@@ -281,13 +281,13 @@
   // Venues modelled on the four majors' surfaces. bz / bh scale how high / how fast the ball comes off the court.
   const VENUES = {
     mel: { name: 'Melbourne', surf: TL('ハード', 'Keras'), nameJa: 'メルボルン', banner: 'NORI OPEN · MELBOURNE', court: '#2f6fc4', outer: '#4f9ee2', wall: '#17407a',
-           sky: ['#0f2a55', '#3a6fb0'], line: '#ffffff', bz: 1.03, bh: .97, dust: '215,225,245', slide: 16 },
+           sky: ['#0f2a55', '#3a6fb0'], line: '#ffffff', bz: 1, bh: 1, dust: '215,225,245', slide: 16 },
     par: { name: 'Paris', surf: TL('クレー', 'Tanah liat'), nameJa: 'パリ', banner: 'NORI OPEN · PARIS', court: '#c8643a', outer: '#bf5d35', wall: '#1d5a3a',
-           sky: ['#4a7fb8', '#a9cbe8'], line: '#f6f0e4', bz: 1.2, bh: .8, dust: '205,115,65', slide: 9, clay: true },
+           sky: ['#4a7fb8', '#a9cbe8'], line: '#f6f0e4', bz: 1.05, bh: .92, dust: '205,115,65', slide: 9, clay: true },
     lon: { name: 'London', surf: TL('芝', 'Rumput'), nameJa: 'ロンドン', banner: 'NORI OPEN · LONDON', court: '#4f9a3e', outer: '#4a9339', wall: '#12422a',
-           sky: ['#5d84b8', '#cfe0f0'], line: '#ffffff', bz: .7, bh: 1.13, dust: '140,180,100', slide: 14, grass: true },
+           sky: ['#5d84b8', '#cfe0f0'], line: '#ffffff', bz: .92, bh: 1.05, dust: '140,180,100', slide: 14, grass: true },
     ny:  { name: 'New York', surf: TL('ハード', 'Keras'), nameJa: 'ニューヨーク', banner: 'NORI OPEN · NEW YORK', court: '#3d63b8', outer: '#3f7f56', wall: '#0e1f36',
-           sky: ['#04060d', '#151d33'], line: '#ffffff', bz: .95, bh: 1.05, dust: '215,225,245', slide: 16, night: true },
+           sky: ['#04060d', '#151d33'], line: '#ffffff', bz: .98, bh: 1.02, dust: '215,225,245', slide: 16, night: true },
   };
   for (const k in VENUES) { VENUES[k].key = k; if (LANG === 'ja') VENUES[k].name = VENUES[k].nameJa; }
   let venue = VENUES.mel, format = 'set';
@@ -707,9 +707,9 @@
     b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
     if (b.z <= 0 && b.vz < 0) {
       const impact = -b.vz;
-      const bh = Math.min(1.08, b.bh * venue.bh); // the surface: clay grips and sits up, grass skids through low
+      const bh = Math.min(1.05, b.bh * venue.bh); // the surface: clay grips and sits up, grass skids through low
       // spin bites harder on clay (topspin jumps up) and slice stays down on grass
-      const sb = b.mg > .004 && venue.clay ? 1.08 : b.mg < -.002 && venue.grass ? .88 : 1;
+      const sb = b.mg > .004 && venue.clay ? 1.02 : b.mg < -.002 && venue.grass ? .97 : 1;
       b.z = 0; b.vz = impact * b.bz * venue.bz * sb; b.vx *= bh; b.vy *= bh;
       if (b.kick) { b.vx += b.kick; b.kick = 0; } // kick serve jumps sideways
       // spin mostly wears off after the first bounce; court friction on later bounces
