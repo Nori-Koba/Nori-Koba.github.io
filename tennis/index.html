@@ -281,13 +281,13 @@
   // Venues modelled on the four majors' surfaces. bz / bh scale how high / how fast the ball comes off the court.
   const VENUES = {
     mel: { name: 'Melbourne', surf: TL('ハード', 'Keras'), nameJa: 'メルボルン', banner: 'NORI OPEN · MELBOURNE', court: '#2f6fc4', outer: '#4f9ee2', wall: '#17407a',
-           sky: ['#0f2a55', '#3a6fb0'], line: '#ffffff', bz: 1, bh: 1, dust: '215,225,245', slide: 16 },
+           sky: ['#0f2a55', '#3a6fb0'], line: '#ffffff', bz: 1.03, bh: .97, dust: '215,225,245', slide: 16 },
     par: { name: 'Paris', surf: TL('クレー', 'Tanah liat'), nameJa: 'パリ', banner: 'NORI OPEN · PARIS', court: '#c8643a', outer: '#bf5d35', wall: '#1d5a3a',
-           sky: ['#4a7fb8', '#a9cbe8'], line: '#f6f0e4', bz: 1.12, bh: .86, dust: '205,115,65', slide: 9, clay: true },
+           sky: ['#4a7fb8', '#a9cbe8'], line: '#f6f0e4', bz: 1.2, bh: .8, dust: '205,115,65', slide: 9, clay: true },
     lon: { name: 'London', surf: TL('芝', 'Rumput'), nameJa: 'ロンドン', banner: 'NORI OPEN · LONDON', court: '#4f9a3e', outer: '#4a9339', wall: '#12422a',
-           sky: ['#5d84b8', '#cfe0f0'], line: '#ffffff', bz: .8, bh: 1.08, dust: '140,180,100', slide: 14, grass: true },
+           sky: ['#5d84b8', '#cfe0f0'], line: '#ffffff', bz: .7, bh: 1.13, dust: '140,180,100', slide: 14, grass: true },
     ny:  { name: 'New York', surf: TL('ハード', 'Keras'), nameJa: 'ニューヨーク', banner: 'NORI OPEN · NEW YORK', court: '#3d63b8', outer: '#3f7f56', wall: '#0e1f36',
-           sky: ['#04060d', '#151d33'], line: '#ffffff', bz: .97, bh: 1.04, dust: '215,225,245', slide: 16, night: true },
+           sky: ['#04060d', '#151d33'], line: '#ffffff', bz: .95, bh: 1.05, dust: '215,225,245', slide: 16, night: true },
   };
   for (const k in VENUES) { VENUES[k].key = k; if (LANG === 'ja') VENUES[k].name = VENUES[k].nameJa; }
   let venue = VENUES.mel, format = 'set';
@@ -503,6 +503,12 @@
       if (kind === 'cheer') {
         f.frequency.setValueAtTime(480, t); f.frequency.linearRampToValueAtTime(900, t + .4); f.Q.value = .8;
         g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.45 * intensity, t + .25); g.gain.exponentialRampToValueAtTime(.0001, t + 2.4);
+      } else if (kind === 'aww') { // a groan: low and slowly falling
+        f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(220, t + 1.4); f.Q.value = 2.2;
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.5 * intensity, t + .25); g.gain.exponentialRampToValueAtTime(.0001, t + 1.9);
+      } else if (kind === 'gasp') { // a sharp intake: short and rising
+        f.frequency.setValueAtTime(340, t); f.frequency.exponentialRampToValueAtTime(720, t + .25); f.Q.value = 2.5;
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.45 * intensity, t + .07); g.gain.exponentialRampToValueAtTime(.0001, t + .7);
       } else {
         f.frequency.setValueAtTime(480, t); f.frequency.exponentialRampToValueAtTime(290, t + .9); f.Q.value = 3;
         g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.6 * intensity, t + .15); g.gain.exponentialRampToValueAtTime(.0001, t + 1.2);
@@ -701,8 +707,10 @@
     b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
     if (b.z <= 0 && b.vz < 0) {
       const impact = -b.vz;
-      const bh = Math.min(1.03, b.bh * venue.bh); // the surface: clay grips and sits up, grass skids through low
-      b.z = 0; b.vz = impact * b.bz * venue.bz; b.vx *= bh; b.vy *= bh;
+      const bh = Math.min(1.08, b.bh * venue.bh); // the surface: clay grips and sits up, grass skids through low
+      // spin bites harder on clay (topspin jumps up) and slice stays down on grass
+      const sb = b.mg > .004 && venue.clay ? 1.08 : b.mg < -.002 && venue.grass ? .88 : 1;
+      b.z = 0; b.vz = impact * b.bz * venue.bz * sb; b.vx *= bh; b.vy *= bh;
       if (b.kick) { b.vx += b.kick; b.kick = 0; } // kick serve jumps sideways
       // spin mostly wears off after the first bounce; court friction on later bounces
       b.mg *= .4; b.ax = 0; b.bz = .68; b.bh = .7;
@@ -928,7 +936,7 @@
     const ct = .38 * player.animDur;
     if (player.anim > player.animDur - ct) player.anim = player.animDur - ct;
     ball.shotKmh = kmh;
-    rally++; maxRally = Math.max(maxRally, rally); maxSpeed = Math.max(maxSpeed, kmh);
+    rally++; maxRally = Math.max(maxRally, rally); maxSpeed = Math.max(maxSpeed, kmh); rallyCrowd();
     sHit(smash ? 1 : power, smash ? 'smash' : type);
     const label = smash ? TL('スマッシュ!', 'Smash!') : sh.name;
     popupAt(player.x, player.y, 2.5, `${label} ${kmh}km/h`, smash ? '#ff5d73' : sh.color);
@@ -1032,6 +1040,7 @@
     cpu.defend = stretched;
     // a net rusher follows an attacking ball in
     cpu.rush = Q('net') && !stretched && type !== 'lob' && type !== 'drop' && (power > .5 || player.x < 1 || player.x > CW - 1) && Math.random() < .6;
+    rallyCrowd();
     if (stretched) { startSlide(cpu); ball.chance = true; popupAt(player.x, player.y, 2.8, TL('チャンスボール!', 'Bola peluang!'), '#e8ff3a'); }
     else if (type !== 'top' && type !== 'flat' || kmh > 95) popupAt(cpu.x, cpu.y, 2.6, `${SHOTS[type].name} ${kmh}km/h`, SHOTS[type].color);
   }
@@ -1148,6 +1157,7 @@
       const ok = ball.serve ? inBox(serveBox(recv, deuce())) : inCourt(recv);
       marks.push({ x: ball.x, y: ball.y, life: venue.clay ? 5 : 1.2, ok }); // clay keeps the ball mark
       if (ok && ball.serve && ball.type === 'top') popupAt(ball.x, ball.y, 1.4, TL('キック!', 'Kick!'), SHOTS.top.color);
+      if (ok && !practice && lineDist(recv) < .1) crowdVoice('gasp', .55); // just caught the line
       if (!ok) {
         lineCall(ball.serve ? 'Fault' : 'Out');
         if (outBy() < .5) crowdVoice('ooh', .8); // so close!
@@ -1195,6 +1205,14 @@
     say(text, 1.25, 1.15);
   }
   // how far outside the lines the ball landed (0 if in)
+  // how close an in-ball landed to the nearest line it had to stay inside (the net side does not count)
+  function lineDist(recv) {
+    if (ball.serve) {
+      const b = serveBox(recv, deuce());
+      return Math.min(Math.abs(ball.x - b.x0), Math.abs(ball.x - b.x1), recv === 'C' ? Math.abs(ball.y - b.y0) : Math.abs(ball.y - b.y1));
+    }
+    return Math.min(Math.abs(ball.x), Math.abs(CW - ball.x), recv === 'C' ? Math.abs(ball.y) : Math.abs(L - ball.y));
+  }
   const outBy = () => Math.max(0, -ball.x, ball.x - CW, ball.y < NET_Y ? -ball.y : ball.y - L);
   function scoreCall(w, gameWon, over, tiebreakNow) {
     if (over) return `Game, set and match, ${NAME[w]}`;
@@ -1221,7 +1239,9 @@
     const longRally = rally >= 8, ace = /エース|Ace/.test(label), error = /アウト|ネット|ダブル|Out|Net|Double/.test(label);
     let inten = (w === 'P' ? .8 : .55) * (error ? .6 : 1);
     if (ace || longRally) inten = 1;
-    crowdClap(inten, 2.2); if (inten >= .9) crowdVoice('cheer', inten);
+    crowdClap(inten, 2.2); if (inten >= .9 && !error) crowdVoice('cheer', inten);
+    // an error ends a long rally (or a double fault): the crowd groans
+    if (error && (rally >= 6 || /ダブル|Double/.test(label))) crowdVoice('aww', rally >= 10 ? .9 : .6);
     cheer = 1.4 * inten;
     if (navigator.vibrate && w === 'C') navigator.vibrate(60);
     let title = w === 'P' ? TL('あなたのポイント!', 'Poin untukmu!') : TL('CPU のポイント', 'Poin untuk CPU');
@@ -1761,7 +1781,10 @@
 
   // after a scrambling get the player slides on, low and wide, and is slow to recover
   const SLIDE = .45;
-  function startSlide(o) { o.slide = SLIDE; o.slideId = Math.random(); o.slideDir = null; }
+  // the crowd gets into a long rally: a murmur of "ooh" as it goes on and on
+  const rallyCrowd = () => { if (!practice && (rally === 10 || rally === 16 || rally >= 22 && rally % 6 === 4)) crowdVoice('ooh', Math.min(.7, .3 + rally * .015)); };
+  const practiceFeeder = o => practice && o === cpu;
+  function startSlide(o) { if (!practice && state === 'rally') crowdVoice('ooh', .45); o.slide = SLIDE; o.slideId = Math.random(); o.slideDir = null; }
 
   // accelerate toward a target velocity, braking harder than speeding up
   function accelTo(o, tvx, tvy, dt, acc, dec) {
@@ -1781,6 +1804,8 @@
     const { R, Fw } = facing(o), { R2, F2 } = legFrame(o);
     const serving = state === 'serve' && isServer(o) && !(o.anim > 0);
     let l = serving ? (i < 0 ? [-.08, .3] : [.32, -.22]) : [i * (.19 + Math.min(1, o.crouch) * .07), 0];
+    // side-step (shuffle): the leading foot reaches out wide, the trailing foot closes in -- they never cross
+    if (o.shuffle && !serving) l = [i * (i === o.shuffle ? .34 : .07), 0];
     const k = o.stroke.side || o.stroke.kind, front = k === 'bh' ? 1 : -1; // forehand: left foot steps in, backhand: right foot
     const animP = o.anim > 0 ? 1 - o.anim / o.animDur : 1;
     if (o.anim > 0 && animP < .85 && i === front && k !== 'serve' && k !== 'smash') l = [l[0] * 1.3, l[1] + (k === 'volley' ? .45 : .36)];
@@ -1825,6 +1850,14 @@
     // walking keeps one foot on the ground; running may have both in the air for a moment
     const allowAt = run > .5 ? .65 : 1;
     if (o.feet.some(f => f.step && f.step < allowAt)) return;
+    // waiting for the ball: quick little adjustment steps on the spot, one foot then the other
+    o.tapT = (o.tapT || 0) - dt;
+    if (o.adjust && sp < 1.2 && !(o.anim > 0) && o.tapT <= 0 && !o.feet.some(f => f.step)) {
+      const k = o.tapFoot = 1 - (o.tapFoot || 0), f = o.feet[k], w = footIdeal(o, k ? 1 : -1);
+      f.dur = .1; f.fx = f.x; f.fy = f.y; f.tx = w[0] + rand(-.03, .03); f.ty = w[1] + rand(-.03, .03);
+      f.run = 0; f.lift = .035 * FIG; f.step = 1e-4; o.tapT = rand(.12, .17);
+      return;
+    }
     let best = -1, worst = 0;
     o.feet.forEach((f, k) => {
       if (f.step) return;
@@ -1844,11 +1877,17 @@
 
   function animateBody(o, dt) {
     const sp = Math.hypot(o.vx, o.vy);
+    // moving mostly sideways at a moderate pace (recovering to the middle, edging over): side-step, facing the net
+    const { R: R0 } = facing(o), lat = sp > .1 ? (o.vx * R0[0] + o.vy * R0[1]) / sp : 0;
+    o.shuffle = sp > .7 && sp < 5.8 && Math.abs(lat) > .72 && !(o.anim > 0) && !(o.slide > 0) && state !== 'serve' ? Math.sign(lat) : 0;
+    // the ball is on its way to you: stay light, with small adjustment steps
+    const mine = o === player ? 'P' : 'C';
+    o.adjust = state === 'rally' && ball.live && ball.last && ball.last !== mine && d2(ball, o) < 9 && !practiceFeeder(o);
     stepFeet(o, dt);
     o.anim = Math.max(0, (o.anim || 0) - dt);
     // long runs: hips and legs turn toward the run (backing up: turn side-on, crossover style)
     let yawT = 0;
-    if (sp > 3.2 && !(o.anim > 0) && !(o.slide > 0)) {
+    if (sp > 3.2 && !(o.anim > 0) && !(o.slide > 0) && !o.shuffle) {
       const { R, Fw } = facing(o), a = Math.atan2((o.vx * R[0] + o.vy * R[1]) / sp, (o.vx * Fw[0] + o.vy * Fw[1]) / sp);
       const w = Math.min(1, (sp - 3.2) / 2);
       yawT = (Math.abs(a) <= Math.PI / 2 ? clamp(a * .7, -1, 1) : Math.sign(a) * .9) * w;
@@ -1870,7 +1909,7 @@
     o.phase += sp * dt * 2.7;
     o.sp += (Math.min(1, sp / 5) - o.sp) * Math.min(1, dt * 10);
     o.hop = Math.max(0, o.hop - dt);
-    const target = o.slide > 0 ? 1.6 : state === 'serve' ? (isServer(o) ? .1 : .75) : state === 'rally' ? .65 : .3;
+    const target = o.slide > 0 ? 1.6 : o.shuffle && state === 'rally' ? .85 : state === 'serve' ? (isServer(o) ? .1 : .75) : state === 'rally' ? .65 : .3;
     o.crouch += (target - o.crouch) * Math.min(1, dt * 5);
   }
 
@@ -1883,6 +1922,7 @@
     } else if ((state === 'rally' || state === 'pause') && !intro) {
       // recover to the middle right after hitting; after floating up a sitter, back off deep to defend the smash
       target = { x: CX + (player.x - CX) * .25, y: cpu.defend ? -3.2 : cpu.rush ? NET_Y - 2.4 : -1 };
+      speed *= .85; // recovering, not sprinting: side-steps back to the middle
     }
     if (target) {
       const dx = target.x - cpu.x, dy = clamp(target.y, -4, NET_Y - 1.2) - cpu.y, l = Math.hypot(dx, dy);
