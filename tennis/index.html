@@ -608,7 +608,7 @@
   let pts = [0, 0], games = [0, 0], faults = 0, rally = 0, maxRally = 0, maxSpeed = 0, tossing = false, cpuServeT = 0;
   let dust = [];
   let aimX = 0, aimD = 0; // where you are aiming while a shot is charged: -1..1 across, -1 short .. 1 deep
-  let pauseT = 0, pauseCb = null, msg = null, popups = [], marks = [], charge = null, history = [], cpuMod = { err: 0, react: 0, noise: 1 };
+  let pauseT = 0, pauseCb = null, msg = null, popups = [], marks = [], skids = [], charge = null, history = [], cpuMod = { err: 0, react: 0, noise: 1 };
 
   // tiebreak: the player due to serve serves the first point, then each serves two in a row
   let tb = false, tbStart = 'P', tbScore = null;
@@ -654,7 +654,7 @@
       $('cName').textContent = (opp.seed ? `[${opp.seed}] ` : '') + opp.n;
       $('cStyle').textContent = TSTYLE[opp.st];
     }
-    pts = [0, 0]; games = [0, 0]; faults = 0; maxRally = 0; maxSpeed = 0; popups = []; marks = [];
+    pts = [0, 0]; games = [0, 0]; faults = 0; maxRally = 0; maxSpeed = 0; popups = []; marks = []; skids = [];
     ptr = null; // the click on the menu button is not a move order
     $('menu').classList.add('hidden'); $('result').classList.add('hidden'); $('board').classList.remove('hidden');
     $('lvName').textContent = lv.name;
@@ -1084,7 +1084,7 @@
   function startPractice(key) {
     lvKey = 'normal'; lv = LEVELS.normal; practice = key; stage = { fill: 1 }; cpu.size = cpu.build = 1; cpuKit = KIT_C;
     pstats = { n: 0, ok: 0, nice: 0, streak: 0, best: 0 };
-    pts = [0, 0]; games = [0, 0]; faults = 0; popups = []; marks = [];
+    pts = [0, 0]; games = [0, 0]; faults = 0; popups = []; marks = []; skids = [];
     $('menu').classList.add('hidden'); $('result').classList.add('hidden');
     $('board').classList.remove('hidden'); $('quit').classList.remove('hidden');
     feedNext();
@@ -1761,7 +1761,7 @@
 
   // after a scrambling get the player slides on, low and wide, and is slow to recover
   const SLIDE = .45;
-  function startSlide(o) { o.slide = SLIDE; }
+  function startSlide(o) { o.slide = SLIDE; o.slideId = Math.random(); o.slideDir = null; }
 
   // accelerate toward a target velocity, braking harder than speeding up
   function accelTo(o, tvx, tvy, dt, acc, dec) {
@@ -1772,54 +1772,91 @@
     o.vx += dx; o.vy += dy;
   }
   // Feet stay planted on the court and step to a new spot when the body leaves them behind.
+  // On a long run the hips and legs turn toward where you are going (the shoulders stay with the ball).
+  const legFrame = o => {
+    const { R, Fw } = facing(o), a = o.legYaw || 0, c = Math.cos(a), sn = Math.sin(a);
+    return { R2: [R[0] * c - Fw[0] * sn, R[1] * c - Fw[1] * sn], F2: [R[0] * sn + Fw[0] * c, R[1] * sn + Fw[1] * c] };
+  };
   function footIdeal(o, i) {
-    const { R, Fw } = facing(o);
+    const { R, Fw } = facing(o), { R2, F2 } = legFrame(o);
     const serving = state === 'serve' && isServer(o) && !(o.anim > 0);
-    let l = serving ? (i < 0 ? [-.08, .3] : [.32, -.22]) : [i * (.19 + o.crouch * .07), 0];
+    let l = serving ? (i < 0 ? [-.08, .3] : [.32, -.22]) : [i * (.19 + Math.min(1, o.crouch) * .07), 0];
     const k = o.stroke.side || o.stroke.kind, front = k === 'bh' ? 1 : -1; // forehand: left foot steps in, backhand: right foot
     const animP = o.anim > 0 ? 1 - o.anim / o.animDur : 1;
     if (o.anim > 0 && animP < .85 && i === front && k !== 'serve' && k !== 'smash') l = [l[0] * 1.3, l[1] + (k === 'volley' ? .45 : .36)];
-    if (o.slide > 0) l = i < 0 ? [-.5, .32] : [.42, -.3]; // splits-style slide
-    return [o.x + (R[0] * l[0] + Fw[0] * l[1]) * FIG + o.vx * .1, o.y + (R[1] * l[0] + Fw[1] * l[1]) * FIG + o.vy * .1];
+    const ax = o.anim > 0 || serving ? R : R2, fw = o.anim > 0 || serving ? Fw : F2;
+    return [o.x + (ax[0] * l[0] + fw[0] * l[1]) * FIG + o.vx * .1, o.y + (ax[1] * l[0] + fw[1] * l[1]) * FIG + o.vy * .1];
+  }
+  // A slide: the leading foot skids out toward the ball with the leg straight, the trailing leg folds
+  // under the body on its toes, and both feet travel with you.
+  function slideFeet(o, dt) {
+    const sp = Math.hypot(o.vx, o.vy), { R, Fw } = facing(o);
+    if (!o.slideDir) o.slideDir = sp > .5 ? [o.vx / sp, o.vy / sp] : [R[0], R[1]];
+    const m = o.slideDir, lead = m[0] * R[0] + m[1] * R[1] >= 0 ? 1 : 0;
+    const tgt = [[o.x + m[0] * .52 * FIG + Fw[0] * .08 * FIG, o.y + m[1] * .52 * FIG + Fw[1] * .08 * FIG],
+                 [o.x - m[0] * .1 * FIG - Fw[0] * .26 * FIG, o.y - m[1] * .1 * FIG - Fw[1] * .26 * FIG]];
+    [lead, 1 - lead].forEach((k, j) => {
+      const f = o.feet[k], t = tgt[j], r = Math.min(1, dt * (j ? 10 : 16));
+      f.x += (t[0] - f.x) * r; f.y += (t[1] - f.y) * r; f.z = 0; f.step = 0;
+      f.pitch += ((j ? .75 : -.25) - f.pitch) * Math.min(1, dt * 12); // trailing foot up on its toes, leading toe up
+    });
+    // the leading shoe scrapes a mark on the court
+    if (sp > .8) { const f = o.feet[lead]; skids.push({ x: f.x, y: f.y, id: o.slideId, life: venue.clay ? 6 : venue.grass ? 3 : 1.5 }); }
   }
   function stepFeet(o, dt) {
-    const sp = Math.hypot(o.vx, o.vy);
-    if (!o.feet) o.feet = [-1, 1].map(i => { const w = footIdeal(o, i); return { x: w[0], y: w[1], z: 0, step: 0 }; });
-    if (o.slide > 0) { // the leading foot skids out ahead, the trailing foot stays planted
-      const { R } = facing(o), lead = o.vx * R[0] + o.vy * R[1] >= 0 ? 1 : 0;
-      const f = o.feet[lead], w = footIdeal(o, lead ? 1 : -1);
-      f.x += (w[0] - f.x) * Math.min(1, dt * 14); f.y += (w[1] - f.y) * Math.min(1, dt * 14); f.z = 0; f.step = 0;
-      return;
-    }
+    const sp = Math.hypot(o.vx, o.vy), run = clamp((sp - 1.6) / 2.4, 0, 1); // 0 = walking, 1 = running
+    if (!o.feet) o.feet = [-1, 1].map(i => { const w = footIdeal(o, i); return { x: w[0], y: w[1], z: 0, step: 0, pitch: 0 }; });
+    if (o.slide > 0) { slideFeet(o, dt); return; }
+    o.slideDir = null;
     o.feet.forEach(f => {
-      if (!f.step) return;
+      if (!f.step) { f.pitch *= Math.max(0, 1 - dt * 14); return; }
       f.step += dt / f.dur;
       const p = Math.min(1, f.step), e = smooth(p);
-      f.x = lerp(f.fx, f.tx, e); f.y = lerp(f.fy, f.ty, e); f.z = Math.sin(Math.PI * p) * f.lift;
-      if (p >= 1) { f.step = 0; f.z = 0; }
+      f.x = lerp(f.fx, f.tx, e); f.y = lerp(f.fy, f.ty, e);
+      // the swing: the heel kicks up early (peak at ~40%), then the leg reaches forward and comes down
+      f.z = Math.sin(Math.PI * Math.pow(p, .75)) * f.lift;
+      // heel-to-toe: toe pointing down as the foot leaves, toe up just before the heel lands
+      f.pitch = (p < .6 ? .65 * Math.sin(Math.PI * p / .6) : -.3 * Math.sin(Math.PI * (p - .6) / .4)) * (.35 + .65 * f.run);
+      if (p >= 1) { f.step = 0; f.z = 0; f.pitch = 0; }
     });
-    // one foot at a time (the other may start once this one is half way through)
-    const busy = o.feet.some(f => f.step && f.step < .5);
-    if (busy) return;
+    // arms swing against the legs: + when the right foot is ahead along the run
+    const md = sp > .1 ? [o.vx / sp, o.vy / sp] : [0, 0], fe = o.feet;
+    o.gait = clamp(((fe[1].x - fe[0].x) * md[0] + (fe[1].y - fe[0].y) * md[1]) / (.45 * FIG), -1, 1);
+    // walking keeps one foot on the ground; running may have both in the air for a moment
+    const allowAt = run > .5 ? .65 : 1;
+    if (o.feet.some(f => f.step && f.step < allowAt)) return;
     let best = -1, worst = 0;
     o.feet.forEach((f, k) => {
       if (f.step) return;
       const w = footIdeal(o, k ? 1 : -1), d = Math.hypot(w[0] - f.x, w[1] - f.y);
       if (d > worst) { worst = d; best = k; }
     });
-    if (best < 0 || worst < (sp > .6 ? .16 : .09) * FIG + .02) return;
+    if (best < 0 || worst < (sp > .6 ? .16 + run * .05 : .09) * FIG + .02) return;
     const f = o.feet[best], w = footIdeal(o, best ? 1 : -1);
-    f.dur = clamp(.2 - sp * .013, .1, .2);
+    // walking steps are slow and low; running steps quick, long and high
+    f.dur = sp < 1.2 ? lerp(.3, .184, sp / 1.2) : clamp(.2 - sp * .013, .1, .2);
     f.fx = f.x; f.fy = f.y; f.tx = w[0] + o.vx * f.dur * .5; f.ty = w[1] + o.vy * f.dur * .5;
-    f.lift = (.06 + Math.min(sp, 8) * .022) * FIG; f.step = 1e-4;
+    f.run = run; f.lift = (.04 + run * .12 + Math.min(sp, 8) * .012) * FIG; f.step = 1e-4;
+    // a stance foot that the body has run far past rolls up onto its toes
+    const other = o.feet[1 - best];
+    if (!other.step) other.pitch = Math.max(other.pitch, .4 * run);
   }
 
   function animateBody(o, dt) {
     const sp = Math.hypot(o.vx, o.vy);
     stepFeet(o, dt);
     o.anim = Math.max(0, (o.anim || 0) - dt);
+    // long runs: hips and legs turn toward the run (backing up: turn side-on, crossover style)
+    let yawT = 0;
+    if (sp > 3.2 && !(o.anim > 0) && !(o.slide > 0)) {
+      const { R, Fw } = facing(o), a = Math.atan2((o.vx * R[0] + o.vy * R[1]) / sp, (o.vx * Fw[0] + o.vy * Fw[1]) / sp);
+      const w = Math.min(1, (sp - 3.2) / 2);
+      yawT = (Math.abs(a) <= Math.PI / 2 ? clamp(a * .7, -1, 1) : Math.sign(a) * .9) * w;
+    }
+    o.legYaw = (o.legYaw || 0) + (yawT - (o.legYaw || 0)) * Math.min(1, dt * (yawT ? 7 : 12));
     if (o.slide > 0) {
       o.slide -= dt;
+      if (o.slide <= 0) o.slideId = 0;
       if (Math.random() < dt * 30) dust.push({ x: o.x + rand(-.3, .3), y: o.y + rand(-.3, .3), life: .5, r: rand(.15, .35) });
     }
     // lean into acceleration, back when braking
@@ -1833,7 +1870,7 @@
     o.phase += sp * dt * 2.7;
     o.sp += (Math.min(1, sp / 5) - o.sp) * Math.min(1, dt * 10);
     o.hop = Math.max(0, o.hop - dt);
-    const target = o.slide > 0 ? 1.15 : state === 'serve' ? (isServer(o) ? .1 : .75) : state === 'rally' ? .65 : .3;
+    const target = o.slide > 0 ? 1.6 : state === 'serve' ? (isServer(o) ? .1 : .75) : state === 'rally' ? .65 : .3;
     o.crouch += (target - o.crouch) * Math.min(1, dt * 5);
   }
 
@@ -1944,6 +1981,7 @@
     dust.forEach(d => { d.life -= dt; d.r += dt * .6; });
     dust = dust.filter(d => d.life > 0);
     marks = marks.filter(m => m.life > 0);
+    skids.forEach(m => (m.life -= dt)); skids = skids.filter(m => m.life > 0);
   }
 
   // ---------- drawing ----------
@@ -2151,7 +2189,7 @@
     else if (prep > 0 && o === player && ball.bounces === 0 && player.y < NET_Y + 5) { st.side = st.kind; st.kind = 'volley'; }
     let pose = prep > 0 ? blendKey(READY, keysFor(st)[0], prep) : READY;
     if (o.sp > .25 && prep < .3) { // pump the arms while running
-      const sw = Math.sin(o.phase) * .36 * o.sp;
+      const sw = (o.gait || 0) * .36 * o.sp;
       pose = { ...pose, hand: [pose.hand[0] + .05, pose.hand[1] - sw * .55, pose.hand[2] - .02 + Math.max(0, -sw) * .25], off: [-.26, .12 + sw, 1.05 + Math.max(0, sw) * .3] };
     }
     return pose;
@@ -2264,9 +2302,10 @@
     const rot = (l, a) => [l[0] * Math.cos(a) + l[1] * Math.sin(a), -l[0] * Math.sin(a) + l[1] * Math.cos(a), l[2]];
     const W3 = l => [o.x + (R[0] * l[0] + Fw[0] * l[1]) * FIG, o.y + (R[1] * l[0] + Fw[1] * l[1]) * FIG, l[2] * FIG];
     const yaw = pose.yaw;
-    const hipL = W3(rot([-.13 * BUILD, 0, hipZ], yaw * .55)), hipR = W3(rot([.13 * BUILD, 0, hipZ], yaw * .55));
+    const lyaw = o.legYaw || 0;
+    const hipL = W3(rot([-.13 * BUILD, 0, hipZ], yaw * .55 + lyaw)), hipR = W3(rot([.13 * BUILD, 0, hipZ], yaw * .55 + lyaw));
     const shZ = hipZ + .55;
-    const shL = W3(rot([-.21 * BUILD, lean, shZ], yaw)), shR = W3(rot([.21 * BUILD, lean, shZ], yaw));
+    const shL = W3(rot([-.21 * BUILD, lean, shZ], yaw + lyaw * .35)), shR = W3(rot([.21 * BUILD, lean, shZ], yaw + lyaw * .35));
     // upper body sways with acceleration
     const sway = p => [p[0] + (o.lx || 0) * FIG, p[1] + (o.ly || 0) * FIG, p[2]];
     [shL, shR].forEach((p, i) => { const q = sway(p); p[0] = q[0]; p[1] = q[1]; });
@@ -2289,11 +2328,15 @@
     // split step: the feet open as you land
     const split = o.hop > 0 ? Math.sin(Math.PI * (1 - o.hop / HOP)) * .1 * FIG : 0;
     const feet = o.feet.map((f, i) => [f.x + R[0] * split * (i ? 1 : -1), f.y + R[1] * split * (i ? 1 : -1), f.z + hop * .8 * FIG]);
-    const ankles = feet.map(f => [f[0] - Fw[0] * .01, f[1] - Fw[1] * .01, f[2] + .08 * FIG]);
-    const kneePole = [Fw[0] + md[0] * .5, Fw[1] + md[1] * .5, .1];
+    // each shoe points along the legs (turned on a run) and toward the motion; pitch rolls heel to toe
+    const { F2 } = legFrame(o);
+    const fdir = o.feet.map(() => { const v = [F2[0] + md[0] * .35, F2[1] + md[1] * .35], l = Math.hypot(...v) || 1; return [v[0] / l, v[1] / l]; });
+    const pitch = o.feet.map(f => f.pitch || 0);
+    const ankles = feet.map((f, i) => [f[0] - fdir[i][0] * .01, f[1] - fdir[i][1] * .01, f[2] + (.08 + Math.max(0, pitch[i]) * .06) * FIG]);
+    const kneePole = [F2[0] + md[0] * .5, F2[1] + md[1] * .5, .1];
     const legL = ik(hipL, ankles[0], .46 * FIG, .42 * FIG, kneePole), legR = ik(hipR, ankles[1], .46 * FIG, .42 * FIG, kneePole);
 
-    if (skel) return { FIG, BUILD, R, Fw, md, yaw, hipL, hipR, shL, shR, neck, head, hand, dir, armR, armL, legL, legR, ankles, feet };
+    if (skel) return { FIG, BUILD, R, Fw, md, yaw, hipL, hipR, shL, shR, neck, head, hand, dir, armR, armL, legL, legR, ankles, feet, fdir, pitch };
     const base = P(o.x, o.y), s = base.s * FIG;
     const Q = p => P(p[0], p[1], p[2]);
     const parts = [];
@@ -2315,16 +2358,16 @@
     ctx.beginPath(); ctx.ellipse(sh0.x, sh0.y, .62 * s * shR0, .2 * s * shR0, 0, 0, Math.PI * 2); ctx.fill();
 
     // legs: thigh, knee, calf bulge, sock, shoe
-    [[hipL, legL, feet[0], ankles[0]], [hipR, legR, feet[1], ankles[1]]].forEach(([hip, leg, foot, ank]) => {
+    [[hipL, legL, feet[0], ankles[0], 0], [hipR, legR, feet[1], ankles[1], 1]].forEach(([hip, leg, foot, ank, fi]) => {
       const kn = leg.joint;
       parts.push({ y: torsoY0 - .004 + (hip === hipL ? 0 : .0001) * (o === player ? 1 : -1), f: () => {
         limbPath([hip, mid(hip, kn, .5), kn, mid(kn, ank, .3), ank].map(Q), [.2, .18, .13, .145, .078].map(v => v * s * BUILD_W), kit.skin);
         taper(Q(mid(kn, ank, .78)), Q(ank), .09 * s, .082 * s, '#f4f4f4'); // sock
       } });
       // shoe: heel to toe along the way the foot points
-      const fw = [Fw[0] + md[0] * .35, Fw[1] + md[1] * .35], fl = Math.hypot(...fw) || 1;
-      const heel = [foot[0] - fw[0] / fl * .06 * FIG, foot[1] - fw[1] / fl * .06 * FIG, foot[2] + .035 * FIG];
-      const toe = [foot[0] + fw[0] / fl * .17 * FIG, foot[1] + fw[1] / fl * .17 * FIG, foot[2] + .03 * FIG];
+      const fw = fdir[fi], fl = 1, pt = pitch[fi];
+      const heel = [foot[0] - fw[0] / fl * .06 * FIG, foot[1] - fw[1] / fl * .06 * FIG, foot[2] + (.035 + Math.max(0, pt) * .14) * FIG];
+      const toe = [foot[0] + fw[0] / fl * .17 * FIG, foot[1] + fw[1] / fl * .17 * FIG, foot[2] + (.03 + Math.max(0, -pt) * .1) * FIG];
       seg([heel[0], heel[1], heel[2] - .02 * FIG], [toe[0], toe[1], toe[2] - .02 * FIG], .1, .085, '#e9e9e9', .003); // sole
       seg(heel, toe, .105, .09, kit.shoe, .004);
     });
@@ -2561,6 +2604,18 @@
       ctx.fillStyle = `rgba(${venue.dust},${d.life * (venue.clay ? .8 : .5)})`;
       ctx.beginPath(); ctx.ellipse(p.x, p.y - d.r * p.s * .3, d.r * p.s, d.r * p.s * .45, 0, 0, 7); ctx.fill();
     });
+    // slide marks: the scrape left by a sliding shoe (deep on clay, a faint scuff elsewhere)
+    ctx.lineCap = 'round';
+    for (let i = 1; i < skids.length; i++) {
+      const a = skids[i - 1], b = skids[i];
+      if (a.id !== b.id) continue;
+      const pa = P(a.x, a.y), pb = P(b.x, b.y);
+      ctx.globalAlpha = Math.min(1, b.life / 1.5);
+      ctx.strokeStyle = venue.clay ? 'rgba(125,45,18,.45)' : venue.grass ? 'rgba(95,80,40,.4)' : 'rgba(20,24,40,.18)';
+      ctx.lineWidth = Math.max(1.5, .1 * pb.s);
+      ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+    }
+    ctx.globalAlpha = 1; ctx.lineCap = 'butt';
     marks.forEach(m => {
       const p = P(m.x, m.y);
       ctx.globalAlpha = Math.min(1, m.life);
@@ -2863,18 +2918,20 @@
             const X = new T.Vector3().subVectors(shR, shL).normalize(), Y0 = new T.Vector3().subVectors(shC, hipC).normalize();
             const Y = Y0.clone().addScaledVector(X, -X.dot(Y0)).normalize(), Z = new T.Vector3().crossVectors(X, Y);
             // legs
-            [['L', k.legL, k.ankles[0], k.feet[0], hipL], ['R', k.legR, k.ankles[1], k.feet[1], hipR]].forEach(([s, leg, an, ft, hip]) => {
+            [['L', k.legL, k.ankles[0], k.feet[0], hipL, 0], ['R', k.legR, k.ankles[1], k.feet[1], hipR, 1]].forEach(([s, leg, an, ft, hip, fi]) => {
               const kn = V(leg.joint), ank = V(an), foot = V(ft), calfMid = kn.clone().lerp(ank, .35);
               seg(P2['thigh' + s], hip, kn, .1 * F * B); ball3(P2['knee' + s], kn, .066 * F * B);
               seg(P2['calfA' + s], kn, calfMid, .066 * F * B); seg(P2['calfB' + s], calfMid, ank, .074 * F * B);
               seg(P2['short' + s], hip, hip.clone().lerp(kn, .5), .118 * F * B);
               seg(P2['sock' + s], ank.clone().lerp(kn, .16), ank, .042 * F * B);
               // shoe, pointing where the player is facing and moving
-              const fw = new T.Vector3(k.Fw[0] + k.md[0] * .35, 0, k.Fw[1] + k.md[1] * .35).normalize(), back = fw.clone().negate();
-              const right = new T.Vector3().crossVectors(UP, back);
-              const c = foot.clone().addScaledVector(fw, .055 * F); c.y = foot.y + .04 * F;
-              basis(P2['shoe' + s], right, UP, back); P2['shoe' + s].position.copy(c); P2['shoe' + s].scale.set(.1 * F, .07 * F, .27 * F);
-              basis(P2['sole' + s], right, UP, back); P2['sole' + s].position.copy(c).setY(foot.y + .008 * F); P2['sole' + s].scale.set(.105 * F, .022 * F, .28 * F);
+              const fh = new T.Vector3(k.fdir[fi][0], 0, k.fdir[fi][1]), right = new T.Vector3().crossVectors(UP, fh.clone().negate());
+              // pitch > 0: heel up, toe down (pushing off); < 0: toe up (about to land)
+              const pt = k.pitch[fi], fw = fh.clone().multiplyScalar(Math.cos(pt)).addScaledVector(UP, -Math.sin(pt));
+              const up = UP.clone().multiplyScalar(Math.cos(pt)).addScaledVector(fh, Math.sin(pt)), back = fw.clone().negate();
+              const c = foot.clone().addScaledVector(fw, .055 * F); c.y = foot.y + .04 * F + Math.abs(Math.sin(pt)) * .11 * F;
+              basis(P2['shoe' + s], right, up, back); P2['shoe' + s].position.copy(c); P2['shoe' + s].scale.set(.1 * F, .07 * F, .27 * F);
+              basis(P2['sole' + s], right, up, back); P2['sole' + s].position.copy(c).addScaledVector(up, -.032 * F); P2['sole' + s].scale.set(.105 * F, .022 * F, .28 * F);
             });
             basis(P2.pelvis, X, Y, Z); P2.pelvis.position.copy(hipC).addScaledVector(Y, .02 * F); P2.pelvis.scale.set(.19 * F * B, .11 * F, .13 * F);
             // torso: tapers from the shoulders to the waist; the chest fills out the top
