@@ -552,6 +552,7 @@
   addEventListener('blur', () => { for (const k in keys) keys[k] = false; charge = null; ptr = null; });
   let ptr = null, mouseShot = null;
   addEventListener('keydown', e => {
+    if (state === 'ceremony') { cerSkip(); return; }
     if (GL && GL.replaying()) { GL.stopReplay(); pauseT = Math.min(pauseT, .15); return; } // any key skips a replay
     const k = e.key.toLowerCase();
     if (!keys[k] && KEYMAP[k]) press(KEYMAP[k]);
@@ -576,6 +577,7 @@
   }
   canvas.addEventListener('contextmenu', e => e.preventDefault());
   canvas.addEventListener('pointerdown', e => {
+    if (state === 'ceremony') { cerSkip(); return; }
     if (GL && GL.replaying()) { GL.stopReplay(); pauseT = Math.min(pauseT, .15); return; }
     setPtr(e);
     if (e.pointerType === 'mouse') {
@@ -592,7 +594,7 @@
   canvas.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') ptr = null; });
   document.querySelectorAll('#shots button').forEach(b => {
     const s = b.dataset.shot;
-    b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (GL && GL.replaying()) { GL.stopReplay(); pauseT = Math.min(pauseT, .15); return; } b.setPointerCapture(e.pointerId); b.classList.add('on'); press(s); });
+    b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (state === 'ceremony') { cerSkip(); return; } if (GL && GL.replaying()) { GL.stopReplay(); pauseT = Math.min(pauseT, .15); return; } b.setPointerCapture(e.pointerId); b.classList.add('on'); press(s); });
     const up = () => { if (b.classList.contains('on')) { b.classList.remove('on'); release(s); } };
     b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
   });
@@ -1261,7 +1263,7 @@
       tb = false;
       if (setWon(i)) {
         crowdClap(1, 4); crowdVoice('cheer', 1); umpire(scoreCall(w, true, true), 600);
-        updateBoard(); pause(title, label, 1.8, () => endMatch(w)); return;
+        updateBoard(); pause(title, label, 1.8, () => (tourOpp && tour && tour.res.length === 6 ? startCeremony(w) : endMatch(w))); return;
       }
       crowdClap(.9, 3);
       if (format === 'set' && games[0] === 6 && games[1] === 6) { // 6-6: tiebreak
@@ -1272,6 +1274,137 @@
     updateBoard();
     umpire(scoreCall(w, gameWon), 650);
     pause(title, label, 1.6, setupServe);
+  }
+
+  // ---------- the trophy ceremony after a final: celebration, handshake, the runner-up plate, the trophy, a speech ----------
+  let cer = null;
+  const CER_END = 18.5;
+  function startCeremony(w) {
+    const champ = w === 'P' ? player : cpu, runner = w === 'P' ? cpu : player;
+    const nameOf = o => (o === player ? NAME.P : tourOpp.n);
+    cer = { w, t: 0, champ, runner, cName: nameOf(champ), rName: nameOf(runner), conf: [], flashes: [], said: {}, stage: false, cup: false, plate: false };
+    state = 'ceremony'; msg = null; popups = []; charge = null; ball.live = false;
+    $('quit').classList.add('hidden');
+    [player, cpu].forEach(o => { o.vx = o.vy = 0; o.anim = 0; o.slide = 0; o.cerPose = null; o.noRacket = false; o.faceCam = false; });
+    crowdClap(1, 5); crowdVoice('cheer', 1); cheer = 3;
+    if (w === 'P') confetti(90);
+  }
+  function confetti(n) {
+    const cols = ['#ffd166', '#ff5d73', '#4cc9f0', '#80ed99', '#ffffff', '#c77dff'];
+    for (let i = 0; i < n; i++) cer.conf.push({ x: rand(0, W), y: -rand(0, H * .5), vx: rand(-30, 30), vy: rand(70, 150), r: rand(0, 6), vr: rand(-6, 6), w: rand(5, 9), h: rand(3, 6), c: pick(cols), life: rand(5, 8) });
+  }
+  function cerWalk(o, x, y, dt, speed) {
+    const dx = x - o.x, dy = y - o.y, l = Math.hypot(dx, dy), s = Math.min(speed, l * 3);
+    accelTo(o, l > .02 ? dx / l * s : 0, l > .02 ? dy / l * s : 0, dt, 10, 14);
+    o.x += o.vx * dt; o.y += o.vy * dt;
+    animateBody(o, dt);
+  }
+  function cerOnce(key, f) { if (!cer.said[key]) { cer.said[key] = true; f(); } }
+  function cerStep(dt) {
+    if (!cer) return;
+    const t = (cer.t += dt), { champ, runner } = cer;
+    if (t < 2.4) { // the winning moment: arms up; the other one hangs their head and walks slowly to the net
+      champ.cerPose = 'up'; runner.cerPose = 'down';
+      cerWalk(champ, champ.x, champ.y, dt, 0); cerWalk(runner, CX + (runner === player ? -.2 : .2), runner === player ? NET_Y + 3 : NET_Y - 3, dt, 1.4);
+    } else if (t < 4.8) { // to the net, and shake hands
+      const shaking = t > 3.8;
+      champ.cerPose = runner.cerPose = shaking ? 'shake' : null;
+      cerWalk(player, CX - .2, NET_Y + .75, dt, 4.2); cerWalk(cpu, CX + .2, NET_Y - .75, dt, 4.2);
+      if (shaking) cerOnce('shake', () => crowdClap(.8, 3));
+    } else if (t < 5.8) { // fade to the presentation
+      if (t > 5.3) cerOnce('stage', () => {
+        cer.stage = true; player.faceCam = true;
+        Object.assign(champ, { x: CX - .85, y: GL ? L - 3.5 : L + .4, vx: 0, vy: 0, feet: null, cerPose: null });
+        Object.assign(runner, { x: CX + 1.15, y: GL ? L - 3.45 : L + .45, vx: 0, vy: 0, feet: null, cerPose: null });
+        champ.noRacket = runner.noRacket = true;
+      });
+      [player, cpu].forEach(o => cerWalk(o, o.x, o.y, dt, 0));
+    } else {
+      [player, cpu].forEach(o => cerWalk(o, o.x, o.y, dt, 0));
+      if (t < 9.3) { // the runner-up
+        runner.cerPose = 'plate'; cer.plate = true;
+        cerOnce('runner', () => { umpire(`Ladies and gentlemen, the runner-up, ${cer.rName}.`, 200); setTimeout(() => crowdClap(.8, 3.5), 1600); });
+      } else if (t < 13.5) { // the champion lifts the trophy
+        champ.cerPose = 'cup'; cer.cup = true; runner.cerPose = null; cer.plate = false; runner.noRacket = false;
+        cerOnce('champ', () => { umpire(`And your champion, ${cer.cName}!`, 100); crowdClap(1, 6); crowdVoice('cheer', 1); cheer = 4; confetti(220); setTimeout(() => crowdClap(1, 5), 3000); });
+      } else { // the speech
+        champ.cerPose = 'chest';
+        cerOnce('speech', () => crowdClap(.4, 1.5));
+      }
+      if (t > 9.3 && Math.random() < dt * 14) cer.flashes.push({ x: rand(0, W), y: rand(0, H * .38), life: .09 }); // photographers
+    }
+    if (t >= CER_END) finishCeremony();
+  }
+  function cerSkip() { if (cer && cer.t < CER_END - .3) cer.t = cer.t < 5.8 ? 5.8 : cer.t < 9.3 ? 9.3 : cer.t < 13.5 ? 13.5 : CER_END; }
+  function finishCeremony() {
+    const w = cer.w;
+    [player, cpu].forEach(o => { o.cerPose = null; o.noRacket = false; o.faceCam = false; o.feet = null; });
+    cer = null;
+    endMatch(w);
+  }
+  function drawCeremony() {
+    if (!cer) return;
+    const t = cer.t, dt = frameDt;
+    // 2D view: the silverware drawn in the hands
+    if (!GL && cer.stage) {
+      const hold = (o, kind) => {
+        const k = figure(o, o === player ? KIT_P : cpuKit, null, true), a = k.hand, b = k.armL.end;
+        const c = P((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 + (kind === 'cup' && o.cerPose === 'cup' ? .12 : 0)), s = c.s * k.FIG;
+        if (kind === 'cup') {
+          ctx.fillStyle = '#f2c14e'; ctx.strokeStyle = '#a07a10'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(c.x - .2 * s, c.y - .55 * s); ctx.lineTo(c.x + .2 * s, c.y - .55 * s); ctx.lineTo(c.x + .07 * s, c.y - .2 * s);
+          ctx.lineTo(c.x + .04 * s, c.y); ctx.lineTo(c.x + .15 * s, c.y + .05 * s); ctx.lineTo(c.x - .15 * s, c.y + .05 * s); ctx.lineTo(c.x - .04 * s, c.y); ctx.lineTo(c.x - .07 * s, c.y - .2 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+          [-1, 1].forEach(sd => { ctx.beginPath(); ctx.arc(c.x + sd * .2 * s, c.y - .42 * s, .08 * s, sd > 0 ? -Math.PI / 2 : Math.PI / 2, sd > 0 ? Math.PI / 2 : Math.PI * 1.5); ctx.stroke(); });
+        } else {
+          ctx.fillStyle = '#dfe3ea'; ctx.strokeStyle = '#8a909c'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(c.x, c.y, .24 * s, 0, 7); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.arc(c.x, c.y, .16 * s, 0, 7); ctx.stroke();
+        }
+      };
+      if (cer.plate) hold(cer.runner, 'plate');
+      if (cer.cup) hold(cer.champ, 'cup');
+    }
+    // photographers' flashes and confetti
+    cer.flashes.forEach(f => { f.life -= dt; ctx.fillStyle = `rgba(255,255,255,${Math.max(0, f.life / .09)})`; ctx.beginPath(); ctx.arc(f.x, f.y, 3 + Math.random() * 3, 0, 7); ctx.fill(); });
+    cer.flashes = cer.flashes.filter(f => f.life > 0);
+    cer.conf.forEach(c => {
+      c.life -= dt; c.x += (c.vx + Math.sin(t * 3 + c.r) * 25) * dt; c.y += c.vy * dt; c.r += c.vr * dt;
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.r); ctx.fillStyle = c.c; ctx.globalAlpha = Math.min(1, c.life); ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h * Math.abs(Math.cos(c.r * 2))); ctx.restore();
+    });
+    cer.conf = cer.conf.filter(c => c.life > 0 && c.y < H + 20);
+    ctx.globalAlpha = 1;
+    // captions
+    const card = (title, sub, y, color = '#fff') => {
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = 'bold 26px system-ui, sans-serif'; const w = Math.min(W - 24, Math.max(ctx.measureText(title).width, sub ? ctx.measureText(sub).width * .7 : 0) + 56);
+      ctx.fillStyle = 'rgba(10,14,32,.82)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - w / 2, y - 34, w, sub ? 80 : 56, 16) : ctx.rect(W / 2 - w / 2, y - 34, w, sub ? 80 : 56); ctx.fill();
+      ctx.fillStyle = color; ctx.fillText(title, W / 2, y - 6);
+      if (sub) { ctx.font = 'bold 17px system-ui, sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(sub, W / 2, y + 24); }
+    };
+    const yC = H - (coarse ? 170 : 120);
+    if (t < 4.8) card(cer.w === 'P' ? TL('🏆 優勝!', '🏆 JUARA!') : TL('準優勝…', 'Runner-up…'), `NORI OPEN ${venue.name}`, yC, cer.w === 'P' ? '#ffd166' : '#dfe3ea');
+    else if (t >= 5.8) {
+      ctx.font = 'bold 15px system-ui, sans-serif'; ctx.fillStyle = 'rgba(10,14,32,.75)'; const tt = `NORI OPEN ${venue.name} · ${TL('表彰式', 'Upacara penghargaan')}`, tw = ctx.measureText(tt).width + 30;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - tw / 2, 104, tw, 30, 15) : ctx.rect(W / 2 - tw / 2, 104, tw, 30); ctx.fill(); ctx.fillStyle = '#ffd166'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tt, W / 2, 119);
+      if (t < 9.3) card(TL('🥈 準優勝', '🥈 Runner-up'), cer.rName, yC, '#dfe3ea');
+      else if (t < 13.5) card(TL('🏆 優勝', '🏆 Juara'), cer.cName, yC, '#ffd166');
+      else {
+        const speech = cer.w === 'P'
+          ? TL('みんな、本当にありがとう！ 最高の 2 週間でした。来年もまたここに戻ってきます！', 'Terima kasih semuanya! Dua minggu yang luar biasa. Tahun depan aku pasti kembali!')
+          : TL(`${NAME.P}、素晴らしい決勝をありがとう。君もきっとすぐにこのトロフィーを掲げるよ`, `Terima kasih ${NAME.P} untuk final yang hebat. Kamu pasti segera mengangkat trofi ini!`);
+        ctx.font = 'bold 16px system-ui, sans-serif';
+        const words = [...speech], lines = []; let cur = '';
+        words.forEach(ch => { if (ctx.measureText(cur + ch).width > Math.min(W - 70, 520)) { lines.push(cur); cur = ch; } else cur += ch; }); if (cur) lines.push(cur);
+        const bh = 34 + lines.length * 22, bw = Math.min(W - 24, 560), by = yC - 30;
+        ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - bw / 2, by - bh / 2, bw, bh, 16) : ctx.rect(W / 2 - bw / 2, by - bh / 2, bw, bh); ctx.fill();
+        ctx.fillStyle = '#1f2340'; ctx.font = 'bold 13px system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(`🎤 ${cer.cName}`, W / 2 - bw / 2 + 16, by - bh / 2 + 16);
+        ctx.font = 'bold 16px system-ui, sans-serif'; lines.forEach((l, i) => ctx.fillText(l, W / 2 - bw / 2 + 16, by - bh / 2 + 40 + i * 22)); ctx.textAlign = 'center';
+      }
+    }
+    ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.textAlign = 'center';
+    ctx.fillText(coarse ? TL('タップで先へ', 'Ketuk untuk lanjut') : TL('キー / クリックで先へ', 'Tekan tombol / klik untuk lanjut'), W / 2, H - 14);
+    // fade between the handshake and the presentation
+    if (t > 4.8 && t < 5.8) { ctx.fillStyle = `rgba(0,0,0,${1 - Math.abs(t - 5.3) / .5})`; ctx.fillRect(0, 0, W, H); }
   }
 
   function endMatch(w) {
@@ -2058,6 +2191,7 @@
   }
 
   function step(dt) {
+    if (state === 'ceremony') { cerStep(dt); return; }
     movePlayer(dt);
     moveCpu(dt);
     moveBall(dt * ballTS());
@@ -2304,11 +2438,22 @@
       if (p <= keys[i].t) return blendKey(keys[i - 1], keys[i], (p - keys[i - 1].t) / (keys[i].t - keys[i - 1].t));
     return keys[keys.length - 1];
   }
-  const facing = o => (o === player ? { R: [1, 0], Fw: [0, -1] } : { R: [-1, 0], Fw: [0, 1] });
+  const facing = o => (o === player && !o.faceCam ? { R: [1, 0], Fw: [0, -1] } : { R: [-1, 0], Fw: [0, 1] });
+  const backView = o => facing(o).Fw[1] < 0; // seen from behind (you, normally)
   const sideKind = o => ((ball.x - o.x) * facing(o).R[0] >= 0 ? 'fh' : 'bh');
   const isServer = o => (server() === 'P') === (o === player);
 
+  // ceremony poses: arms up, head down, handshake, the runner-up plate, the trophy over the head / at the chest
+  const CER_POSE = {
+    up: K(0, 0, [.3, .05, 2.05], [.15, .1, 1], [-.3, .05, 2.05]),
+    down: K(0, 0, [.22, 0, .82], [.1, .25, -1], [-.22, 0, .82]),
+    shake: K(0, .2, [.12, .5, 1.05], [.3, .5, -.6], [-.25, 0, .95]),
+    plate: K(0, 0, [.16, .32, 1.08], [0, .2, 1], [-.16, .32, 1.08]),
+    cup: K(0, 0, [.13, .12, 2.0], [0, .1, 1], [-.13, .12, 2.0]),
+    chest: K(0, 0, [.14, .3, 1.35], [0, .2, 1], [-.14, .3, 1.35]),
+  };
   function poseOf(o, ch) {
+    if (state === 'ceremony' && o.cerPose) return CER_POSE[o.cerPose];
     if (o.anim > 0) return sample(keysFor(o.stroke), 1 - o.anim / o.animDur);
     if (state === 'serve' && isServer(o)) {
       if (ball.held) return SERVE_STANCE;
@@ -2495,7 +2640,7 @@
     // legs: thigh, knee, calf bulge, sock, shoe
     [[hipL, legL, feet[0], ankles[0], 0], [hipR, legR, feet[1], ankles[1], 1]].forEach(([hip, leg, foot, ank, fi]) => {
       const kn = leg.joint;
-      parts.push({ y: torsoY0 - .004 + (hip === hipL ? 0 : .0001) * (o === player ? 1 : -1), f: () => {
+      parts.push({ y: torsoY0 - .004 + (hip === hipL ? 0 : .0001) * (backView(o) ? 1 : -1), f: () => {
         limbPath([hip, mid(hip, kn, .5), kn, mid(kn, ank, .3), ank].map(Q), [.2, .18, .13, .145, .078].map(v => v * s * BUILD_W), kit.skin);
         taper(Q(mid(kn, ank, .78)), Q(ank), .09 * s, .082 * s, '#f4f4f4'); // sock
       } });
@@ -2544,7 +2689,7 @@
         ctx.beginPath(); ctx.moveTo(dr.x + (WR.x - dr.x) * .15, dr.y + (WR.y - dr.y) * .15); ctx.lineTo(WR.x, WR.y); ctx.stroke();
         ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = Math.max(.8, .02 * s);
         ctx.beginPath(); ctx.moveTo(WL.x + (WR.x - WL.x) * .25, WL.y + 2); ctx.quadraticCurveTo(cx, WL.y + .05 * s, WL.x + (WR.x - WL.x) * .7, WR.y + 2); ctx.stroke();
-        if (o !== player) { // collar, seen from the front
+        if (!backView(o)) { // collar, seen from the front
           ctx.fillStyle = kit.trim; ctx.beginPath();
           ctx.moveTo(N.x - .07 * s, N.y + .01 * s); ctx.lineTo(N.x, N.y + .1 * s); ctx.lineTo(N.x + .07 * s, N.y + .01 * s); ctx.lineTo(N.x, N.y + .04 * s); ctx.closePath(); ctx.fill();
         }
@@ -2556,7 +2701,7 @@
       f: () => {
         const N = Q(neck), Hd = Q(head), r = .118 * s, ry = r * 1.12;
         taper(N, { x: Hd.x, y: Hd.y + ry * .55 }, .085 * s, .075 * s, kit.skin);
-        const turn = Math.sin(yaw) * r * .45 * (o === player ? 1 : -1);
+        const turn = Math.sin(yaw) * r * .45 * (backView(o) ? 1 : -1);
         // ears
         ctx.fillStyle = shadeOf(kit.skin, -.12);
         ctx.beginPath(); ctx.ellipse(Hd.x - r * .98, Hd.y + r * .05, r * .2, r * .3, 0, 0, 7); ctx.ellipse(Hd.x + r * .98, Hd.y + r * .05, r * .2, r * .3, 0, 0, 7); ctx.fill();
@@ -2564,7 +2709,7 @@
         hg.addColorStop(0, shadeOf(kit.skin, .15)); hg.addColorStop(1, shadeOf(kit.skin, -.2));
         ctx.fillStyle = hg; ctx.beginPath(); ctx.ellipse(Hd.x, Hd.y, r, ry, 0, 0, 7); ctx.fill();
         ctx.strokeStyle = OUTLINE; ctx.lineWidth = lw; ctx.stroke();
-        if (o === player) { // from behind: hair at the back, the cap and its strap
+        if (backView(o)) { // from behind: hair at the back, the cap and its strap
           ctx.fillStyle = kit.hair; ctx.beginPath(); ctx.ellipse(Hd.x, Hd.y + ry * .05, r * .97, ry * .9, 0, 0, 7); ctx.fill();
           ctx.fillStyle = kit.cap; ctx.beginPath(); ctx.ellipse(Hd.x, Hd.y - ry * .2, r * 1.04, ry * .78, 0, Math.PI * 1.02, Math.PI * 1.98); ctx.fill();
           ctx.fillRect(Hd.x - r * 1.04, Hd.y - ry * .26, r * 2.08, ry * .22);
@@ -2598,6 +2743,7 @@
     parts.push({
       y: at(hand, .45)[1] + .01,
       f: () => {
+        if (o.noRacket) return;
         const A = Q(at(hand, -.07)), T = Q(at(hand, .3)), C = Q(at(hand, .5)), D = Q(at(hand, .68));
         const ang = Math.atan2(D.y - T.y, D.x - T.x), len = Math.max(3, Math.hypot(D.x - T.x, D.y - T.y) / 2 + .04 * s), wid = Math.max(2, .11 * s);
         ctx.lineCap = 'round';
@@ -2714,9 +2860,11 @@
     }
   }
 
+  let bgKey = null;
   function draw() {
     if (GL) { // stadium backdrop on the canvas behind the 3D scene
-      const main = ctx; ctx = GL.bgCtx; ctx.clearRect(0, 0, W, H); drawCourt(); ctx = main;
+      const bk = `${venue.key}${venue.night}${W}x${H}`;
+      if (bgKey !== bk) { bgKey = bk; const main = ctx; ctx = GL.bgCtx; ctx.clearRect(0, 0, W, H); drawCourt(); ctx = main; }
       ctx.clearRect(0, 0, W, H);
       if (GL.replaying()) {
         GL.frame();
@@ -2827,7 +2975,7 @@
       ctx.beginPath(); ctx.ellipse(p.x, p.y, rx, ry, 0, 0, 7); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(p.x - rx * 1.4, p.y); ctx.lineTo(p.x + rx * 1.4, p.y); ctx.moveTo(p.x, p.y - ry * 1.6); ctx.lineTo(p.x, p.y + ry * 1.6); ctx.stroke();
     }
-    if (state !== 'menu' && !GL) {
+    if (state !== 'menu' && state !== 'ceremony' && !GL) {
       const sp = P(ball.x, ball.y);
       ctx.fillStyle = 'rgba(0,0,0,.3)';
       ctx.beginPath(); ctx.ellipse(sp.x, sp.y, Math.max(2, .12 * sp.s), Math.max(1, .05 * sp.s), 0, 0, 7); ctx.fill();
@@ -2840,7 +2988,7 @@
       { y: cpu.y, f: () => figure(cpu, cpuKit) },
       { y: player.y, f: () => figure(player, KIT_P, charge) },
     ];
-    if (state !== 'menu') items.push({ y: ball.y + .01, f: drawBall });
+    if (state !== 'menu' && state !== 'ceremony') items.push({ y: ball.y + .01, f: drawBall });
     if (GL) { GL.frame(frameDt); if (state !== 'menu') drawTrail(); chargeMeter(player, charge); drawUmpCall(); }
     else items.sort((a, b) => a.y - b.y).forEach(i => i.f());
 
@@ -2872,6 +3020,7 @@
       if (t2) { ctx.font = 'bold 14px system-ui, sans-serif'; ctx.fillStyle = '#ffd166'; ctx.fillText(t2, W / 2, y - 34); }
     }
     drawMsg();
+    if (state === 'ceremony') drawCeremony();
   }
   function drawMsg() {
     if (msg) {
@@ -2896,7 +3045,7 @@
       const glCanvas = $('gl'), bgCanvas = $('bg');
       const renderer = new T.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true });
       renderer.setClearColor(0x000000, 0);
-      renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+      renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFShadowMap;
       const scene = new T.Scene(), camera = new T.PerspectiveCamera(30, 1, .5, 300);
       const hemi = new T.HemisphereLight(0xffffff, 0x445566, .9); scene.add(hemi);
       const sun = new T.DirectionalLight(0xffffff, 1.1);
@@ -2952,7 +3101,7 @@
       const tapeMat = new T.MeshLambertMaterial({ color: 0xffffff });
       bar(V3(-px, NET_Y, 1.07), V3(CX, NET_Y, NET_H), .035, tapeMat); bar(V3(CX, NET_Y, NET_H), V3(CW + px, NET_Y, 1.07), .035, tapeMat);
       // ball
-      const ballMesh = new T.Mesh(new T.SphereGeometry(.07, 20, 14), new T.MeshStandardMaterial({ color: 0xe8ff3a, roughness: .55, emissive: 0x2a3300 }));
+      const ballMesh = new T.Mesh(new T.SphereGeometry(.07, 20, 14), new T.MeshLambertMaterial({ color: 0xe8ff3a, emissive: 0x2a3300 }));
       ballMesh.castShadow = true; scene.add(ballMesh);
       // people: each drawn by the 2D code into its own little canvas, shown on a plane at that person's depth
       const sprites = new Map(), dprS = Math.min(devicePixelRatio || 1, 2);
@@ -2990,12 +3139,12 @@
       })();
       function makeBody() {
         const mats = {
-          skin: new T.MeshStandardMaterial({ roughness: .62 }), shirt: new T.MeshStandardMaterial({ roughness: .85 }),
-          trim: new T.MeshStandardMaterial({ roughness: .8 }), shorts: new T.MeshStandardMaterial({ roughness: .85 }),
-          hair: new T.MeshStandardMaterial({ roughness: .95 }), cap: new T.MeshStandardMaterial({ roughness: .8 }),
-          shoe: new T.MeshStandardMaterial({ roughness: .55 }), sock: new T.MeshStandardMaterial({ color: 0xf2f2f2, roughness: .9 }),
-          sole: new T.MeshStandardMaterial({ color: 0xdedede, roughness: .7 }), dark: new T.MeshStandardMaterial({ color: 0x1b1b1b, roughness: .5 }),
-          racket: new T.MeshStandardMaterial({ roughness: .35, metalness: .25 }),
+          skin: new T.MeshLambertMaterial(), shirt: new T.MeshLambertMaterial(),
+          trim: new T.MeshLambertMaterial(), shorts: new T.MeshLambertMaterial(),
+          hair: new T.MeshLambertMaterial(), cap: new T.MeshLambertMaterial(),
+          shoe: new T.MeshLambertMaterial(), sock: new T.MeshLambertMaterial({ color: 0xf2f2f2 }),
+          sole: new T.MeshLambertMaterial({ color: 0xdedede }), dark: new T.MeshLambertMaterial({ color: 0x1b1b1b }),
+          racket: new T.MeshLambertMaterial(),
           strings: new T.MeshBasicMaterial({ map: gridTex, transparent: true, opacity: .8, side: T.DoubleSide, depthWrite: false }),
         };
         const g = new T.Group(); scene.add(g);
@@ -3109,10 +3258,40 @@
             seg(P2.throatL, at(.3), ctr.clone().addScaledVector(dir, -len * .82).addScaledVector(side, wid * .55), .009 * F);
             seg(P2.throatR, at(.3), ctr.clone().addScaledVector(dir, -len * .82).addScaledVector(side, -wid * .55), .009 * F);
             [P2.frame, P2.strings].forEach(m => { basis(m, side, dir, n); m.position.copy(ctr); m.scale.set(wid, len, wid * .9); });
+            [P2.grip, P2.throatL, P2.throatR, P2.frame, P2.strings].forEach(m => (m.visible = !o.noRacket));
           },
         };
       }
       const bodies = { player: makeBody(), cpu: makeBody() };
+      // ---- the trophy ceremony: a gold cup, a silver plate, and a close camera on the two finalists ----
+      const gold = new T.MeshLambertMaterial({ color: 0xf2c14e, emissive: 0x3a2a00 }), silver = new T.MeshLambertMaterial({ color: 0xdfe3ea, emissive: 0x202428 });
+      const cup = new T.Group();
+      {
+        const prof = [[0, 0], [.13, 0], [.13, .03], [.05, .06], [.035, .2], [.06, .24], [.15, .3], [.17, .46], [.165, .5], [0, .5]].map(([x, y]) => new T.Vector2(x, y));
+        const body = new T.Mesh(new T.LatheGeometry(prof, 24), gold); cup.add(body);
+        [-1, 1].forEach(sd => { const h = new T.Mesh(new T.TorusGeometry(.08, .014, 6, 14, Math.PI), gold); h.position.set(sd * .17, .38, 0); h.rotation.z = sd > 0 ? -Math.PI / 2 : Math.PI / 2; cup.add(h); });
+      }
+      const plate = new T.Mesh(new T.CylinderGeometry(.24, .24, .02, 32), silver);
+      cup.visible = plate.visible = false; scene.add(cup); scene.add(plate);
+      let cerCam = false;
+      function cerGL() {
+        if (state === 'ceremony' && cer) {
+          if (cer.stage) { // a close shot of the presentation
+            camera.clearViewOffset(); camera.aspect = W / H; camera.fov = W < H ? 58 : 36;
+            camera.position.set(CX + .15, 1.6, L + 1.9); camera.lookAt(CX + .15, 1.15, L - 3.5); camera.updateProjectionMatrix();
+            cerCam = true;
+          }
+          const hold = (mesh, o, up, show) => {
+            mesh.visible = !!show; if (!show) return;
+            const k = figure(o, o === player ? KIT_P : cpuKit, null, true), a = k.hand, b = k.armL.end, F = k.FIG;
+            mesh.position.set((a[0] + b[0]) / 2, (a[2] + b[2]) / 2 + up * F, (a[1] + b[1]) / 2);
+            mesh.scale.setScalar(F * 1.25);
+          };
+          hold(cup, cer.champ, cer.champ.cerPose === 'cup' ? .05 : -.05, cer.cup);
+          hold(plate, cer.runner, .02, cer.plate);
+          if (plate.visible) plate.rotation.set(Math.PI / 2, 0, 0);
+        } else if (cerCam || cup.visible || plate.visible) { cerCam = false; cup.visible = plate.visible = false; resizeGL(); }
+      }
       // ---- stage 3: the stadium (walls, LED boards, stands full of fans, floodlights) and surface textures ----
       const rnd = (a, b) => a + Math.random() * (b - a);
       const canvasTex = (w, h, paint, repeat) => {
@@ -3214,7 +3393,7 @@
           for (let y = -8.5; y < L + 12; y += .58) fans.push([x + rnd(-.08, .08), y + rnd(-.08, .08), z, side < 0 ? Math.PI / 2 : -Math.PI / 2]);
         }
       });
-      const bodyGeo = new T.BoxGeometry(.42, .55, .3), headGeo = new T.SphereGeometry(.12, 8, 6);
+      const bodyGeo = new T.BoxGeometry(.42, .55, .3), headGeo = new T.IcosahedronGeometry(.12, 0);
       const fanBody = new T.InstancedMesh(bodyGeo, new T.MeshLambertMaterial(), fans.length);
       const fanHead = new T.InstancedMesh(headGeo, new T.MeshLambertMaterial(), fans.length);
       const shirtCols = ['#ff5d73', '#ffd166', '#06d6a0', '#118ab2', '#f4f1de', '#ef8354', '#a78bfa', '#ffffff', '#2b2d42', '#e63946'];
@@ -3227,8 +3406,10 @@
       });
       scene.add(fanBody, fanHead);
       let fillSet = -1;
+      let fansKey = null;
       function moveFans(t) {
         const cheerK = Math.min(1, cheer), waving = rally > 4;
+        if (!cheerK && !waving) { if (fansKey === stage.fill) return; fansKey = stage.fill; } else fansKey = null;
         fans.forEach((f, i) => {
           const [x, y, z, rot, here, ph] = f;
           if (here > stage.fill) { mtx.makeScale(0, 0, 0); fanBody.setMatrixAt(i, mtx); fanHead.setMatrixAt(i, mtx); return; }
@@ -3265,7 +3446,7 @@
       // seated officials: chair, body, head with a cap, one arm that rises to signal a call
       function makeOfficial(x, y, seatZ, faceTo, shirt, scale, high) {
         const g = new T.Group(); g.position.set(x, 0, y); g.rotation.y = Math.atan2(faceTo[0] - x, faceTo[1] - y); scene.add(g);
-        const m = (geo, color, px, py, pz, sx = 1, sy = 1, sz = 1) => { const o = new T.Mesh(geo, new T.MeshStandardMaterial({ color, roughness: .8 })); o.position.set(px, py, pz); o.scale.set(sx, sy, sz); o.castShadow = true; g.add(o); return o; };
+        const m = (geo, color, px, py, pz, sx = 1, sy = 1, sz = 1) => { const o = new T.Mesh(geo, new T.MeshLambertMaterial({ color })); o.position.set(px, py, pz); o.scale.set(sx, sy, sz); o.castShadow = false; g.add(o); return o; };
         const box = new T.BoxGeometry(1, 1, 1), cyl = new T.CylinderGeometry(1, 1, 1, 10), sph = new T.SphereGeometry(1, 14, 10);
         if (high) { // the umpire's tall chair
           [[-.32, -.25], [.32, -.25], [-.32, .25], [.32, .25]].forEach(([a, b]) => m(cyl, '#3a3f55', a, seatZ / 2, b, .035, seatZ, .035));
@@ -3281,7 +3462,7 @@
         m(box, high ? '#cfd5e6' : '#f2f2f2', 0, seatZ + .74 * s, .08 * s, .14 * s, .02 * s, .12 * s); // visor
         m(cyl, shirt, -.23 * s, seatZ + .3 * s, 0, .05 * s, .45 * s, .05 * s);                   // resting arm
         const pivot = new T.Group(); pivot.position.set(.22 * s, seatZ + .52 * s, -.04); g.add(pivot);
-        const arm = new T.Mesh(cyl, new T.MeshStandardMaterial({ color: shirt, roughness: .8 })); arm.scale.set(.05 * s, .5 * s, .05 * s); arm.position.y = -.25 * s; arm.castShadow = true; pivot.add(arm);
+        const arm = new T.Mesh(cyl, new T.MeshLambertMaterial({ color: shirt })); arm.scale.set(.05 * s, .5 * s, .05 * s); arm.position.y = -.25 * s; arm.castShadow = false; pivot.add(arm);
         return { group: g, pivot };
       }
       const umpire3 = makeOfficial(UMP.x, UMP.y, 1.9, [CX, NET_Y], '#1f2b55', 1.25, true);
@@ -3341,19 +3522,24 @@
       // lighter mode: lower resolution, no shadows from the people, half the crowd
       let lite = false, fpsSamples = 0, fpsTime = 0;
       try { lite = localStorage.getItem('bumpy3dLite') === '1'; } catch (e) {}
+      // quality levels: normal (1.5x pixels, shadows), lite (1x, no body shadows, half the crowd), ultra (0.75x, no shadows at all)
+      let ultra = false;
+      const glDpr = () => ultra ? .75 : lite ? 1 : Math.min(devicePixelRatio || 1, 1.5);
       function applyLite() {
-        renderer.setPixelRatio(lite ? 1 : Math.min(devicePixelRatio || 1, 2)); renderer.setSize(W, H, false);
+        renderer.setPixelRatio(glDpr()); renderer.setSize(W, H, false);
+        renderer.shadowMap.enabled = !ultra; scene.traverse(o => { if (o.material && o.material.needsUpdate !== undefined) o.material.needsUpdate = true; });
         recMeshes.forEach(m => (m.castShadow = !lite));
-        fanBody.count = fanHead.count = lite ? Math.floor(fans.length / 2) : fans.length;
+        fanBody.count = fanHead.count = ultra ? Math.floor(fans.length / 4) : lite ? Math.floor(fans.length / 2) : fans.length; fansKey = null;
         sun.shadow.mapSize.set(lite ? 512 : 1024, lite ? 512 : 1024); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
       }
       applyLite();
-      function watchFps(dt) { // switch to the lighter mode by itself if the first seconds of play run slowly
-        if (lite || fpsSamples > 240 || !(state === 'rally' || state === 'serve')) return;
+      function watchFps(dt) { // step down by itself while play runs slowly: first to lite, then to the lightest level
+        if (ultra || fpsSamples > 180 || !(state === 'rally' || state === 'serve')) return;
         fpsSamples++; fpsTime += dt;
-        if (fpsSamples === 240 && fpsTime / 240 > 1 / 38) {
-          lite = true; applyLite(); popupAt(player.x, player.y, 3, TL('軽量モードに切り替えました', 'Beralih ke mode ringan'), '#fff');
-          const box = $('lite3d'); if (box) box.checked = true;
+        if (fpsSamples === 180 && fpsTime / 180 > 1 / 42) {
+          if (!lite) { lite = true; popupAt(player.x, player.y, 3, TL('軽量モードに切り替えました', 'Beralih ke mode ringan'), '#fff'); const box = $('lite3d'); if (box) box.checked = true; }
+          else ultra = true;
+          applyLite(); fpsSamples = 0; fpsTime = 0;
         }
       }
       let venueSet = null;
@@ -3367,7 +3553,7 @@
       }
       function resizeGL() {
         const dpr = Math.min(devicePixelRatio || 1, 2);
-        renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
+        renderer.setPixelRatio(glDpr()); renderer.setSize(W, H, false);
         bgCanvas.width = W * dpr; bgCanvas.height = H * dpr; bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
         // a pinhole camera at (CX, camH, L + CAM_BACK) looking straight down the court, principal point at (W/2, hy)
         const Hf = 2 * Math.max(hy, H - hy, 1);
@@ -3389,7 +3575,7 @@
           if (replay) { sprites.forEach(s => (s.mesh.visible = false)); moveFans(nowR); if (replayFrame(nowR)) return; }
           watchFps(dt);
           // the ball: a little larger than life so it never shrinks below a few pixels
-          ballMesh.visible = state !== 'menu';
+          ballMesh.visible = state !== 'menu' && state !== 'ceremony';
           if (ballMesh.visible) {
             const d = Math.max(1, L + CAM_BACK - ball.y), px = .07 * F / d;
             ballMesh.scale.setScalar(Math.max(1, 3 / px) * 1.25);
@@ -3403,6 +3589,7 @@
           judges.forEach((j, i) => { judges3[i].pivot.rotation.x = j.call > 0 ? -2.4 : 0; });
           bodies.cpu.update(cpu, cpuKit, null);
           bodies.player.update(player, KIT_P, charge);
+          cerGL();
           if (state !== 'menu') record(nowR);
           renderer.render(scene, camera);
         },
