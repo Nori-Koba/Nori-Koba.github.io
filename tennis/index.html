@@ -176,6 +176,12 @@
         <button id="tourNew">新しく始める</button>
         <button class="alt hidden" id="tourCont">つづきから</button>
       </div>
+      <p style="margin-top:12px"><b>📅 キャリア</b>（世界ランキング 100 位からスタート）</p>
+      <p style="font-size:12px;margin:2px 0">1 年で 4 大会：メルボルン → パリ → ロンドン → ニューヨーク。勝ち上がった分だけポイントが入り、ランキングが上がる。ランキングが上がればシードがつく</p>
+      <div class="btns">
+        <button id="carNew">新しく始める</button>
+        <button class="alt hidden" id="carCont">つづきから</button>
+      </div>
       <p style="margin-top:12px"><b>練習モード</b>（CPU が球出し）</p>
       <div class="btns">
         <button class="alt" data-drill="stroke">ストローク</button>
@@ -212,7 +218,7 @@
   let LANG = 'id';
   try { LANG = localStorage.getItem('bumpyLang') || 'id'; } catch (e) {}
   const TL = (ja, id) => (LANG === 'id' ? id : ja);
-  const HTML_ID = {"👥 ダブルス（2 対 2）はこちら": "👥 Main ganda (2 lawan 2) di sini", "あなた": "Kamu", "パワースピン": "Power spin", "スライス": "Slice", "ロブ": "Lob", "ドロップ": "Drop shot", "フラット": "Flat", "トップスピン": "Topspin", "CPU と 1 対 1 のテニス勝負！": "Tanding tenis satu lawan satu melawan CPU!", "会場": "Arena", "メルボルン": "Melbourne", "ハード": "Keras", "パリ": "Paris", "クレー": "Tanah liat", "ロンドン": "London", "芝": "Rumput", "ニューヨーク": "New York", "ハード・夜": "Keras · malam", "試合形式": "Format pertandingan", "1 セット": "1 set", "6 ゲーム先取・6-6 でタイブレーク": "Pertama ke 6 game · tie-break di 6-6", "ショート": "Singkat", "3 ゲーム先取": "Pertama ke 3 game", "あなた：": "Kamu: ", "パワースピン型": "tipe power spin", "（重いトップスピンが大きく落ちて跳ねる）": " (topspin berat yang menukik tajam lalu memantul tinggi)", "スライス型": "tipe slice", "（基本はトップスピン、速い球と低く滑るスライスを多めに混ぜる）": " (dasarnya topspin, dicampur banyak bola cepat dan slice rendah yang meluncur)", "移動": "Bergerak", "マウス / 矢印キー": "Mouse / tombol panah", "指でドラッグ": "Geser dengan jari", "パワーと狙い": "Tenaga & arah", "：ショットのボタンを": ": tekan dan ", "長押し": "tahan", "でためて、離して打つ（ボールが届けば自動で打つ）。": " tombol pukulan untuk mengisi tenaga, lalu lepaskan untuk memukul (otomatis memukul kalau bola terjangkau). ", "ためている間に狙いを決める": "Tentukan arah selagi mengisi tenaga", "：キーは押した方向のマスへ（←→で左右、↑で深く、↓で短いアングル）、マウスは相手コートの狙いたい所を指す、指は弾いた方向へ。その間プレイヤーは自動でボールに寄る。強く打つほどアウトしやすい。": ": dengan tombol, ke kotak arah yang ditekan (←→ kiri/kanan, ↑ dalam, ↓ sudut pendek); dengan mouse, tunjuk titik di lapangan lawan; dengan jari, usap ke arah tujuan. Sementara itu pemain otomatis mendekati bola. Makin keras pukulan, makin mudah out.", "打てる範囲": "Jangkauan pukulan", "：足元の丸の中のボールだけ打てる。トップスピン（オレンジ）は狭く、スライス（青い点線）は広い。打点は 3 段階：丸の内側＝": ": hanya bola di dalam lingkaran di kakimu yang bisa dipukul. Topspin (oranye) sempit, slice (garis putus biru) lebar. Titik pukul ada 3 tingkat: bagian dalam = ", "ナイスショット": "pukulan bagus", "、真ん中＝普通、ふちギリギリ＝": ", tengah = biasa, paling pinggir = ", "ミスヒットか、ふわっと浮いたチャンスボール": "mishit atau bola melambung yang jadi peluang lawan", "（しかもスライディングして戻りが遅れる）。CPU がギリギリで返した浮き球（光る輪）は決めどころ！ 高ければ": " (dan kamu tergelincir sehingga telat kembali). Bola melambung dari CPU yang kepepet (cincin bercahaya) adalah kesempatanmu! Kalau tinggi, ", "スマッシュ": "smash", "、腰〜肩の高さならコート後方から": "; kalau setinggi pinggang–bahu, dari belakang lapangan bisa ", "ドライブボレー": "drive volley", "（トップスピン / フラット）でノーバウンドで叩ける。": " (topspin / flat) sebelum memantul.", "サーブ": "Servis", "：1 回押してトス → 球種のボタンを": ": tekan sekali untuk melambungkan bola → lalu ", "でパワーをためて、ボールが": " tombol jenis pukulan untuk mengisi tenaga, dan lepaskan saat bola ", "一番高いところで離す": "di titik tertinggi", "。ためすぎるとボールが落ちてタイミングがずれる。": ". Kalau terlalu lama, bola turun dan timing meleset. ", "ファースト": "Servis pertama", "はフラット（最速 約210km/h）かスライス（約170km/h、左へ曲がって滑る）。": ": flat (tercepat ±210 km/h) atau slice (±170 km/h, melengkung ke kiri dan meluncur). ", "セカンド": "Servis kedua", "は必ずスピン（キック）サーブ：ネットを安全に越えて沈み、跳ね上がってぐっと前に伸びる。ほぼ必ず入る。速いサーブほど相手は反応が遅れ、コーナーに決まればエース！": " selalu servis spin (kick): melewati net dengan aman, menukik, lalu memantul naik dan melaju ke depan. Hampir pasti masuk. Makin cepat servis, makin telat reaksi lawan — masuk ke pojok, ace!", "Z・J・スペース・左クリック": "Z · J · Spasi · klik kiri", "ネットを安全に越えて急に落ち、肩の高さまで跳ね上がる": "Melewati net dengan aman, menukik tajam, memantul setinggi bahu", "X・K・右クリック": "X · K · klik kanan", "まっすぐ低く滑る。サーブなら左に曲がる": "Meluncur lurus dan rendah. Saat servis melengkung ke kiri", "C・L・ホイールクリック": "C · L · klik roda", "一番速い。でもミスしやすい": "Paling cepat, tapi mudah salah", "S・I・Shift+左クリック": "S · I · Shift+klik kiri", "高く上げて前に出た相手の頭を越す": "Melambung tinggi melewati lawan yang maju ke net", "D・O・Shift+右クリック": "D · O · Shift+klik kanan", "ネット際にポトリ。後ろの相手に効く": "Jatuh pelan dekat net. Ampuh untuk lawan yang di belakang", "球種の使い分け": "Memilih jenis pukulan", "・低く弾んだ球はスライスで返すと安全（フラットやトップは持ち上げにくい）": "• Bola yang memantul rendah lebih aman dikembalikan dengan slice (flat dan topspin sulit diangkat)", "・高く跳ねた球はトップスピンで。腰の高さの打ちごろの球はフラットで強打！": "• Bola yang memantul tinggi pakai topspin. Bola setinggi pinggang yang enak dipukul, hajar dengan flat!", "・同じ球種ばかりだと CPU に": "• Kalau terus memakai pukulan yang sama, CPU akan ", "読まれる": "membacanya", "。3 種類続けて打ち分けると CPU が": ". Kalau berganti 3 jenis pukulan berturut-turut, CPU jadi ", "揺さぶられて": "goyah", "崩れる": " dan berantakan", "コツ": "Tips", "：ショットのボタンを長押しすると、ボールの打ちやすい所（ボレー・スマッシュの位置やバウンド後の頂点）へ自動で走る。ノーバウンドの高い球はスマッシュ：地面の": ": tahan tombol pukulan dan pemain otomatis lari ke titik yang enak (posisi voli/smash atau puncak pantulan). Bola tinggi yang belum memantul bisa di-smash: tunggu di ", "赤い印": "tanda merah", "の所で待つと頭上の打ちやすい高さに落ちてくる。ボールが赤く光って「今!」が出たら打てる。練習モードで球出し練習もできる。": " di tanah, bola akan turun ke ketinggian yang pas di atas kepala. Pukul saat bola menyala merah dan muncul \"Sekarang!\". Ada juga mode latihan dengan bola umpan.", "オートスイング（ボタンを押していなくても自動で打つ）": "Ayunan otomatis (memukul sendiri meski tombol tidak ditekan)", "軽量モード（3D が重いとき。遅い端末では自動で ON）": "Mode ringan (kalau 3D berat; aktif otomatis di perangkat lambat)", "名場面リプレイ（長いラリー・大事なポイント・豪快なエースのときだけ）": "Replay momen terbaik (hanya reli panjang, poin penting, atau ace dahsyat)", "2D 表示にする（いちばん軽い。古い端末向け）": "Tampilan 2D (paling ringan, untuk perangkat lama)", "相手の強さを選んでスタート": "Pilih tingkat lawan lalu mulai", "やさしい": "Mudah", "ふつう": "Normal", "つよい": "Sulit", "最強": "Terkuat", "🏆 トーナメント": "🏆 Turnamen", "（128 人のグランドスラム・あなたは第 1 シード）": " (Grand Slam 128 pemain · kamu unggulan 1)", "全 7 試合・1 セット（6-6 でタイブレーク）。会場は上で選んだもの。ほかの試合は AI がシミュレーション": "7 pertandingan · 1 set (tie-break di 6-6). Arena sesuai pilihan di atas. Pertandingan lain disimulasikan AI", "新しく始める": "Mulai baru", "つづきから": "Lanjutkan", "練習モード": "Mode latihan", "（CPU が球出し）": " (CPU mengumpan bola)", "ストローク": "Groundstroke", "ボレー": "Voli", "ドロップ拾い": "Kejar drop shot", "チャンスボール": "Bola peluang", "ランダム": "Acak", "🎉 Bumpy Party! であそぶ": "🎉 Main Bumpy Party!", "もう一回": "Main lagi", "トーナメント表へ": "Ke bagan turnamen", "メニュー": "Menu", "@title:メニューへ": "Ke menu", "@title:サウンド": "Suara", "@title:ホームへ": "Beranda"};
+  const HTML_ID = {"📅 キャリア": "📅 Karier", "（世界ランキング 100 位からスタート）": " (mulai dari peringkat dunia 100)", "1 年で 4 大会：メルボルン → パリ → ロンドン → ニューヨーク。勝ち上がった分だけポイントが入り、ランキングが上がる。ランキングが上がればシードがつく": "4 turnamen setahun: Melbourne → Paris → London → New York. Makin jauh kamu melaju, makin banyak poin dan peringkatmu naik. Peringkat tinggi = jadi unggulan", "👥 ダブルス（2 対 2）はこちら": "👥 Main ganda (2 lawan 2) di sini", "あなた": "Kamu", "パワースピン": "Power spin", "スライス": "Slice", "ロブ": "Lob", "ドロップ": "Drop shot", "フラット": "Flat", "トップスピン": "Topspin", "CPU と 1 対 1 のテニス勝負！": "Tanding tenis satu lawan satu melawan CPU!", "会場": "Arena", "メルボルン": "Melbourne", "ハード": "Keras", "パリ": "Paris", "クレー": "Tanah liat", "ロンドン": "London", "芝": "Rumput", "ニューヨーク": "New York", "ハード・夜": "Keras · malam", "試合形式": "Format pertandingan", "1 セット": "1 set", "6 ゲーム先取・6-6 でタイブレーク": "Pertama ke 6 game · tie-break di 6-6", "ショート": "Singkat", "3 ゲーム先取": "Pertama ke 3 game", "あなた：": "Kamu: ", "パワースピン型": "tipe power spin", "（重いトップスピンが大きく落ちて跳ねる）": " (topspin berat yang menukik tajam lalu memantul tinggi)", "スライス型": "tipe slice", "（基本はトップスピン、速い球と低く滑るスライスを多めに混ぜる）": " (dasarnya topspin, dicampur banyak bola cepat dan slice rendah yang meluncur)", "移動": "Bergerak", "マウス / 矢印キー": "Mouse / tombol panah", "指でドラッグ": "Geser dengan jari", "パワーと狙い": "Tenaga & arah", "：ショットのボタンを": ": tekan dan ", "長押し": "tahan", "でためて、離して打つ（ボールが届けば自動で打つ）。": " tombol pukulan untuk mengisi tenaga, lalu lepaskan untuk memukul (otomatis memukul kalau bola terjangkau). ", "ためている間に狙いを決める": "Tentukan arah selagi mengisi tenaga", "：キーは押した方向のマスへ（←→で左右、↑で深く、↓で短いアングル）、マウスは相手コートの狙いたい所を指す、指は弾いた方向へ。その間プレイヤーは自動でボールに寄る。強く打つほどアウトしやすい。": ": dengan tombol, ke kotak arah yang ditekan (←→ kiri/kanan, ↑ dalam, ↓ sudut pendek); dengan mouse, tunjuk titik di lapangan lawan; dengan jari, usap ke arah tujuan. Sementara itu pemain otomatis mendekati bola. Makin keras pukulan, makin mudah out.", "打てる範囲": "Jangkauan pukulan", "：足元の丸の中のボールだけ打てる。トップスピン（オレンジ）は狭く、スライス（青い点線）は広い。打点は 3 段階：丸の内側＝": ": hanya bola di dalam lingkaran di kakimu yang bisa dipukul. Topspin (oranye) sempit, slice (garis putus biru) lebar. Titik pukul ada 3 tingkat: bagian dalam = ", "ナイスショット": "pukulan bagus", "、真ん中＝普通、ふちギリギリ＝": ", tengah = biasa, paling pinggir = ", "ミスヒットか、ふわっと浮いたチャンスボール": "mishit atau bola melambung yang jadi peluang lawan", "（しかもスライディングして戻りが遅れる）。CPU がギリギリで返した浮き球（光る輪）は決めどころ！ 高ければ": " (dan kamu tergelincir sehingga telat kembali). Bola melambung dari CPU yang kepepet (cincin bercahaya) adalah kesempatanmu! Kalau tinggi, ", "スマッシュ": "smash", "、腰〜肩の高さならコート後方から": "; kalau setinggi pinggang–bahu, dari belakang lapangan bisa ", "ドライブボレー": "drive volley", "（トップスピン / フラット）でノーバウンドで叩ける。": " (topspin / flat) sebelum memantul.", "サーブ": "Servis", "：1 回押してトス → 球種のボタンを": ": tekan sekali untuk melambungkan bola → lalu ", "でパワーをためて、ボールが": " tombol jenis pukulan untuk mengisi tenaga, dan lepaskan saat bola ", "一番高いところで離す": "di titik tertinggi", "。ためすぎるとボールが落ちてタイミングがずれる。": ". Kalau terlalu lama, bola turun dan timing meleset. ", "ファースト": "Servis pertama", "はフラット（最速 約210km/h）かスライス（約170km/h、左へ曲がって滑る）。": ": flat (tercepat ±210 km/h) atau slice (±170 km/h, melengkung ke kiri dan meluncur). ", "セカンド": "Servis kedua", "は必ずスピン（キック）サーブ：ネットを安全に越えて沈み、跳ね上がってぐっと前に伸びる。ほぼ必ず入る。速いサーブほど相手は反応が遅れ、コーナーに決まればエース！": " selalu servis spin (kick): melewati net dengan aman, menukik, lalu memantul naik dan melaju ke depan. Hampir pasti masuk. Makin cepat servis, makin telat reaksi lawan — masuk ke pojok, ace!", "Z・J・スペース・左クリック": "Z · J · Spasi · klik kiri", "ネットを安全に越えて急に落ち、肩の高さまで跳ね上がる": "Melewati net dengan aman, menukik tajam, memantul setinggi bahu", "X・K・右クリック": "X · K · klik kanan", "まっすぐ低く滑る。サーブなら左に曲がる": "Meluncur lurus dan rendah. Saat servis melengkung ke kiri", "C・L・ホイールクリック": "C · L · klik roda", "一番速い。でもミスしやすい": "Paling cepat, tapi mudah salah", "S・I・Shift+左クリック": "S · I · Shift+klik kiri", "高く上げて前に出た相手の頭を越す": "Melambung tinggi melewati lawan yang maju ke net", "D・O・Shift+右クリック": "D · O · Shift+klik kanan", "ネット際にポトリ。後ろの相手に効く": "Jatuh pelan dekat net. Ampuh untuk lawan yang di belakang", "球種の使い分け": "Memilih jenis pukulan", "・低く弾んだ球はスライスで返すと安全（フラットやトップは持ち上げにくい）": "• Bola yang memantul rendah lebih aman dikembalikan dengan slice (flat dan topspin sulit diangkat)", "・高く跳ねた球はトップスピンで。腰の高さの打ちごろの球はフラットで強打！": "• Bola yang memantul tinggi pakai topspin. Bola setinggi pinggang yang enak dipukul, hajar dengan flat!", "・同じ球種ばかりだと CPU に": "• Kalau terus memakai pukulan yang sama, CPU akan ", "読まれる": "membacanya", "。3 種類続けて打ち分けると CPU が": ". Kalau berganti 3 jenis pukulan berturut-turut, CPU jadi ", "揺さぶられて": "goyah", "崩れる": " dan berantakan", "コツ": "Tips", "：ショットのボタンを長押しすると、ボールの打ちやすい所（ボレー・スマッシュの位置やバウンド後の頂点）へ自動で走る。ノーバウンドの高い球はスマッシュ：地面の": ": tahan tombol pukulan dan pemain otomatis lari ke titik yang enak (posisi voli/smash atau puncak pantulan). Bola tinggi yang belum memantul bisa di-smash: tunggu di ", "赤い印": "tanda merah", "の所で待つと頭上の打ちやすい高さに落ちてくる。ボールが赤く光って「今!」が出たら打てる。練習モードで球出し練習もできる。": " di tanah, bola akan turun ke ketinggian yang pas di atas kepala. Pukul saat bola menyala merah dan muncul \"Sekarang!\". Ada juga mode latihan dengan bola umpan.", "オートスイング（ボタンを押していなくても自動で打つ）": "Ayunan otomatis (memukul sendiri meski tombol tidak ditekan)", "軽量モード（3D が重いとき。遅い端末では自動で ON）": "Mode ringan (kalau 3D berat; aktif otomatis di perangkat lambat)", "名場面リプレイ（長いラリー・大事なポイント・豪快なエースのときだけ）": "Replay momen terbaik (hanya reli panjang, poin penting, atau ace dahsyat)", "2D 表示にする（いちばん軽い。古い端末向け）": "Tampilan 2D (paling ringan, untuk perangkat lama)", "相手の強さを選んでスタート": "Pilih tingkat lawan lalu mulai", "やさしい": "Mudah", "ふつう": "Normal", "つよい": "Sulit", "最強": "Terkuat", "🏆 トーナメント": "🏆 Turnamen", "（128 人のグランドスラム・あなたは第 1 シード）": " (Grand Slam 128 pemain · kamu unggulan 1)", "全 7 試合・1 セット（6-6 でタイブレーク）。会場は上で選んだもの。ほかの試合は AI がシミュレーション": "7 pertandingan · 1 set (tie-break di 6-6). Arena sesuai pilihan di atas. Pertandingan lain disimulasikan AI", "新しく始める": "Mulai baru", "つづきから": "Lanjutkan", "練習モード": "Mode latihan", "（CPU が球出し）": " (CPU mengumpan bola)", "ストローク": "Groundstroke", "ボレー": "Voli", "ドロップ拾い": "Kejar drop shot", "チャンスボール": "Bola peluang", "ランダム": "Acak", "🎉 Bumpy Party! であそぶ": "🎉 Main Bumpy Party!", "もう一回": "Main lagi", "トーナメント表へ": "Ke bagan turnamen", "メニュー": "Menu", "@title:メニューへ": "Ke menu", "@title:サウンド": "Suara", "@title:ホームへ": "Beranda"};
   document.documentElement.lang = LANG;
   if (LANG === 'id') { // translate the page's own text in place (keeping the elements and their handlers)
     const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -1354,7 +1360,7 @@
   const TKEY = 'bumpyTennisTour1';
   let tour = null, tourOpp = null; // tourOpp: the CPU you are playing right now in the tournament
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  function saveTour() { try { tour ? localStorage.setItem(TKEY, JSON.stringify(tour)) : localStorage.removeItem(TKEY); } catch (e) {} }
+  function saveTour() { if (tour && tour.career) { if (career) { career.cur = tour; saveCareer(); } return; } try { tour ? localStorage.setItem(TKEY, JSON.stringify(tour)) : localStorage.removeItem(TKEY); } catch (e) {} }
   // ratings (0 = easy, .5 = normal, 1 = hard): every seed is at least hard, from 1.3 (#2) down to 1.0 (#32); the rest sit between normal and hard
   const seedRating = seed => seed ? 1.3 - (seed - 2) * .01 : .62 + Math.random() * .16;
   function loadTour() {
@@ -1465,7 +1471,7 @@
 
   function showTour() {
     const card = $('tourCard'), v = VENUES[tour.venue], r = tour.res.length, champ = champion();
-    let h = `<div class="tour"><h2>🏆 NORI OPEN</h2><p>${v.name} (${v.surf}) · ${TL('128 ドロー ・ 1 セットマッチ', 'Bagan 128 · 1 set')}</p><div class="path">`;
+    let h = `<div class="tour">${tour.career && career ? `<p style="margin:0 0 4px;font-size:13px">📅 ${TL('キャリア', 'Karier')} · ${TL(`大会 ${career.ev + 1}/4`, `Turnamen ${career.ev + 1}/4`)} · ${TL('ランキング', 'Peringkat')} <b>${rankOf(0)}${TL('位', '')}</b></p>` : ''}<h2>🏆 NORI OPEN</h2><p>${v.name} (${v.surf}) · ${TL('128 ドロー ・ 1 セットマッチ', 'Bagan 128 · 1 set')}</p><div class="path">`;
     const lostAt = tour.out ? tour.res.findIndex(rr => rr.some(m => m.l === 0)) : -1;
     ROUNDS.forEach((n, i) => {
       const cls = tour.out ? (i < lostAt ? 'done' : i === lostAt ? 'lost' : '') : i < r ? 'done' : i === r ? 'now' : '';
@@ -1496,14 +1502,14 @@
         : TL('<p style="font-size:13px">シードは全員勝ち上がり</p>', '<p style="font-size:13px">Semua unggulan lolos</p>'));
     }
     const alive = new Set(r >= 7 ? [champ] : entrants(r));
-    h += `<h3>${TL('シード選手', 'Pemain unggulan')}</h3><div class="chips">${tour.players.filter(p => p.seed).map((p, i) => `<span class="${alive.has(i) ? '' : 'out'}">${p.seed} ${i === 0 ? TL('あなた', 'Kamu') : p.sur}</span>`).join('')}</div>`;
+    h += `<h3>${TL('シード選手', 'Pemain unggulan')}</h3><div class="chips">${tour.players.map((p, i) => ({ p, i })).filter(x => x.p.seed).sort((a, b) => a.p.seed - b.p.seed).map(({ p, i }) => `<span class="${alive.has(i) ? '' : 'out'}">${p.seed} ${i === 0 ? TL('あなた', 'Kamu') : p.sur}</span>`).join('')}</div>`;
     if (r < 7) {
       const e = entrants(r);
       h += TL(`<details><summary>${ROUNDS[r]}の組み合わせ（${e.length} 人）</summary><ul>`, `<details><summary>Undian ${ROUNDS[r]} (${e.length} pemain)</summary><ul>`);
       for (let m = 0; m < e.length / 2; m++) h += `<li class="${e[2 * m] === 0 || e[2 * m + 1] === 0 ? 'me' : ''}"><span>${pname(e[2 * m])}</span><span>vs</span><span>${pname(e[2 * m + 1])}</span></li>`;
       h += '</ul></details>';
     }
-    h += '<div class="btns">' + (tour.out || champ >= 0 ? `<button data-t="new">${TL('新しいトーナメント', 'Turnamen baru')}</button>` : `<button data-t="play">▶ ${TL('試合開始', 'Mulai tanding')}</button>`) +
+    h += '<div class="btns">' + (tour.out || champ >= 0 ? (tour.career ? `<button data-t="cnext">📅 ${TL('大会を終えてランキング更新', 'Selesai & perbarui peringkat')}</button>` : `<button data-t="new">${TL('新しいトーナメント', 'Turnamen baru')}</button>`) : `<button data-t="play">▶ ${TL('試合開始', 'Mulai tanding')}</button>`) +
       `<button class="alt" data-t="menu">${TL('メニュー', 'Menu')}</button></div>` +
       `<div class="btns"><button class="dark" data-t="pdf">📄 ${TL('勝ち上がりを PDF で保存', 'Simpan bagan sebagai PDF')}</button></div></div>`;
     card.innerHTML = h;
@@ -1512,6 +1518,8 @@
       if (t === 'play') playTourMatch();
       else if (t === 'pdf') saveTourPDF(b);
       else if (t === 'new') { tour = newTour(); saveTour(); showTour(); }
+      else if (t === 'cnext') careerFinishEvent();
+      else if (tour.career) showCareer();
       else { $('tour').classList.add('hidden'); $('menu').classList.remove('hidden'); refreshTourButtons(); }
     }));
     $('menu').classList.add('hidden'); $('result').classList.add('hidden'); $('board').classList.add('hidden'); $('quit').classList.add('hidden');
@@ -1544,6 +1552,89 @@
     saveTour();
     return r;
   }
+  // ---------- career: one season of the four slams, starting from No. 100 in the world ----------
+  const CKEY = 'bumpyTennisCareer1', CAREER_VENUES = ['mel', 'par', 'lon', 'ny'];
+  // ranking points for how far you got: lost in round 1 .. lost in the final, then the title
+  const SLAM_PTS = [10, 45, 90, 180, 360, 720, 1200, 2000];
+  let career = null;
+  function saveCareer() { try { career ? localStorage.setItem(CKEY, JSON.stringify(career)) : localStorage.removeItem(CKEY); } catch (e) {} }
+  function loadCareer() { try { const c = JSON.parse(localStorage.getItem(CKEY)); return c && c.players ? c : null; } catch (e) { return null; } }
+  const rankOrder = () => career.players.map((p, i) => i).sort((a, b) => career.players[b].pts - career.players[a].pts || a - b);
+  const rankOf = id => rankOrder().indexOf(id) + 1;
+  function newCareer() {
+    // the same 127 rivals as a tournament; their ranking points follow their strength
+    const players = newTour().players.map(p => ({ ...p, seed: 0 }));
+    const cpus = players.map((p, i) => i).filter(i => i).sort((a, b) => players[b].r - players[a].r);
+    cpus.forEach((id, k) => (players[id].pts = Math.round(9000 * Math.pow(k + 1, -.6) + Math.random() * 20)));
+    // you start just behind the 99th best rival: world No. 100
+    const sorted = cpus.map(i => players[i].pts).sort((a, b) => b - a);
+    players[0].pts = sorted[98] - 1; players[0].r = 1.1;
+    career = { v: 1, ev: 0, players, hist: [], startRank: 0, cur: null };
+    career.startRank = rankOf(0);
+    saveCareer();
+  }
+  // a slam: the top 32 of the ranking are seeded, in the usual places in the draw
+  function careerTour() {
+    const order = rankOrder(), seedOf = {};
+    order.slice(0, 32).forEach((id, k) => (seedOf[id] = k + 1));
+    const players = career.players.map((p, i) => ({ ...p, seed: seedOf[i] || 0 }));
+    const draw = new Array(128).fill(-1), bySeed = s => order[s - 1];
+    const place = (seeds, slots) => { shuffle(slots); seeds.forEach((sd, i) => (draw[slots[i]] = bySeed(sd))); };
+    draw[0] = bySeed(1); draw[127] = bySeed(2);
+    place([3, 4], [63, 64]);
+    place([5, 6, 7, 8], [31, 32, 95, 96]);
+    place([9, 10, 11, 12, 13, 14, 15, 16], [15, 16, 47, 48, 79, 80, 111, 112]);
+    place([...Array(16)].map((_, i) => 17 + i), [7, 8, 23, 24, 39, 40, 55, 56, 71, 72, 87, 88, 103, 104, 119, 120]);
+    const rest = shuffle(order.slice(32));
+    for (let i = 0; i < 128; i++) if (draw[i] < 0) draw[i] = rest.pop();
+    return { v: 4, venue: CAREER_VENUES[career.ev], players, draw, res: [], out: false, career: true };
+  }
+  // how far each player got in the finished draw
+  const reached = id => { if (champion() === id) return 7; const r = tour.res.findIndex(rr => rr.some(m => m.l === id)); return r < 0 ? 7 : r; };
+  const REACHED = TL(['1回戦敗退', '2回戦敗退', '3回戦敗退', '4回戦敗退', 'ベスト8', 'ベスト4', '準優勝', '🏆 優勝'], ['Kalah babak 1', 'Kalah babak 2', 'Kalah babak 3', 'Kalah babak 4', 'Perempat final', 'Semifinal', 'Runner-up', '🏆 Juara']);
+  function careerFinishEvent() {
+    const before = rankOf(0);
+    career.players.forEach((p, id) => (p.pts += SLAM_PTS[reached(id)]));
+    career.hist.push({ venue: tour.venue, got: reached(0), pts: SLAM_PTS[reached(0)], seed: tour.players[0].seed, before, after: rankOf(0), champ: tour.players[champion()].n });
+    career.ev++; career.cur = null; tour = null;
+    saveCareer(); showCareer();
+  }
+  function startCareerEvent() { tour = careerTour(); career.cur = tour; saveCareer(); showTour(); }
+  function showCareer() {
+    const card = $('tourCard'), order = rankOrder(), me = order.indexOf(0) + 1, done = career.ev >= 4;
+    let h = `<div class="tour"><h2>📅 ${TL('キャリア', 'Karier')}</h2>`;
+    h += `<div class="big" style="margin:4px 0">${TL('世界ランキング', 'Peringkat dunia')} <b>${me}${TL('位', '')}</b></div><p style="margin:0">${career.players[0].pts} pt · ${TL(`スタート時 ${career.startRank} 位`, `awal musim: peringkat ${career.startRank}`)}</p>`;
+    h += `<h3>${TL('今シーズンの 4 大会', '4 turnamen musim ini')}</h3><ul>` + CAREER_VENUES.map((k, i) => {
+      const r = career.hist[i], v = VENUES[k];
+      const res = r ? `${REACHED[r.got]} <small>+${r.pts}pt · ${r.before}→${r.after}${TL('位', '')}</small>` : i === career.ev ? (career.cur ? TL('▶ 開催中', '▶ Sedang berlangsung') : TL('▶ 次の大会', '▶ Berikutnya')) : '—';
+      return `<li class="${i === career.ev && !done ? 'me' : ''}"><span>${i + 1}. ${v.name} <small>${v.surf}</small></span><span>${res}</span></li>`;
+    }).join('') + '</ul>';
+    if (done) {
+      const best = Math.max(...career.hist.map(r => r.got)), titles = career.hist.filter(r => r.got === 7).length;
+      h += `<div class="opp"><div class="nm">${TL('シーズン終了！', 'Musim selesai!')}</div>${TL(`${career.startRank} 位 → <b>${me} 位</b>`, `Peringkat ${career.startRank} → <b>${me}</b>`)}<br>${TL('最高成績', 'Hasil terbaik')}：${REACHED[best]}${titles ? ` · ${TL(`優勝 ${titles} 回`, `${titles} gelar`)}` : ''}${titles === 4 ? `<br><b>🏆 ${TL('年間グランドスラム達成！', 'Grand Slam kalender!')}</b>` : ''}</div>`;
+    }
+    // the top of the ranking, and you
+    h += `<h3>${TL('世界ランキング', 'Peringkat dunia')}</h3><ul>` + order.slice(0, 10).map((id, k) => `<li class="${id === 0 ? 'me' : ''}"><span>${k + 1}. ${id === 0 ? TL('あなた', 'Kamu') : career.players[id].n} <small>${id === 0 ? '' : career.players[id].cc}</small></span><span>${career.players[id].pts} pt</span></li>`).join('') +
+      (me > 10 ? `<li>…</li><li class="me"><span>${me}. ${TL('あなた', 'Kamu')}</span><span>${career.players[0].pts} pt</span></li>` : '') + '</ul>';
+    if (!done) {
+      const next = VENUES[CAREER_VENUES[career.ev]], seedNow = me <= 32 ? me : 0;
+      h += `<p style="font-size:13px">${seedNow ? TL(`次の大会は第 ${seedNow} シード`, `Turnamen berikutnya: unggulan ${seedNow}`) : TL('次の大会はノーシード（33 位以内でシードがつく）', 'Turnamen berikutnya: tanpa unggulan (masuk 32 besar untuk jadi unggulan)')}</p>`;
+    }
+    h += '<div class="btns">' + (done ? `<button data-c="new">${TL('新しいシーズン', 'Musim baru')}</button>`
+      : career.cur ? `<button data-c="cont">▶ ${TL('大会の続き', 'Lanjutkan turnamen')}</button>`
+      : `<button data-c="go">▶ ${VENUES[CAREER_VENUES[career.ev]].name} ${TL('へ', '')}</button>`) + `<button class="alt" data-c="menu">${TL('メニュー', 'Menu')}</button></div></div>`;
+    card.innerHTML = h;
+    card.querySelectorAll('[data-c]').forEach(b => (b.onclick = () => {
+      const c = b.dataset.c;
+      if (c === 'go') startCareerEvent();
+      else if (c === 'cont') { tour = career.cur; showTour(); }
+      else if (c === 'new') { if (confirm(TL('新しいシーズンを始めますか？（今の記録は消えます）', 'Mulai musim baru? (catatan sekarang akan hilang)'))) { newCareer(); showCareer(); } }
+      else { $('tour').classList.add('hidden'); $('menu').classList.remove('hidden'); refreshTourButtons(); }
+    }));
+    $('menu').classList.add('hidden'); $('result').classList.add('hidden'); $('board').classList.add('hidden'); $('quit').classList.add('hidden');
+    $('tour').classList.remove('hidden'); card.scrollTop = 0; state = 'menu';
+  }
+
   // ---------- the draw as a PDF: a cover page, the four quarters, and the final eight ----------
   let jspdfP = null;
   const loadJsPDF = () => jspdfP || (jspdfP = new Promise((ok, ng) => {
@@ -1658,6 +1749,9 @@
   function refreshTourButtons() {
     const t = loadTour();
     $('tourCont').classList.toggle('hidden', !t);
+    const c = loadCareer();
+    $('carCont').classList.toggle('hidden', !c);
+    if (c) $('carCont').textContent = c.ev >= 4 ? TL('シーズンの結果', 'Hasil musim') : TL(`つづきから（${c.ev + 1}/4 大会）`, `Lanjutkan (turnamen ${c.ev + 1}/4)`);
     if (t) $('tourCont').textContent = t.out || (t.res.length === 7) ? TL('トーナメントの結果', 'Hasil turnamen') : TL(`つづきから（${ROUNDS[t.res.length]}）`, `Lanjutkan (${ROUNDS[t.res.length]})`);
   }
 
@@ -3363,6 +3457,12 @@
     if (t && !t.out && t.res.length < 7 && t.res.length > 0 && !confirm(TL('今のトーナメントを捨てて、新しく始めますか？', 'Buang turnamen sekarang dan mulai yang baru?'))) return;
     tour = newTour(); saveTour(); showTour();
   };
+  $('carNew').onclick = () => {
+    const c = loadCareer();
+    if (c && c.ev < 4 && (c.ev > 0 || c.cur) && !confirm(TL('今のキャリアを捨てて、新しく始めますか？', 'Buang karier sekarang dan mulai yang baru?'))) return;
+    newCareer(); showCareer();
+  };
+  $('carCont').onclick = () => { career = loadCareer(); if (career) showCareer(); else refreshTourButtons(); };
   $('tourCont').onclick = () => { tour = loadTour(); if (tour) { tour.venue in VENUES || (tour.venue = 'mel'); showTour(); } else refreshTourButtons(); };
   refreshTourButtons();
   $('toMenu').onclick = () => { refreshTourButtons();
