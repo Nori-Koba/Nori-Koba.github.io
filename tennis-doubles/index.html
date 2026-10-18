@@ -1737,27 +1737,50 @@
     try {
       const c = JSON.parse(localStorage.getItem(CKEY));
       if (!(c && c.players)) return null;
-      if ((c.v || 1) < 2) { c.players.forEach((p, i) => { if (i) p.r = upRating(p.r); }); if (c.cur) c.cur.players.forEach((p, i) => { if (i) p.r = upRating(p.r); }); c.v = 2; }
+      if ((c.v || 1) < 3) return null; // careers from before the slam-points ranking can't be carried over
       return c;
     } catch (e) { return null; }
   }
-  const rankOrder = () => career.players.map((p, i) => i).sort((a, b) => career.players[b].pts - career.players[a].pts || a - b);
+  // ties: the better single result first, then a fixed tiebreak order
+  const rankOrder = () => career.players.map((p, i) => i).sort((a, b) => { const A = career.players[a], B = career.players[b]; return B.pts - A.pts || Math.max(...B.prev) - Math.max(...A.prev) || (B.tbk || 0) - (A.tbk || 0) || a - b; });
   const rankOf = id => rankOrder().indexOf(id) + 1;
   function newCareer() {
-    // the same 127 rivals as a tournament; their ranking points follow their strength
-    const players = newTour().players.map(p => ({ ...p, seed: 0 }));
-    const cpus = players.map((p, i) => i).filter(i => i).sort((a, b) => players[b].r - players[a].r);
-    cpus.forEach((id, k) => (players[id].pts = Math.round(9000 * Math.pow(k + 1, -.6) + Math.random() * 20)));
-    // you start just behind the 99th best rival: world No. 100
-    const sorted = cpus.map(i => players[i].pts).sort((a, b) => b - a);
-    players[0].pts = sorted[98] - 1; players[0].r = 1.1;
-    career = { v: 2, ev: 0, players, hist: [], startRank: 0, cur: null };
+    // the same 127 rivals as a tournament. Last year's four slams are played out (simulated) to give everyone
+    // the points they defend this year; the ranking is the sum of the last four slams, so at most 8000.
+    const players = newTour().players.map(p => ({ ...p, seed: 0, prev: [0, 0, 0, 0], pts: 0, tbk: Math.random() }));
+    career = { v: 3, ev: 0, players, hist: [], startRank: 0, cur: null };
+    const saved = tour;
+    for (let ev = 0; ev < 4; ev++) {
+      const byR = players.map((p, i) => i).filter(i => i).sort((a, b) => players[b].r - players[a].r);
+      tour = careerTour(byR.concat([0])); // last year: seeded by strength (you were outside the top 32)
+      while (tour.res.length < 7) simRound(tour.res.length);
+      players.forEach((p, id) => (p.prev[ev] = SLAM_PTS[reached(id)]));
+    }
+    tour = saved;
+    // you were not on the tour last year: give you the slam results that put you closest to world No. 100
+    players[0].prev = [0, 0, 0, 0];
+    players.forEach(p => (p.pts = p.prev.reduce((a, b) => a + b, 0)));
+    let best = null;
+    const P = SLAM_PTS.slice(0, 4); // your best last year was a fourth round
+    for (const a of P) for (const b of P) for (const c of P) for (const d of P) {
+      players[0].prev = [a, b, c, d]; players[0].pts = a + b + c + d;
+      players[0].tbk = 2; const hi = rankOf(0); players[0].tbk = -1; const lo = rankOf(0); // top / bottom of the players level with you
+      const err = 100 < hi ? hi - 100 : 100 > lo ? 100 - lo : 0;
+      if (!best || err < best.err) best = { err, prev: [a, b, c, d] };
+    }
+    players[0].prev = best.prev; players[0].pts = best.prev.reduce((a, b) => a + b, 0);
+    // among the players level with you, slot in exactly at No. 100 if the group spans it
+    players[0].tbk = 2;
+    const order = rankOrder(), ahead = order.slice(0, 99).filter(i => i);
+    const tied = order.filter(i => i && players[i].pts === players[0].pts && Math.max(...players[i].prev) === Math.max(...players[0].prev));
+    const k = 99 - ahead.filter(i => !tied.includes(i)).length; // how many of the level group must stay ahead of you
+    if (k > 0 && k <= tied.length) players[0].tbk = k < tied.length ? (players[tied[k - 1]].tbk + players[tied[k]].tbk) / 2 : players[tied[k - 1]].tbk - .001;
     career.startRank = rankOf(0);
     saveCareer();
   }
   // a slam: the top 32 of the ranking are seeded, in the usual places in the draw
-  function careerTour() {
-    const order = rankOrder(), seedOf = {};
+  function careerTour(order = rankOrder()) {
+    const seedOf = {};
     order.slice(0, 32).forEach((id, k) => (seedOf[id] = k + 1));
     const players = career.players.map((p, i) => ({ ...p, seed: seedOf[i] || 0 }));
     const draw = new Array(128).fill(-1), bySeed = s => order[s - 1];
@@ -1775,9 +1798,10 @@
   const reached = id => { if (champion() === id) return 7; const r = tour.res.findIndex(rr => rr.some(m => m.l === id)); return r < 0 ? 7 : r; };
   const REACHED = TL(['1回戦敗退', '2回戦敗退', '3回戦敗退', '4回戦敗退', 'ベスト8', 'ベスト4', '準優勝', '🏆 優勝'], ['Kalah babak 1', 'Kalah babak 2', 'Kalah babak 3', 'Kalah babak 4', 'Perempat final', 'Semifinal', 'Runner-up', '🏆 Juara']);
   function careerFinishEvent() {
-    const before = rankOf(0);
-    career.players.forEach((p, id) => (p.pts += SLAM_PTS[reached(id)]));
-    career.hist.push({ venue: tour.venue, got: reached(0), pts: SLAM_PTS[reached(0)], seed: tour.players[0].seed, before, after: rankOf(0), champ: tour.players[champion()].n });
+    const before = rankOf(0), ev = career.ev, lost = career.players[0].prev[ev];
+    // this slam's points replace the same slam's points from a year ago (the champion's 2000 come off if they lose early)
+    career.players.forEach((p, id) => { p.prev[ev] = SLAM_PTS[reached(id)]; p.pts = p.prev.reduce((a, b) => a + b, 0); });
+    career.hist.push({ venue: tour.venue, got: reached(0), pts: SLAM_PTS[reached(0)], lost, seed: tour.players[0].seed, before, after: rankOf(0), champ: tour.players[champion()].n });
     career.ev++; career.cur = null; tour = null;
     saveCareer(); showCareer();
   }
@@ -1785,10 +1809,11 @@
   function showCareer() {
     const card = $('tourCard'), order = rankOrder(), me = order.indexOf(0) + 1, done = career.ev >= 4;
     let h = `<div class="tour"><h2>📅 ${TL('キャリア', 'Karier')}</h2>`;
-    h += `<div class="big" style="margin:4px 0">${TL('世界ランキング', 'Peringkat dunia')} <b>${me}${TL('位', '')}</b></div><p style="margin:0">${career.players[0].pts} pt · ${TL(`スタート時 ${career.startRank} 位`, `awal musim: peringkat ${career.startRank}`)}</p>`;
+    h += `<div class="big" style="margin:4px 0">${TL('世界ランキング', 'Peringkat dunia')} <b>${me}${TL('位', '')}</b></div><p style="margin:0">${career.players[0].pts} pt · ${TL(`スタート時 ${career.startRank} 位`, `awal musim: peringkat ${career.startRank}`)}</p>
+      <p style="font-size:12px;margin:2px 0;color:var(--sub)">${TL('ランキング＝直近 4 大会のポイントの合計（最高 8000pt）。大会のたびに前年の同じ大会のポイントと入れ替わる', 'Peringkat = total poin 4 Grand Slam terakhir (maks. 8000). Tiap turnamen menggantikan poin turnamen yang sama tahun lalu')}</p>`;
     h += `<h3>${TL('今シーズンの 4 大会', '4 turnamen musim ini')}</h3><ul>` + CAREER_VENUES.map((k, i) => {
       const r = career.hist[i], v = VENUES[k];
-      const res = r ? `${REACHED[r.got]} <small>+${r.pts}pt · ${r.before}→${r.after}${TL('位', '')}</small>` : i === career.ev ? (career.cur ? TL('▶ 開催中', '▶ Sedang berlangsung') : TL('▶ 次の大会', '▶ Berikutnya')) : '—';
+      const res = r ? `${REACHED[r.got]} <small>+${r.pts} / −${r.lost}pt · ${r.before}→${r.after}${TL('位', '')}</small>` : i === career.ev ? (career.cur ? TL('▶ 開催中', '▶ Sedang berlangsung') : TL('▶ 次の大会', '▶ Berikutnya')) : '—';
       return `<li class="${i === career.ev && !done ? 'me' : ''}"><span>${i + 1}. ${v.name} <small>${v.surf}</small></span><span>${res}</span></li>`;
     }).join('') + '</ul>';
     if (done) {
@@ -1800,6 +1825,8 @@
       (me > 10 ? `<li>…</li><li class="me"><span>${me}. ${TL('あなた', 'Kamu')}</span><span>${career.players[0].pts} pt</span></li>` : '') + '</ul>';
     if (!done) {
       const next = VENUES[CAREER_VENUES[career.ev]], seedNow = me <= 32 ? me : 0;
+      const def = career.players[0].prev[career.ev], champPrev = career.players.findIndex(p => p.prev[career.ev] === 2000);
+      h += `<p style="font-size:13px">${TL(`${next.name} で守るポイント：<b>${def}pt</b>（前年の成績）`, `Poin yang dipertahankan di ${next.name}: <b>${def}pt</b> (hasil tahun lalu)`)}${champPrev > 0 ? `<br>${TL('前年の優勝', 'Juara tahun lalu')}：${career.players[champPrev].n}` : ''}</p>`;
       h += `<p style="font-size:13px">${seedNow ? TL(`次の大会は第 ${seedNow} シード`, `Turnamen berikutnya: unggulan ${seedNow}`) : TL('次の大会はノーシード（33 位以内でシードがつく）', 'Turnamen berikutnya: tanpa unggulan (masuk 32 besar untuk jadi unggulan)')}</p>`;
     }
     h += '<div class="btns">' + (done ? `<button data-c="new">${TL('新しいシーズン', 'Musim baru')}</button>`
