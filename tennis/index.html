@@ -151,9 +151,8 @@
         ・低く弾んだ球はスライスで返すと安全（フラットやトップは持ち上げにくい）<br>
         ・高く跳ねた球はトップスピンで。腰の高さの打ちごろの球はフラットで強打！<br>
         ・同じ球種ばかりだと CPU に<b>読まれる</b>。3 種類続けて打ち分けると CPU が<b>揺さぶられて</b>崩れる<br>
-        <b>コツ</b>：ショットのボタンを長押しすると、ボールの打ちやすい所（ボレー・スマッシュの位置やバウンド後の頂点）へ自動で走る。ノーバウンドの高い球はスマッシュ：地面の<b>赤い印</b>の所で待つと頭上の打ちやすい高さに落ちてくる。ボールが赤く光って「今!」が出たら打てる。練習モードで怪物サーバー相手のリターン練習もできる。
+        <b>コツ</b>：ショットのボタンを長押しすると、ボールの打ちやすい所（ボレー・スマッシュの位置やバウンド後の頂点）へ自動で走る。ノーバウンドの高い球はスマッシュ：地面の<b>赤い印</b>の所で待つと頭上の打ちやすい高さに落ちてくる。ボールが赤く光って「今!」が出たら打てる。
       </div>
-      <label><input type="checkbox" id="auto"> オートスイング（ボタンを押していなくても自動で打つ）</label>
       <label id="liteRow" class="hidden"><input type="checkbox" id="lite3d"> 軽量モード（3D が重いとき。遅い端末では自動で ON）</label>
       <label><input type="checkbox" id="replays"> 名場面リプレイ（長いラリー・大事なポイント・豪快なエースのときだけ）</label>
       <label><input type="checkbox" id="use2d"> 2D 表示にする（いちばん軽い。古い端末向け）</label>
@@ -169,10 +168,6 @@
       <div class="btns">
         <button id="carNew">新しく始める</button>
         <button class="alt hidden" id="carCont">つづきから</button>
-      </div>
-      <p style="margin-top:12px"><b>練習モード</b></p>
-      <div class="btns">
-        <button class="dark" data-drill="return">リターン（怪物サーバー）</button>
       </div>
       <p style="margin-top:12px"><a href="../party/index.html">🎉 Bumpy Party! であそぶ</a></p>
     </div>
@@ -271,7 +266,8 @@
   const $ = id => document.getElementById(id);
   const canvas = $('c'); let ctx = canvas.getContext('2d'), GL = null;
   const coarse = matchMedia('(pointer: coarse)').matches;
-  if (coarse) { document.body.classList.add('coarse'); $('auto').checked = true; }
+  const autoSwing = false; // swings only on a button (test builds turn this on for the bots)
+  if (coarse) document.body.classList.add('coarse');
 
   // ---------- projection ----------
   let W, H, F, hy, camH;
@@ -579,7 +575,6 @@
   };
 
   let lvKey = 'normal', lv = LEVELS.normal, state = 'menu';
-  let practice = null, pstats = null; // practice drill (null = match) and its tally
   const body = () => ({ phase: 0, sp: 0, hop: 0, crouch: 0, stroke: { kind: 'fh', spin: 'top' } });
   const player = { x: CX, y: L + 1, vx: 0, vy: 0, swing: 0, cool: 0, shot: 'top', power: 0, ...body() };
   const cpu = { x: CX, y: -1, vx: 0, vy: 0, swing: 0, plan: null, react: 0, ...body() };
@@ -622,7 +617,7 @@
     (recv === 'C' ? ball.y >= -TB && ball.y <= NET_Y : ball.y >= NET_Y && ball.y <= L + TB);
 
   function startMatch(key, opp = null) {
-    practice = null; $('quit').classList.remove('hidden');
+    $('quit').classList.remove('hidden');
     tb = false; tbScore = null; intro = false;
     $('board').innerHTML = BOARD_HTML;
     lvKey = key; lv = LEVELS[key];
@@ -926,7 +921,7 @@
     if (note) popupAt(player.x, player.y, 3.6, note, '#fff');
     if (smash) player.stroke = { kind: 'smash', spin: 'flat', side: 'smash' };
     cpu.hop = HOP;
-    if (!practice) readPlayer(smash ? 'smash' : type);
+    readPlayer(smash ? 'smash' : type);
   }
 
   // The CPU learns your habits: the same shot over and over gets read,
@@ -1058,69 +1053,7 @@
   }
 
   // ---------- rules ----------
-  // ---------- practice: returning serve, nothing is scored ----------
-  const DRILLS = {
-    // returning serve: the CPU is a monster server, faster and more accurate than any big server in the tour
-    return: { name: 'リターン（怪物サーバー）', spot: () => [CX, L + .8], feeder: [CX, -.4], serve: true },
-  };
-  const MONSTER = () => ({ ...LEVELS.ultra, srv: { spd: 1.22, risk: .7, aim: .85, mix: { flat: 7, slice: 3, top: .3 } } });
-  let retSide = 0;
-  let drill = 'return';
-  function startPractice(key) {
-    lvKey = 'normal'; lv = MONSTER(); practice = key; retSide = 0; stage = { fill: 1 }; cpu.size = cpu.build = 1; cpuKit = KIT_C;
-    pstats = { n: 0, ok: 0, nice: 0, streak: 0, best: 0 };
-    pts = [0, 0]; games = [0, 0]; faults = 0; popups = []; marks = []; skids = [];
-    $('menu').classList.add('hidden'); $('result').classList.add('hidden');
-    $('board').classList.remove('hidden'); $('quit').classList.remove('hidden');
-    feedNext();
-  }
-  function practiceBoard() {
-    const d = DRILLS[practice].name;
-    $('board').innerHTML = `<div class="r"><span class="n">練習: ${d}</span></div>` +
-      `<div class="r"><span class="n" style="font-size:13px">成功 ${pstats.ok} / ${pstats.n} ・ ナイス ${pstats.nice} ・ 連続 ${pstats.streak} (最高 ${pstats.best})</span></div>`;
-  }
-  function feedNext() {
-    drill = practice;
-    feedServe();
-  }
-  // return practice: alternate deuce / ad, the CPU tosses and serves by itself (second serve after a fault)
-  function feedServe(second) {
-    if (!second) { faults = 0; retSide++; }
-    const dc = retSide % 2 === 1;
-    pts = dc ? [0, 0] : [1, 0]; games = [1, 0]; // the CPU serves; the score only picks the side
-    Object.assign(player, { x: CX + (dc ? 3.1 : -2.2), y: L + .8, vx: 0, vy: 0, feet: null, slide: 0, anim: 0, swing: 0, closest: null });
-    Object.assign(cpu, { x: CX + (dc ? -.9 : .9), y: -.4, vx: 0, vy: 0, feet: null, slide: 0, anim: 0, plan: null });
-    Object.assign(ball, { live: false, held: true, serve: false, last: null, bounces: 0, rolling: false, trail: [], mg: 0, bz: .7, bh: .85, ax: 0, kick: 0, spin: 0, type: 'flat' });
-    tossing = false; charge = null; rally = 0; msg = null; cpuServeT = .9;
-    state = 'serve'; practiceBoard();
-  }
-  function serveFault() { // practice: a missed serve is not your miss; serve again (twice missed: a new point)
-    ball.live = false;
-    popupAt(cpu.x, cpu.y, 2.6, faults ? 'ダブルフォールト（ノーカウント）' : 'フォールト', '#ccc');
-    const second = !faults; faults = second ? 1 : 0;
-    state = 'pause'; msg = null; pauseT = .9; pauseCb = () => feedServe(second);
-  }
-  function practiceDone(ok, label) {
-    ball.live = false;
-    pstats.n++;
-    if (ok) { pstats.ok++; pstats.streak++; pstats.best = Math.max(pstats.best, pstats.streak); sWin(); }
-    else { pstats.streak = 0; sLose(); }
-    if (ok && player.lastGrade === 'nice') pstats.nice++;
-    popupAt(player.x, player.y, 3, label, ok ? '#e8ff3a' : '#ff8080');
-    practiceBoard();
-    state = 'pause'; msg = null; pauseT = 1; pauseCb = feedNext;
-  }
-
   function onBounce() {
-    if (practice) {
-      if (!ball.live) return;
-      ball.bounces++;
-      if (drill === 'return' && ball.last === 'C' && ball.serve && ball.bounces === 1 && !inBox(serveBox('P', deuce()))) return serveFault();
-      if (drill === 'return' && ball.last === 'C' && ball.serve && ball.bounces >= 2) return practiceDone(false, `サービスエース… ${ball.serveKmh}km/h`);
-      if (ball.last === 'P') practiceDone(ball.bounces === 1 && inCourt('C'), ball.bounces === 1 && inCourt('C') ? 'リターン成功!' : 'アウト');
-      else if (ball.bounces >= 2) practiceDone(false, '取れなかった…');
-      return;
-    }
     if (!ball.live) return;
     ball.bounces++;
     const recv = other(ball.last);
@@ -1128,7 +1061,7 @@
       const ok = ball.serve ? inBox(serveBox(recv, deuce())) : inCourt(recv);
       marks.push({ x: ball.x, y: ball.y, life: venue.clay ? 5 : 1.2, ok }); // clay keeps the ball mark
       if (ok && ball.serve && ball.type === 'top') popupAt(ball.x, ball.y, 1.4, 'キック!', SHOTS.top.color);
-      if (ok && !practice && lineDist(recv) < .1) crowdVoice('gasp', .55); // just caught the line
+      if (ok && lineDist(recv) < .1) crowdVoice('gasp', .55); // just caught the line
       if (!ok) {
         lineCall(ball.serve ? 'Fault' : 'Out');
         if (outBy() < .5) crowdVoice('ooh', .8); // so close!
@@ -1143,8 +1076,6 @@
     }
   }
   function onNet() {
-    if (practice && drill === 'return' && ball.last === 'C') return serveFault();
-    if (practice) return practiceDone(false, 'ネット');
     ball.serve ? fault('ネット') : pointTo(other(ball.last), 'ネット!');
   }
 
@@ -1201,7 +1132,7 @@
   function pause(title, sub, sec, cb) {
     state = 'pause'; msg = { title, sub }; pauseT = sec; pauseCb = cb;
     pointsSinceReplay++;
-    if (replayAsk) { replayAsk = false; if (GL && !practice) { const d = GL.replay(); if (d) { pauseT += d; pointsSinceReplay = 0; } } }
+    if (replayAsk) { replayAsk = false; if (GL) { const d = GL.replay(); if (d) { pauseT += d; pointsSinceReplay = 0; } } }
   }
 
   function pointTo(w, label) {
@@ -2010,9 +1941,8 @@
   // after a scrambling get the player slides on, low and wide, and is slow to recover
   const SLIDE = .45;
   // the crowd gets into a long rally: a murmur of "ooh" as it goes on and on
-  const rallyCrowd = () => { if (!practice && (rally === 10 || rally === 16 || rally >= 22 && rally % 6 === 4)) crowdVoice('ooh', Math.min(.7, .3 + rally * .015)); };
-  const practiceFeeder = o => practice && o === cpu;
-  function startSlide(o) { if (!practice && state === 'rally') crowdVoice('ooh', .45); o.slide = SLIDE; o.slideId = Math.random(); o.slideDir = null; }
+  const rallyCrowd = () => { if (rally === 10 || rally === 16 || rally >= 22 && rally % 6 === 4) crowdVoice('ooh', Math.min(.7, .3 + rally * .015)); };
+  function startSlide(o) { if (state === 'rally') crowdVoice('ooh', .45); o.slide = SLIDE; o.slideId = Math.random(); o.slideDir = null; }
 
   // accelerate toward a target velocity, braking harder than speeding up
   function accelTo(o, tvx, tvy, dt, acc, dec) {
@@ -2110,7 +2040,7 @@
     o.shuffle = sp > .7 && sp < 5.8 && Math.abs(lat) > .72 && !(o.anim > 0) && !(o.slide > 0) && state !== 'serve' ? Math.sign(lat) : 0;
     // the ball is on its way to you: stay light, with small adjustment steps
     const mine = o === player ? 'P' : 'C';
-    o.adjust = state === 'rally' && ball.live && ball.last && ball.last !== mine && d2(ball, o) < 9 && !practiceFeeder(o);
+    o.adjust = state === 'rally' && ball.live && ball.last && ball.last !== mine && d2(ball, o) < 9;
     stepFeet(o, dt);
     o.anim = Math.max(0, (o.anim || 0) - dt);
     // long runs: hips and legs turn toward the run (backing up: turn side-on, crossover style)
@@ -2142,15 +2072,6 @@
   }
 
   function moveCpu(dt) {
-    if (practice) {
-      accelTo(cpu, 0, 0, dt, C_ACC, C_DEC); cpu.x += cpu.vx * dt; cpu.y += cpu.vy * dt; animateBody(cpu, dt);
-      if (drill === 'return' && state === 'serve') { // the monster server: near-perfect toss, full power
-        cpuServeT -= dt;
-        if (ball.held && cpuServeT <= 0) toss();
-        else if (tossing && ball.vz <= .3) serveHit('C', rand(.94, 1), pickWeighted(lv.srv.mix), rand(.88, 1));
-      }
-      return;
-    }
     let target = null, speed = lv.speed * (ball.live && ball.last === 'P' ? footSpeed() : 1);
     if (state === 'rally' && ball.live && ball.last === 'P') {
       if (cpu.react > 0) cpu.react -= dt;
@@ -2212,7 +2133,7 @@
     if (state === 'rally') {
       const dp = d2(ball, player), reachable = canHit('P') && ball.z < 3.2;
       if (charge && reachable && dp < hitReach(charge.type) * .95 && player.cool <= 0) fireSwing(); // charged shot fires on contact
-      else if (!charge && $('auto').checked && reachable && ball.z < 2.6 && player.cool <= 0) {
+      else if (!charge && autoSwing && reachable && ball.z < 2.6 && player.cool <= 0) {
         // auto swing: topspin when the ball is close, a defensive slice when you have to stretch
         const t = dp < hitReach('top') * .9 ? 'top' : dp < hitReach('slice') * .9 ? 'slice' : null;
         if (t) {
@@ -2230,7 +2151,7 @@
       const dc = d2(ball, cpu);
       // the CPU also meets the ball where it passes closest (it can stretch past its reach with a
       // defensive slice), and lets a ball that just bounced rise to a hittable height first
-      const cIn = !practice && state === 'rally' && canHit('C') && dc < lv.reach * STRETCH && ball.z < (ball.bounces === 0 ? 3.1 : 2.6);
+      const cIn = state === 'rally' && canHit('C') && dc < lv.reach * STRETCH && ball.z < (ball.bounces === 0 ? 3.1 : 2.6);
       const rising = ball.z < .35 && ball.vz > 0;
       if (cIn && (cpu.closest == null || dc < cpu.closest || rising)) cpu.closest = Math.min(cpu.closest ?? dc, dc);
       else if (cpu.closest != null) {
@@ -2332,8 +2253,8 @@
     drawAds(t);
     ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.font = `bold ${Math.max(10, mid.s * .75)}px system-ui, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const inMatch = state !== 'menu' && state !== 'over' && !practice;
-    const btxt = inMatch || (practice && lastServe) ? [lastServe ? `SPEED ${lastServe.kmh} km/h` : '', inMatch ? `TIME ${clockText()}` : ''].filter(Boolean).join('   ·   ') || V.banner : V.banner;
+    const inMatch = state !== 'menu' && state !== 'over';
+    const btxt = inMatch ? [lastServe ? `SPEED ${lastServe.kmh} km/h` : '', inMatch ? `TIME ${clockText()}` : ''].filter(Boolean).join('   ·   ') || V.banner : V.banner;
     if (btxt !== V.banner) ctx.font = `bold ${Math.max(9, mid.s * .5)}px system-ui, sans-serif`;
     const bw = ctx.measureText(btxt).width + 24;
     ctx.fillStyle = btxt !== V.banner ? 'rgba(5,7,13,.95)' : 'rgba(0,0,0,.35)'; ctx.fillRect(mid.x - bw / 2, P(CX, -8, 1.9).y, bw, P(CX, -8, .3).y - P(CX, -8, 1.9).y);
@@ -3381,15 +3302,15 @@
       sbMesh.position.set(CX, 1.07, -7.97); scene.add(sbMesh);
       let sbKey = '';
       function paintScoreboard() {
-        const inMatch = state !== 'menu' && state !== 'over' && !practice, V = venue;
+        const inMatch = state !== 'menu' && state !== 'over', V = venue;
         const fresh = lastServe && performance.now() - lastServe.t < 9000; // the speed glows for a while after each serve
-        const key = inMatch ? [games, pts, tb, server(), clockText(), lastServe && lastServe.kmh, fresh, NAME.C].join('|') : practice ? `p${lastServe && lastServe.kmh}${fresh}` : V.banner;
+        const key = inMatch ? [games, pts, tb, server(), clockText(), lastServe && lastServe.kmh, fresh, NAME.C].join('|') : V.banner;
         if (key === sbKey) return; sbKey = key;
         const g = sbCanvas.getContext('2d'), w = sbCanvas.width, h = sbCanvas.height;
         g.fillStyle = '#05070d'; g.fillRect(0, 0, w, h);
         g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 4; g.strokeRect(4, 4, w - 8, h - 8);
         g.textBaseline = 'middle';
-        if (!inMatch && !practice) { g.fillStyle = '#fff'; g.font = 'bold 64px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(V.banner, w / 2, h / 2 + 2); sbTex.needsUpdate = true; return; }
+        if (!inMatch) { g.fillStyle = '#fff'; g.font = 'bold 64px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(V.banner, w / 2, h / 2 + 2); sbTex.needsUpdate = true; return; }
         // left: serve speed
         g.textAlign = 'center';
         g.fillStyle = '#9aa3c0'; g.font = 'bold 26px system-ui, sans-serif'; g.fillText('SERVE SPEED', 190, 44);
@@ -3397,7 +3318,6 @@
         g.fillText(lastServe ? String(lastServe.kmh) : '—', 170, 118);
         g.font = 'bold 30px system-ui, sans-serif'; g.fillText('km/h', 318, 128);
         if (lastServe) { g.fillStyle = '#9aa3c0'; g.font = 'bold 22px system-ui, sans-serif'; g.fillText(`${boardName(lastServe.who)} · ${lastServe.type === 'top' ? 'KICK' : lastServe.type === 'slice' ? 'SLICE' : 'FLAT'}`, 190, 172); }
-        if (practice) { g.fillStyle = '#fff'; g.font = 'bold 48px system-ui, sans-serif'; g.fillText('PRACTICE', 840, h / 2); sbTex.needsUpdate = true; return; }
         // middle: the score (serve dot, name, games, points)
         const sv = server();
         [['P', 0], ['C', 1]].forEach(([wh, i]) => {
@@ -3682,9 +3602,8 @@
   document.querySelectorAll('[data-venue]').forEach(b => (b.onclick = () => { venue = VENUES[b.dataset.venue]; pickOne('[data-venue]', 'venue', b.dataset.venue); }));
   pickOne('[data-venue]', 'venue', 'mel');
   document.querySelectorAll('[data-level]').forEach(b => (b.onclick = () => startMatch(b.dataset.level)));
-  document.querySelectorAll('[data-drill]').forEach(b => (b.onclick = () => startPractice(b.dataset.drill)));
   $('quit').onclick = () => {
-    practice = null; state = 'menu'; msg = null; ball.live = false; quietForPoint();
+    state = 'menu'; msg = null; ball.live = false; quietForPoint();
     if (tourOpp) { tourOpp = null; $('board').classList.add('hidden'); $('quit').classList.add('hidden'); showTour(); return; }
     refreshTourButtons();
     $('result').classList.add('hidden'); $('board').classList.add('hidden'); $('quit').classList.add('hidden'); $('menu').classList.remove('hidden');
