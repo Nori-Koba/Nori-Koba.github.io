@@ -1478,7 +1478,7 @@
     $('resTitle').textContent = w === 'P' ? TL('🏆 勝利!', '🏆 Menang!') : TL('😢 まけちゃった…', '😢 Kalah…');
     $('resScore').textContent = `${games[0]} - ${games[1]}` + (tbScore ? ` (${Math.min(...tbScore)})` : '');
     $('resDetail').innerHTML = TL(`相手：${lv.name} ・ 最長ラリー <b>${maxRally}</b> 回 ・ 最速ショット <b>${maxSpeed}</b> km/h<br>`, `Lawan: ${lv.name} · reli terpanjang <b>${maxRally}</b> · pukulan tercepat <b>${maxSpeed}</b> km/h<br>`) +
-      (w === 'P' ? (lvKey === 'ultra' ? TL('最強を倒した！ どのシードにも勝てる実力！', 'Kamu mengalahkan yang terkuat! Kamu bisa mengalahkan unggulan mana pun!') : lvKey === 'max' ? TL('すごい！ 次は「最強」に挑戦！', 'Hebat! Sekarang coba "Terkuat"!') : TL('次はもっと強い相手に挑戦してみよう！', 'Coba lawan yang lebih kuat!')) : TL('スピンやロブを使い分けてもう一回！', 'Variasikan spin dan lob, lalu coba lagi!'));
+      (w === 'P' ? (lvKey === 'ultra' ? TL('最強を倒した！ 第 2 シード級に勝てる実力！', 'Kamu mengalahkan yang terkuat! Selevel unggulan 2!') : lvKey === 'max' ? TL('すごい！ 次は「最強」に挑戦！', 'Hebat! Sekarang coba "Terkuat"!') : TL('次はもっと強い相手に挑戦してみよう！', 'Coba lawan yang lebih kuat!')) : TL('スピンやロブを使い分けてもう一回！', 'Variasikan spin dan lob, lalu coba lagi!'));
     $('again').classList.toggle('hidden', !!tourOpp); $('toTour').classList.toggle('hidden', !tourOpp);
     if (tourOpp) {
       const r = tourResult(w);
@@ -3968,15 +3968,13 @@
     requestAnimationFrame(loop);
   }
 
-  // the strongest menu opponent: the No. 2 seed's rating, then pushed past it (no quirks, no big serve)
-  // rating 1.0 = the old "hard"; 1.3 = つよい; 1.55 = the strongest (the No. 2 seed)
+  // the strongest menu opponent: as strong as the tournament's top CPU seed, No. 2 (no quirks, no big serve)
+  // the menu follows the draw: ふつう = the weakest unseeded entrant (1.0), つよい = the No. 32 seed (1.3), 最強 = the No. 2 seed (1.55)
   LEVELS.max = { ...levelFor({ n: 'max', r: 1.3, st: 'all' }), name: TL('つよい', 'Sulit') };
   LEVELS.ultra = { ...levelFor({ n: 'ultra', r: 1.55, st: 'all' }), name: TL('最強', 'Terkuat') };
-  Object.assign(LEVELS.ultra, { speed: 8, reach: 1.55, react: .05, err: .005, power: [.92, 1] }); // beyond the No. 2 seed: nearly your feet, a wider reach
-  { const M = LEVELS.ultra; Object.assign(MATE, { speed: M.speed * 1.12, react: M.react * .7, reach: Math.min(1.65, M.reach * 1.1), err: M.err * .5, power: [Math.max(.6, M.power[0]), 1], aim: Math.min(1, M.aim + .15) }); } // beyond the strongest level
-  // the menu's bottom two: よわい = rating 1.0 (the weakest unseeded entrant), ふつう = 1.15 (an average unseeded one)
-  LEVELS.weak = { ...levelFor({ n: 'weak', r: 1 }), name: TL('よわい', 'Lemah') };
-  LEVELS.mid = { ...levelFor({ n: 'mid', r: 1.15 }), name: TL('ふつう', 'Normal') };
+  { const M = LEVELS.ultra; Object.assign(MATE, { speed: M.speed * 1.12, react: M.react * .7, reach: Math.min(1.5, M.reach * 1.1), err: M.err * .5, power: [Math.max(.6, M.power[0]), 1], aim: Math.min(1, M.aim + .15) }); } // beyond the strongest level
+  LEVELS.weak = { ...levelFor({ n: 'weak', r: .75 }), name: TL('よわい', 'Lemah') }; // halfway down to the old よわい
+  LEVELS.mid = { ...levelFor({ n: 'mid', r: 1 }), name: TL('ふつう', 'Normal') };
   const BOARD_HTML = $('board').innerHTML;
   const pickOne = (sel, attr, val) => document.querySelectorAll(sel).forEach(b => b.classList.toggle('on', b.dataset[attr] === val));
   document.querySelectorAll('[data-venue]').forEach(b => (b.onclick = () => { venue = VENUES[b.dataset.venue]; pickOne('[data-venue]', 'venue', b.dataset.venue); }));
