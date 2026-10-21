@@ -638,6 +638,7 @@
 
   // tiebreak: the player due to serve serves the first point, then each serves two in a row
   let tb = false, tbStart = 'P', tbScore = null;
+  let matchT0 = 0, lastServe = null; // for the stadium scoreboard: when the match began, and the last serve's speed
   const server = () => {
     if (tb) { const n = pts[0] + pts[1]; return n === 0 ? tbStart : Math.floor((n - 1) / 2) % 2 === 0 ? other(tbStart) : tbStart; }
     return (games[0] + games[1]) % 2 === 0 ? 'P' : 'C';
@@ -690,6 +691,7 @@
       $('cStyle').textContent = TSTYLE[opp.st];
     }
     pts = [0, 0]; games = [0, 0]; faults = 0; maxRally = 0; maxSpeed = 0; popups = []; marks = []; skids = [];
+    matchT0 = performance.now(); lastServe = null;
     ptr = null; // the click on the menu button is not a move order
     $('menu').classList.add('hidden'); $('result').classList.add('hidden'); $('board').classList.remove('hidden');
     $('lvName').textContent = lv.name; if (!opp) { $('cName').textContent = TL('CPU ペア', 'Pasangan CPU'); $('cStyle').textContent = ''; }
@@ -851,6 +853,7 @@
       ball.bz = .45 + power * .05; ball.bh = 1.02; ball.kick = 0; // kicks up and drives through
     } else if (type === 'flat') { ball.bz = .56; ball.bh = .86; } // flat serve: fast and sits up a little
     Object.assign(ball, { live: true, serve: true, last: who, bounces: 0, serveKmh: kmh, chance: false });
+    lastServe = { kmh, who, type, t: performance.now() };
     tossing = false; state = 'rally';
     const s = sb, rcv = receiverBody();
     startAnim(s, 'serve', type, .32);
@@ -1995,6 +1998,9 @@
     if (a >= 3 && b >= 3) return a === b ? '40' : a > b ? 'Ad' : '40';
     return ['0', '15', '30', '40'][Math.min(a, 3)];
   }
+  // what the stadium boards show: the last serve's speed, the match clock and the score
+  const clockText = () => { const m = Math.floor((performance.now() - matchT0) / 60000); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; };
+  const boardName = w => (w === 'P' ? (/partner/.test(NAME.P) ? 'Kobay / Partner' : NAME.P.split(' ').pop()) : NAME.C.replace(' and ', ' / ')).toUpperCase();
   function updateBoard() {
     $('gP').textContent = games[0]; $('gC').textContent = games[1];
     $('pP').textContent = scoreText(pts[0], pts[1]); $('pC').textContent = scoreText(pts[1], pts[0]);
@@ -2615,9 +2621,12 @@
     drawAds(t);
     ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.font = `bold ${Math.max(10, mid.s * .75)}px system-ui, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const bw = ctx.measureText(V.banner).width + 24;
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(mid.x - bw / 2, P(CX, -8, 1.9).y, bw, P(CX, -8, .3).y - P(CX, -8, 1.9).y);
-    ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.fillText(V.banner, mid.x, mid.y);
+    const inMatch = state !== 'menu' && state !== 'over' && !practice;
+    const btxt = inMatch || (practice && lastServe) ? [lastServe ? `SPEED ${lastServe.kmh} km/h` : '', inMatch ? `TIME ${clockText()}` : ''].filter(Boolean).join('   ·   ') || V.banner : V.banner;
+    if (btxt !== V.banner) ctx.font = `bold ${Math.max(9, mid.s * .5)}px system-ui, sans-serif`;
+    const bw = ctx.measureText(btxt).width + 24;
+    ctx.fillStyle = btxt !== V.banner ? 'rgba(5,7,13,.95)' : 'rgba(0,0,0,.35)'; ctx.fillRect(mid.x - bw / 2, P(CX, -8, 1.9).y, bw, P(CX, -8, .3).y - P(CX, -8, 1.9).y);
+    ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.fillText(btxt, mid.x, mid.y);
     if (GL) return; // the court itself is 3D
     // the playing surface
     ctx.fillStyle = V.outer; ctx.fillRect(0, wallBot, W, H - wallBot);
@@ -3644,14 +3653,12 @@
         const g = ledCanvas.getContext('2d'), w = ledCanvas.width, h = ledCanvas.height, mx = x => (x - backX0) / (backX1 - backX0) * w;
         g.fillStyle = V.wall; g.fillRect(0, 0, w, h);
         for (let k = 0, x = -15; x < CW + 15; x += 5.2, k++) {
-          if (x + 5 > CX - 3.2 && x < CX + 3.2) continue;
+          if (x + 5 > CX - 5.2 && x < CX + 5.2) continue; // the middle is the scoreboard
           const [name, col] = SPONSORS[(k + shift) % SPONSORS.length], a = mx(x), b = mx(x + 5);
           g.fillStyle = col; g.fillRect(a, 8, b - a, h - 16);
           g.fillStyle = '#fff'; g.font = `bold ${Math.min(70, (b - a) * .9 / (name.length * .6))}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
           g.fillText(name, (a + b) / 2, h / 2 + 2);
         }
-        g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(mx(CX - 3.2), 20, mx(CX + 3.2) - mx(CX - 3.2), h - 40);
-        g.fillStyle = 'rgba(255,255,255,.95)'; g.font = 'bold 44px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(V.banner, mx(CX), h / 2 + 2);
         ledTex.needsUpdate = true;
         const s = sideCanvas.getContext('2d'), sw = sideCanvas.width, sh = sideCanvas.height, n = 8;
         for (let k = 0; k < n; k++) {
@@ -3661,6 +3668,45 @@
           s.fillText(name, (k + .5) * sw / n, sh / 2 + 1);
         }
         sideTex.needsUpdate = true;
+      }
+      // the stadium scoreboard: serve speed, the score and the match clock (the event banner between matches)
+      const sbCanvas = document.createElement('canvas'); sbCanvas.width = 1280; sbCanvas.height = 200;
+      const sbTex = new T.CanvasTexture(sbCanvas); sbTex.colorSpace = T.SRGBColorSpace; sbTex.anisotropy = 4;
+      const sbMesh = new T.Mesh(new T.PlaneGeometry(10.2, 1.6), new T.MeshBasicMaterial({ map: sbTex, toneMapped: false }));
+      sbMesh.position.set(CX, 1.07, -7.97); scene.add(sbMesh);
+      let sbKey = '';
+      function paintScoreboard() {
+        const inMatch = state !== 'menu' && state !== 'over' && !practice, V = venue;
+        const fresh = lastServe && performance.now() - lastServe.t < 9000; // the speed glows for a while after each serve
+        const key = inMatch ? [games, pts, tb, server(), clockText(), lastServe && lastServe.kmh, fresh, NAME.C].join('|') : practice ? `p${lastServe && lastServe.kmh}${fresh}` : V.banner;
+        if (key === sbKey) return; sbKey = key;
+        const g = sbCanvas.getContext('2d'), w = sbCanvas.width, h = sbCanvas.height;
+        g.fillStyle = '#05070d'; g.fillRect(0, 0, w, h);
+        g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 4; g.strokeRect(4, 4, w - 8, h - 8);
+        g.textBaseline = 'middle';
+        if (!inMatch && !practice) { g.fillStyle = '#fff'; g.font = 'bold 64px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(V.banner, w / 2, h / 2 + 2); sbTex.needsUpdate = true; return; }
+        // left: serve speed
+        g.textAlign = 'center';
+        g.fillStyle = '#9aa3c0'; g.font = 'bold 26px system-ui, sans-serif'; g.fillText('SERVE SPEED', 190, 44);
+        g.fillStyle = fresh ? '#ffd166' : '#d7dcef'; g.font = 'bold 88px system-ui, sans-serif';
+        g.fillText(lastServe ? String(lastServe.kmh) : '—', 170, 118);
+        g.font = 'bold 30px system-ui, sans-serif'; g.fillText('km/h', 318, 128);
+        if (lastServe) { g.fillStyle = '#9aa3c0'; g.font = 'bold 22px system-ui, sans-serif'; g.fillText(`${boardName(lastServe.who)} · ${lastServe.type === 'top' ? 'KICK' : lastServe.type === 'slice' ? 'SLICE' : 'FLAT'}`, 190, 172); }
+        if (practice) { g.fillStyle = '#fff'; g.font = 'bold 48px system-ui, sans-serif'; g.fillText('PRACTICE', 840, h / 2); sbTex.needsUpdate = true; return; }
+        // middle: the score (serve dot, name, games, points)
+        const sv = server();
+        [['P', 0], ['C', 1]].forEach(([wh, i]) => {
+          const y = 66 + i * 72;
+          g.fillStyle = sv === wh ? '#e8ff3a' : 'transparent'; g.beginPath(); g.arc(420, y, 10, 0, 7); g.fill();
+          g.textAlign = 'left'; g.fillStyle = '#fff'; g.font = 'bold 46px system-ui, sans-serif'; g.fillText(boardName(wh).slice(0, 12), 445, y + 2);
+          g.textAlign = 'center'; g.fillStyle = '#fff'; g.fillText(String(games[i]), 790, y + 2);
+          g.fillStyle = '#ffd166'; g.fillText(tb ? String(pts[i]) : scoreText(pts[i], pts[1 - i]), 885, y + 2);
+        });
+        // right: the match clock
+        g.fillStyle = '#9aa3c0'; g.font = 'bold 26px system-ui, sans-serif'; g.fillText('MATCH TIME', 1110, 44);
+        g.fillStyle = '#fff'; g.font = 'bold 76px system-ui, sans-serif'; g.fillText(clockText(), 1110, 116);
+        if (tb) { g.fillStyle = '#ff8080'; g.font = 'bold 24px system-ui, sans-serif'; g.fillText('TIEBREAK', 1110, 172); }
+        sbTex.needsUpdate = true;
       }
       const wallMat = new T.MeshLambertMaterial({ color: 0x17407a });
       const backWall = new T.Mesh(new T.BoxGeometry(70, 2.2, .3), wallMat); backWall.position.set(CX, 1.1, -8.15); scene.add(backWall);
@@ -3881,6 +3927,7 @@
           }
           const now = performance.now() / 1000, shift = Math.floor(now / 5);
           if (shift !== ledShift) { ledShift = shift; paintBoards(venue, shift); }
+          paintScoreboard();
           moveFans(now);
           sprites.forEach(s => (s.mesh.visible = false));
           judges.forEach((j, i) => { judges3[i].pivot.rotation.x = j.call > 0 ? -2.4 : 0; });
