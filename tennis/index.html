@@ -165,8 +165,8 @@
       <label><input type="checkbox" id="use2d"> 2D 表示にする（いちばん軽い。古い端末向け）</label>
       <p style="margin-top:10px"><b>相手の強さを選んでスタート</b></p>
       <div class="btns">
-        <button class="alt" data-level="normal">よわい</button>
-        <button data-level="hard">ふつう</button>
+        <button class="alt" data-level="weak">よわい</button>
+        <button data-level="mid">ふつう</button>
         <button class="dark" data-level="max">つよい</button>
         <button class="dark" data-level="ultra" style="background:#7b2cbf;box-shadow:0 4px 0 #4a1a75">最強</button>
       </div>
@@ -3741,9 +3741,12 @@
   }
 
   // the strongest menu opponent: as strong as the tournament's No. 2 seed (no quirks, no big serve)
-  // rating 1.0 = the old "hard"; 1.3 = the old strongest; 1.55 = the new strongest (the No. 2 seed)
+  // rating 1.0 = the old "hard"; 1.3 = つよい; 1.55 = the strongest (the No. 2 seed)
   LEVELS.max = { ...levelFor({ n: 'max', r: 1.3, st: 'all' }), name: TL('つよい', 'Sulit') };
   LEVELS.ultra = { ...levelFor({ n: 'ultra', r: 1.55, st: 'all' }), name: TL('最強', 'Terkuat') };
+  // the menu's bottom two: よわい = rating 1.0 (the weakest unseeded entrant), ふつう = 1.15 (an average unseeded one)
+  LEVELS.weak = { ...levelFor({ n: 'weak', r: 1 }), name: TL('よわい', 'Lemah') };
+  LEVELS.mid = { ...levelFor({ n: 'mid', r: 1.15 }), name: TL('ふつう', 'Normal') };
   const BOARD_HTML = $('board').innerHTML;
   const pickOne = (sel, attr, val) => document.querySelectorAll(sel).forEach(b => b.classList.toggle('on', b.dataset[attr] === val));
   document.querySelectorAll('[data-venue]').forEach(b => (b.onclick = () => { venue = VENUES[b.dataset.venue]; pickOne('[data-venue]', 'venue', b.dataset.venue); }));
