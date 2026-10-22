@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Mang Kobay Tennis</title>
-<meta name="description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、世界ランキング 100 位から頂点を目指す。">
+<meta name="description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、1000 人のツアーで、世界ランキング 1 位を守り抜く。">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mang Kobay Tennis">
 <meta property="og:title" content="Mang Kobay Tennis — 無料の 3D テニスゲーム">
-<meta property="og:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、世界ランキング 100 位から頂点を目指す。">
+<meta property="og:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、1000 人のツアーで、世界ランキング 1 位を守り抜く。">
 <meta property="og:url" content="https://nori-koba.github.io/tennis/">
 <meta property="og:image" content="https://nori-koba.github.io/tennis/ogp.png">
 <meta property="og:image:width" content="1200">
@@ -16,7 +16,7 @@
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mang Kobay Tennis — 無料の 3D テニスゲーム">
-<meta name="twitter:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、世界ランキング 100 位から頂点を目指す。">
+<meta name="twitter:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、1000 人のツアーで、世界ランキング 1 位を守り抜く。">
 <meta name="twitter:image" content="https://nori-koba.github.io/tennis/ogp.png">
 <style>
   :root { --ink: #1f2340; --accent: #ff5d73; --sub: #6b6f8f; --ball: #e8ff3a;
@@ -163,8 +163,8 @@
         <button class="dark" data-level="max">つよい</button>
         <button class="dark" data-level="ultra" style="background:#7b2cbf;box-shadow:0 4px 0 #4a1a75">最強</button>
       </div>
-      <p style="margin-top:12px"><b>📅 キャリア</b>（世界ランキング 100 位からスタート）</p>
-      <p style="font-size:12px;margin:2px 0">1 年で 4 大会：メルボルン → パリ → ロンドン → ニューヨーク。勝ち上がった分だけポイントが入り、ランキングが上がる。ランキングが上がればシードがつく</p>
+      <p style="margin-top:12px"><b>📅 キャリア</b>（世界ランキング 1 位・8000pt からスタート）</p>
+      <p style="font-size:12px;margin:2px 0">前年に 4 大大会を全制覇したあなたが、メルボルン → パリ → ロンドン → ニューヨークの 4 大会でポイントを守る。ツアーには 1000 人の選手がいて、下部大会でポイントを稼ぎ、予選やワイルドカードから本戦に上がってくる</p>
       <div class="btns">
         <button id="carNew">新しく始める</button>
         <button class="alt hidden" id="carCont">つづきから</button>
@@ -1322,24 +1322,36 @@
   const ROUNDS = ['1回戦', '2回戦', '3回戦', '4回戦', '準々決勝', '準決勝', '決勝'];
   const TSTYLE = { big: 'ビッグサーバー', base: 'ベースライナー', slice: 'スライス職人', all: 'オールラウンド' };
   const NAMEPOOL = { // made-up players
-    ESP: ['Moreno', 'Castell', 'Ibarra', 'Soler', 'Varela', 'Ruiz', 'Olmedo', 'Prado'],
-    FRA: ['Lemaire', 'Duval', 'Garnier', 'Roussel', 'Bertin', 'Mallet', 'Fabre', 'Vidal'],
-    ITA: ['Ferretti', 'Bellucci', 'Marchetti', 'Conti', 'Rinaldi', 'Galli', 'Serra', 'Benedetti'],
-    GER: ['Hoffer', 'Brandt', 'Kessler', 'Lindner', 'Vogt', 'Hartmann', 'Engel', 'Seidel'],
-    USA: ['Carver', 'Holloway', 'Brennan', 'Whitaker', 'Dalton', 'Mercer', 'Sutton', 'Ramsey'],
-    GBR: ['Ashby', 'Pemberton', 'Hale', 'Crossley', 'Whitlock', 'Barlow'],
-    AUS: ['Kellaway', 'Dunmore', 'Radley', 'Tasker', 'Gilchrist', 'Mabry'],
-    ARG: ['Echeverri', 'Quiroga', 'Ledesma', 'Villalba', 'Barrios', 'Arce'],
-    JPN: ['Takeda', 'Morioka', 'Hayama', 'Kanzaki', 'Sakurai', 'Onodera'],
-    CAN: ['Lachance', 'Boucher', 'McRae', 'Gendron'],
-    NED: ['Van Dijkman', 'Mulder', 'Brouwer', 'Kuiper'],
-    SWE: ['Lindqvist', 'Hedlund', 'Ekström', 'Sandell'],
-    CZE: ['Novotny', 'Kratochvil', 'Dvorak', 'Pokorny'],
-    CHI: ['Fuenzalida', 'Araya', 'Cifuentes'],
-    BRA: ['Siqueira', 'Teixeira', 'Barbosa', 'Moura'],
-    SUI: ['Imhof', 'Brunner', 'Zollinger'],
-    POL: ['Wrona', 'Kaczor', 'Sobczak'],
-    KOR: ['Baek', 'Seong', 'Hwang'],
+    ESP: ['Moreno', 'Castell', 'Ibarra', 'Soler', 'Varela', 'Ruiz', 'Olmedo', 'Prado', 'Galindo', 'Herrera', 'Cuesta', 'Montoya', 'Salinas', 'Arroyo', 'Navarro', 'Peña'],
+    FRA: ['Lemaire', 'Duval', 'Garnier', 'Roussel', 'Bertin', 'Mallet', 'Fabre', 'Vidal', 'Lacroix', 'Moreau', 'Perrin', 'Chevalier', 'Gauthier', 'Marchand', 'Leclerc', 'Rocher'],
+    ITA: ['Ferretti', 'Bellucci', 'Marchetti', 'Conti', 'Rinaldi', 'Galli', 'Serra', 'Benedetti', 'Lombardi', 'Moretti', 'Fontana', 'Caruso', 'Ricci', 'Mancini', 'Testa', 'Vitale'],
+    GER: ['Hoffer', 'Brandt', 'Kessler', 'Lindner', 'Vogt', 'Hartmann', 'Engel', 'Seidel', 'Krause', 'Wendt', 'Bauer', 'Pohl', 'Reuter', 'Schenk', 'Winkler', 'Albers'],
+    USA: ['Carver', 'Holloway', 'Brennan', 'Whitaker', 'Dalton', 'Mercer', 'Sutton', 'Ramsey', 'Foster', 'Garrison', 'Hayden', 'Lowell', 'Prescott', 'Thornton', 'Wade', 'Beckett'],
+    GBR: ['Ashby', 'Pemberton', 'Hale', 'Crossley', 'Whitlock', 'Barlow', 'Fairley', 'Ormsby', 'Kingsley', 'Thwaite', 'Marlow', 'Easton'],
+    AUS: ['Kellaway', 'Dunmore', 'Radley', 'Tasker', 'Gilchrist', 'Mabry', 'Brayshaw', 'Coulter', 'Fennell', 'Lockyer', 'Rowntree', 'Yeates'],
+    ARG: ['Echeverri', 'Quiroga', 'Ledesma', 'Villalba', 'Barrios', 'Arce', 'Bustos', 'Correa', 'Funes', 'Medina', 'Rivas', 'Sosa'],
+    JPN: ['Takeda', 'Morioka', 'Hayama', 'Kanzaki', 'Sakurai', 'Onodera', 'Ishikura', 'Nagase', 'Okubo', 'Tsuchiya', 'Uemura', 'Yashiro'],
+    CAN: ['Lachance', 'Boucher', 'McRae', 'Gendron', 'Ducharme', 'Fraser', 'Paquette', 'Robichaud'],
+    NED: ['Van Dijkman', 'Mulder', 'Brouwer', 'Kuiper', 'De Boer', 'Visser', 'Smit', 'Dekker'],
+    SWE: ['Lindqvist', 'Hedlund', 'Ekström', 'Sandell', 'Bergqvist', 'Nyström', 'Åkesson', 'Holm'],
+    CZE: ['Novotny', 'Kratochvil', 'Dvorak', 'Pokorny', 'Vesely', 'Kolar', 'Svoboda', 'Hajek'],
+    CHI: ['Fuenzalida', 'Araya', 'Cifuentes', 'Bravo', 'Olate', 'Reyes'],
+    BRA: ['Siqueira', 'Teixeira', 'Barbosa', 'Moura', 'Cardoso', 'Ribeiro', 'Pacheco', 'Lacerda'],
+    SUI: ['Imhof', 'Brunner', 'Zollinger', 'Baumann', 'Gerber', 'Studer'],
+    POL: ['Wrona', 'Kaczor', 'Sobczak', 'Mazur', 'Zielinski', 'Gorski'],
+    KOR: ['Baek', 'Seong', 'Hwang', 'Ryu', 'Shin', 'Yoon'],
+    SRB: ['Jankovic', 'Lazarevic', 'Pavlovic', 'Stankovic'],
+    CRO: ['Babic', 'Matic', 'Peric', 'Vukic'],
+    AUT: ['Gruber', 'Huber', 'Leitner', 'Pichler'],
+    BEL: ['Claes', 'Goossens', 'Maes', 'Peeters'],
+    POR: ['Antunes', 'Carvalho', 'Moniz', 'Tavares'],
+    NOR: ['Dahl', 'Haugen', 'Lunde'],
+    DEN: ['Kjær', 'Lund', 'Thorsen'],
+    COL: ['Cabal', 'Ospina', 'Zuluaga'],
+    MEX: ['Aceves', 'Ortega', 'Zamora'],
+    IND: ['Bhatia', 'Menon', 'Rao'],
+    CHN: ['Liang', 'Tang', 'Zhou'],
+    RSA: ['Botha', 'Naidoo', 'Venter'],
   };
   const INITIALS = 'ABCDEFGHJKLMNOPRSTVW';
   // quirks: what the scouting memo says about each player
@@ -1441,8 +1453,8 @@
   const userMatch = r => Math.floor(entrants(r).indexOf(0) / 2);
 
   // one set between two CPUs, point by point: the server usually holds, the stronger player more often
-  function simSet(a, b) {
-    const pa = tour.players[a], pb = tour.players[b];
+  function simSet(a, b) { const r = simPair(tour.players[a], tour.players[b]); return { w: r.w ? b : a, l: r.w ? a : b, s: r.s }; }
+  function simPair(pa, pb) {
     const form = () => (Math.random() - .5) * .08; // some days you just play better
     const ra = pa.r + form(), rb = pb.r + form();
     const pServe = (s, rcv, st) => clamp(.64 + (s - rcv) * .3 + (st === 'big' ? .07 : st === 'slice' ? -.01 : 0), .45, .84);
@@ -1462,7 +1474,7 @@
       g[game(srv)]++; srv = 1 - srv;
     }
     const wi = g[0] > g[1] ? 0 : 1;
-    return { w: wi ? b : a, l: wi ? a : b, s: `${g[wi]}-${g[1 - wi]}` + (tbs !== null ? `(${tbs})` : '') };
+    return { w: wi, s: `${g[wi]}-${g[1 - wi]}` + (tbs !== null ? `(${tbs})` : '') };
   }
   // finish round r: every match not already decided is simulated
   function simRound(r, userRes) {
@@ -1497,7 +1509,7 @@
 
   const stars = r => { const n = clamp(Math.round((r - .85) / .14), 1, 5); return '★'.repeat(n) + '☆'.repeat(5 - n); };
   const seedTag = p => p.seed ? `<span class="sd">${p.seed}</span> ` : '';
-  const pname = id => { const p = tour.players[id]; return id === 0 ? `${seedTag(p)}<b>あなた</b>` : `${seedTag(p)}${p.n} <small>${p.cc}</small>`; };
+  const pname = id => { const p = tour.players[id]; return id === 0 ? `${seedTag(p)}<b>あなた</b>` : `${seedTag(p)}${p.n}${p.tag ? ` <small>(${p.tag})</small>` : ''} <small>${p.cc}</small>`; };
 
   function showTour() {
     const card = $('tourCard'), v = VENUES[tour.venue], r = tour.res.length, champ = champion();
@@ -1515,6 +1527,7 @@
     } else {
       const e = entrants(r), m = userMatch(r), opp = e[2 * m] === 0 ? e[2 * m + 1] : e[2 * m], p = tour.players[opp];
       h += `<h3>${ROUNDS[r]} · 次の相手</h3><div class="opp"><div class="nm">${p.seed ? `<span class="sd">第${p.seed}シード</span> ` : ''}${p.n} <small>${p.cc}</small></div>
+        ${p.tag ? `<div style="font-size:12px">${p.tag === 'Q' ? '予選を勝ち上がってきた選手' : 'ワイルドカードで出場'}${p.cid ? ` · 世界ランキング ${rankOf(p.cid)}位` : ''}</div>` : p.cid ? `<div style="font-size:12px">世界ランキング ${rankOf(p.cid)}位</div>` : ''}
         ${TSTYLE[p.st]} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>
         ${p.look ? `<div style="margin:6px 0"><span class="kit" style="background:${p.look.shirt};border-color:${p.look.trim}"></span><span class="kit" style="background:${p.look.shorts}"></span></div>` : ''}
         <div class="memo"><b>📋 スカウティングメモ</b>${(p.traits || []).map(k => `<div class="${TRAITS[k].good ? 'g' : 'b'}">${TRAITS[k].good ? '◎' : '△'} <b>${TRAITS[k].name}</b>：${TRAITS[k].memo}</div>`).join('')}</div>
@@ -1532,7 +1545,7 @@
         : '<p style="font-size:13px">シードは全員勝ち上がり</p>');
     }
     const alive = new Set(r >= 7 ? [champ] : entrants(r));
-    h += `<h3>シード選手</h3><div class="chips">${tour.players.map((p, i) => ({ p, i })).filter(x => x.p.seed).sort((a, b) => a.p.seed - b.p.seed).map(({ p, i }) => `<span class="${alive.has(i) ? '' : 'out'}">${p.seed} ${i === 0 ? 'あなた' : p.sur}</span>`).join('')}</div>`;
+    h += `<h3>シード選手</h3><div class="chips">${tour.players.map((p, i) => ({ p, i })).filter(x => x.p.seed).sort((a, b) => a.p.seed - b.p.seed).map(({ p, i }) => `<span class="${alive.has(i) ? '' : 'out'}">${p.seed} ${i === 0 ? 'あなた' : tour.career ? p.n : p.sur}</span>`).join('')}</div>`;
     if (r < 7) {
       const e = entrants(r);
       h += `<details><summary>${ROUNDS[r]}の組み合わせ（${e.length} 人）</summary><ul>`;
@@ -1582,121 +1595,285 @@
     saveTour();
     return r;
   }
-  // ---------- career: one season of the four slams, starting from No. 100 in the world ----------
-  const CKEY = 'bumpyTennisCareer1', CAREER_VENUES = ['mel', 'par', 'lon', 'ny'];
+  // ---------- career: a 1000-player tour. You play only the four slams, as last year's champion of all four ----------
+  // Everyone else also plays a tour-level event, challengers or futures in the weeks between the slams, and gets
+  // into a slam directly (top 104), through qualifying (16) or on a wildcard (8). The ranking is the last 12 months:
+  // the four slams plus each player's best 8 other weeks, so no one can reach your 8000 (at most 4 x 1200 + 8 x 250).
+  const CKEY = 'bumpyTennisCareer1', CAREER_VENUES = ['mel', 'par', 'lon', 'ny'], HOST = ['AUS', 'FRA', 'GBR', 'USA'];
   // ranking points for how far you got: lost in round 1 .. lost in the final, then the title
-  const SLAM_PTS = [10, 45, 90, 180, 360, 720, 1200, 2000];
+  const SLAM_PTS = [10, 45, 90, 180, 360, 720, 1200, 2000], QUAL_PTS = [0, 8, 16], QUALIFIER_BONUS = 25;
+  const NPLAYERS = 1000, WEEKS = 4, BEST_N = 8; // WEEKS of other events before each slam
+  const TIERS = { // 32 draws, 8 seeds; points for losing in R32, R16, QF, SF, F and for the title
+    t250: { name: 'ツアー250', pts: [0, 20, 45, 90, 150, 250], n: 1 },
+    ch:   { name: 'チャレンジャー', pts: [0, 6, 12, 25, 64, 125], n: 2 },
+    fu:   { name: 'フューチャーズ', pts: [0, 1, 3, 6, 13, 25], n: 6 },
+  };
+  const ROUNDS32 = ['1回戦', '2回戦', '準々決勝', '準決勝', '決勝'], QROUNDS = ['予選1回戦', '予選2回戦', '予選決勝'];
+  const TOUR_CITIES = [
+    ['ブリスベン', '香港', 'オークランド', 'アデレード'], ['ドーハ', 'マルセイユ', 'ヒューストン', 'ミュンヘン'],
+    ['シュトゥットガルト', 'スヘルトーヘンボス', 'ハレ', 'イーストボーン'], ['アトランタ', 'ワシントン', 'キッツビュール', 'ウィンストンセーラム'],
+  ];
+  const CITIES = ['ソウル', '台北', 'プネ', 'カサブランカ', 'サンティアゴ', 'リマ', 'ボゴタ', 'モンテレイ', 'ナポリ', 'ブダペスト', 'プラハ', 'ザグレブ',
+    'リヨン', 'ブレーメン', 'ポルト', 'アンタルヤ', 'アスタナ', '横浜', '松山', '京都', 'マニラ', 'バンコク', 'ヌメア', 'キャンベラ', 'バーニー', 'ダラス',
+    'タラハシー', 'ウィニペグ', 'グラナダ', 'ビエラ', 'トリノ', 'ハイルブロン', 'ルガーノ', 'ウッチ', 'タンペレ', 'オーフス', 'メディシン', 'グアヤキル',
+    'ブエノスアイレス', 'サンパウロ', 'カンピーナス', 'ケレタロ', 'チェンナイ', 'バンガロール', '済州', '深圳', '成都', '広州', '北九州', '甲府'];
   let career = null;
   function saveCareer() { try { career ? localStorage.setItem(CKEY, JSON.stringify(career)) : localStorage.removeItem(CKEY); } catch (e) {} }
   function loadCareer() {
     try {
       const c = JSON.parse(localStorage.getItem(CKEY));
       if (!(c && c.players)) return null;
-      if ((c.v || 1) < 3) return null; // careers from before the slam-points ranking can't be carried over
+      if ((c.v || 1) < 4) return null; // careers from before the 1000-player tour can't be carried over
       return c;
     } catch (e) { return null; }
   }
+  // the ranking: the four slams plus the best BEST_N other weeks of the last 12 months
+  let rankCache = null, rankFor = null;
+  function recalc() {
+    for (const p of career.players) p.pts = p.sl.reduce((a, b) => a + b, 0) + [...p.wk].sort((a, b) => b - a).slice(0, BEST_N).reduce((a, b) => a + b, 0);
+    rankCache = null;
+  }
   // ties: the better single result first, then a fixed tiebreak order
-  const rankOrder = () => career.players.map((p, i) => i).sort((a, b) => { const A = career.players[a], B = career.players[b]; return B.pts - A.pts || Math.max(...B.prev) - Math.max(...A.prev) || (B.tbk || 0) - (A.tbk || 0) || a - b; });
+  const best1 = p => Math.max(...p.sl, ...p.wk);
+  const rankOrder = () => (rankFor === career && rankCache) || (rankFor = career, rankCache = career.players.map((p, i) => i).sort((a, b) => {
+    const A = career.players[a], B = career.players[b];
+    return B.pts - A.pts || best1(B) - best1(A) || B.tbk - A.tbk || a - b;
+  }));
   const rankOf = id => rankOrder().indexOf(id) + 1;
+
+  function makeCareerPlayers() {
+    // a pyramid of strength: the top 31 are the old seeds (1.55 .. 1.30), then the slam regulars, then the lower tours
+    const names = [], used = new Set();
+    for (const [cc, list] of Object.entries(NAMEPOOL)) for (const sur of list) names.push({ sur, cc });
+    const players = [{ n: 'Mang Kobay', sur: 'Kobay', cc: 'YOU', r: 1.1, st: 'top', tbk: -1 }];
+    for (let k = 1; k < NPLAYERS; k++) {
+      const r = k <= 31 ? 1.55 - (k - 1) * (.25 / 30) : k <= 127 ? 1.25 - (k - 32) * (.25 / 95) : k <= 300 ? 1 - (k - 128) * (.2 / 172) : .8 - (k - 301) * (.35 / 698);
+      let nm, full; do { nm = pickOf(names); full = INITIALS[Math.floor(Math.random() * INITIALS.length)] + '. ' + nm.sur; } while (used.has(full)); used.add(full);
+      const pl = { n: full, sur: nm.sur, cc: nm.cc, r: +clamp(r + rand(-.03, .03), .4, 1.55).toFixed(3), st: pickOf(['big', 'base', 'slice', 'all']), tbk: 0 };
+      pl.seed = k <= 32 ? k : 0; pl.traits = makeTraits(pl); pl.look = makeLook(pl); delete pl.seed;
+      players.push(pl);
+    }
+    players.forEach(p => { p.sl = [0, 0, 0, 0]; p.wk = new Array(4 * WEEKS).fill(0); p.pts = 0; });
+    return players;
+  }
+  // a draw with the seeds in their usual places; groups of slots are filled by successive groups of seeds
+  const SLOTS = {
+    128: [[0], [127], [63, 64], [31, 32, 95, 96], [15, 16, 47, 48, 79, 80, 111, 112], [7, 8, 23, 24, 39, 40, 55, 56, 71, 72, 87, 88, 103, 104, 119, 120]],
+    32: [[0], [31], [15, 16], [7, 8, 23, 24]],
+    q: [[...Array(16)].map((_, i) => i * 8)], // qualifying: 16 sections of 8, one seed at the top of each
+  };
+  function makeDraw(order, kind) { // order: entrants by ranking
+    const size = kind === 32 ? 32 : 128, d = new Array(size).fill(-1);
+    let s = 0;
+    for (const g of SLOTS[kind]) { const sl = shuffle([...g]); for (const slot of sl) d[slot] = order[s++]; }
+    const rest = shuffle(order.slice(s));
+    for (let i = 0; i < size; i++) if (d[i] < 0) d[i] = rest.pop();
+    return { draw: d, seeds: order.slice(0, s) };
+  }
+  // one set between two players of the tour (career ids); id 0 always wins if `meWins`
+  function careerMatch(a, b, meWins) {
+    if (meWins && (a === 0 || b === 0)) return { w: 0, l: a === 0 ? b : a, s: pickOf(['6-1', '6-2', '6-3', '6-4', '6-4', '7-5', '7-6(4)']) };
+    const r = simPair(career.players[a], career.players[b]);
+    return { w: r.w ? b : a, l: r.w ? a : b, s: r.s };
+  }
+  function runDraw(draw, rounds, meWins) {
+    const res = []; let e = draw;
+    for (let r = 0; r < rounds; r++) {
+      const out = [];
+      for (let m = 0; m < e.length / 2; m++) out.push(careerMatch(e[2 * m], e[2 * m + 1], meWins));
+      res.push(out); e = out.map(x => x.w);
+    }
+    return res;
+  }
+  // how far each player got in a finished draw (0 = lost in the first round .. rounds = won it)
+  const reachedIn = (res, id) => { const r = res.findIndex(rr => rr.some(m => m.l === id)); return r < 0 ? res.length : r; };
+
+  // one week of the other tours: the tour-level event takes the best available players, then the challengers;
+  // the futures are filled from everyone else who wants to play, so even the lowest-ranked get matches
+  function simWeek(slot, store) {
+    const pos = new Map(rankOrder().map((id, k) => [id, k])), order = rankOrder().filter(id => id !== 0 && Math.random() < .8);
+    const evs = [], g = Math.floor(slot / WEEKS), cities = shuffle([...CITIES]);
+    let i = 0;
+    const take = n => order.slice(i, i += n);
+    const split = (list, n) => { const out = [...Array(n)].map(() => []); list.forEach((id, k) => out[Math.floor(k / n) % 2 ? n - 1 - k % n : k % n].push(id)); return out; }; // snake: even fields
+    evs.push({ k: 't250', city: TOUR_CITIES[g][slot % WEEKS], ids: take(32) });
+    split(take(32 * TIERS.ch.n), TIERS.ch.n).forEach(ids => evs.push({ k: 'ch', city: cities.pop(), ids }));
+    const pool = shuffle(order.slice(i)).slice(0, 32 * TIERS.fu.n).sort((a, b) => pos.get(a) - pos.get(b));
+    split(pool, TIERS.fu.n).forEach(ids => evs.push({ k: 'fu', city: cities.pop(), ids }));
+    career.players.forEach(p => (p.wk[slot] = 0));
+    for (const ev of evs) {
+      if (ev.ids.length < 32) continue;
+      const { draw, seeds } = makeDraw(ev.ids, 32), res = runDraw(draw, 5);
+      draw.forEach(id => (career.players[id].wk[slot] = TIERS[ev.k].pts[reachedIn(res, id)]));
+      if (store) career.evs.push({ k: ev.k, name: `${TIERS[ev.k].name} ${ev.city}`, gap: g, wk: slot % WEEKS, draw, res, seeds });
+    }
+    recalc();
+  }
+  const simGap = (g, store) => { for (let w = 0; w < WEEKS; w++) simWeek(g * WEEKS + w, store); };
+
+  // who plays slam `ev`: the top 104 directly, 8 wildcards (host-country players first, and you if you ever drop
+  // out of the top 104), and 16 qualifiers from a 128-player qualifying draw
+  function slamFields(ev, store, meWins) {
+    const order = rankOrder(), direct = order.slice(0, 104), out = new Set(direct), wc = [];
+    if (!out.has(0)) { wc.push(0); out.add(0); }
+    const rest = order.filter(id => !out.has(id));
+    for (const id of rest) if (wc.length < 5 && career.players[id].cc === HOST[ev] && rankOf(id) <= 400) { wc.push(id); out.add(id); }
+    const young = shuffle(rest.filter(id => !out.has(id)).slice(0, 200));
+    while (wc.length < 8) { const id = young.pop(); wc.push(id); out.add(id); }
+    const left = order.filter(id => !out.has(id)), qwc = shuffle(left.slice(112, 500)).slice(0, 16);
+    const qOrder = left.slice(0, 112).concat(qwc).sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    const q = makeDraw(qOrder, 'q'), qres = runDraw(q.draw, 3, meWins), qual = qres[2].map(m => m.w);
+    if (store) career.evs.push({ k: 'q', name: `${VENUES[CAREER_VENUES[ev]].name} 予選`, gap: ev, wk: WEEKS, draw: q.draw, res: qres, seeds: q.seeds, wc: qwc });
+    const main = direct.concat(wc, qual).sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    return { main, wc, qual, qdraw: q.draw, qres };
+  }
+  // a slam's points: the main draw by round reached (+25 for a qualifier), the qualifying losers by their round
+  function slamPoints(ev, main, res, f) {
+    career.players.forEach(p => (p.sl[ev] = 0));
+    f.qdraw.forEach(id => (career.players[id].sl[ev] = QUAL_PTS[Math.min(2, reachedIn(f.qres, id))]));
+    main.forEach(id => (career.players[id].sl[ev] = SLAM_PTS[reachedIn(res, id)] + (f.qual.includes(id) ? QUALIFIER_BONUS : 0)));
+    recalc();
+  }
+  function simSlam(ev, meWins) {
+    const f = slamFields(ev, false, meWins), { draw } = makeDraw(f.main, 128), res = runDraw(draw, 7, meWins);
+    slamPoints(ev, f.main, res, f);
+  }
   function newCareer() {
-    // the same 127 rivals as a tournament. Last year's four slams are played out (simulated) to give everyone
-    // the points they defend this year; the ranking is the sum of the last four slams, so at most 8000.
-    const players = newTour().players.map(p => ({ ...p, seed: 0, prev: [0, 0, 0, 0], pts: 0, tbk: Math.random() }));
-    career = { v: 3, ev: 0, players, hist: [], startRank: 0, cur: null };
-    const saved = tour;
-    for (let ev = 0; ev < 4; ev++) {
-      const byR = players.map((p, i) => i).filter(i => i).sort((a, b) => players[b].r - players[a].r);
-      tour = careerTour(byR.concat([0])); // last year: seeded by strength (you were outside the top 32)
-      while (tour.res.length < 7) simRound(tour.res.length);
-      players.forEach((p, id) => (p.prev[ev] = SLAM_PTS[reached(id)]));
-    }
-    tour = saved;
-    // you were not on the tour last year: give you the slam results that put you closest to world No. 100
-    players[0].prev = [0, 0, 0, 0];
-    players.forEach(p => (p.pts = p.prev.reduce((a, b) => a + b, 0)));
-    let best = null;
-    const P = SLAM_PTS.slice(0, 4); // your best last year was a fourth round
-    for (const a of P) for (const b of P) for (const c of P) for (const d of P) {
-      players[0].prev = [a, b, c, d]; players[0].pts = a + b + c + d;
-      players[0].tbk = 2; const hi = rankOf(0); players[0].tbk = -1; const lo = rankOf(0); // top / bottom of the players level with you
-      const err = 100 < hi ? hi - 100 : 100 > lo ? 100 - lo : 0;
-      if (!best || err < best.err) best = { err, prev: [a, b, c, d] };
-    }
-    players[0].prev = best.prev; players[0].pts = best.prev.reduce((a, b) => a + b, 0);
-    // among the players level with you, slot in exactly at No. 100 if the group spans it
-    players[0].tbk = 2;
-    const order = rankOrder(), ahead = order.slice(0, 99).filter(i => i);
-    const tied = order.filter(i => i && players[i].pts === players[0].pts && Math.max(...players[i].prev) === Math.max(...players[0].prev));
-    const k = 99 - ahead.filter(i => !tied.includes(i)).length; // how many of the level group must stay ahead of you
-    if (k > 0 && k <= tied.length) players[0].tbk = k < tied.length ? (players[tied[k - 1]].tbk + players[tied[k]].tbk) / 2 : players[tied[k - 1]].tbk - .001;
+    // two years are played out: the first only builds a ranking, the second is last year, when you won all four slams.
+    // Then the weeks before this year's first slam are played, and you start as No. 1 with 8000 points.
+    const players = makeCareerPlayers();
+    career = { v: 4, ev: 0, players, hist: [], startRank: 0, cur: null, evs: [] };
+    players.forEach((p, i) => { if (i) p.tbk = p.r + rand(0, .15); }); // no points yet: the stronger players enter first
+    for (let g = 0; g < 4; g++) { simGap(g, false); simSlam(g, false); }
+    players.forEach((p, i) => { if (i) p.tbk = Math.random(); });
+    for (let g = 0; g < 4; g++) { simGap(g, false); simSlam(g, true); }
+    simGap(0, true);
     career.startRank = rankOf(0);
     saveCareer();
   }
-  // a slam: the top 32 of the ranking are seeded, in the usual places in the draw
-  function careerTour(order = rankOrder()) {
-    const seedOf = {};
-    order.slice(0, 32).forEach((id, k) => (seedOf[id] = k + 1));
-    const players = career.players.map((p, i) => ({ ...p, seed: seedOf[i] || 0 }));
-    const draw = new Array(128).fill(-1), bySeed = s => order[s - 1];
-    const place = (seeds, slots) => { shuffle(slots); seeds.forEach((sd, i) => (draw[slots[i]] = bySeed(sd))); };
-    draw[0] = bySeed(1); draw[127] = bySeed(2);
-    place([3, 4], [63, 64]);
-    place([5, 6, 7, 8], [31, 32, 95, 96]);
-    place([9, 10, 11, 12, 13, 14, 15, 16], [15, 16, 47, 48, 79, 80, 111, 112]);
-    place([...Array(16)].map((_, i) => 17 + i), [7, 8, 23, 24, 39, 40, 55, 56, 71, 72, 87, 88, 103, 104, 119, 120]);
-    const rest = shuffle(order.slice(32));
-    for (let i = 0; i < 128; i++) if (draw[i] < 0) draw[i] = rest.pop();
-    return { v: 4, venue: CAREER_VENUES[career.ev], players, draw, res: [], out: false, career: true };
+  // the slam you play: the field is set and the qualifying is played, then your draw (you are always id 0 in it)
+  function careerTour() {
+    const ev = career.ev, f = slamFields(ev, true, false), order = f.main, { draw, seeds } = makeDraw(order, 128);
+    const ids = [0, ...order.filter(id => id !== 0)], loc = new Map(ids.map((id, i) => [id, i]));
+    const players = ids.map(id => ({ ...career.players[id], cid: id, seed: seeds.indexOf(id) + 1, tag: f.qual.includes(id) ? 'Q' : f.wc.includes(id) ? 'WC' : '' }));
+    players.forEach(p => { delete p.sl; delete p.wk; });
+    return { v: 4, venue: CAREER_VENUES[ev], players, draw: draw.map(id => loc.get(id)), res: [], out: false, career: true,
+             f: { qual: f.qual, qdraw: f.qdraw, qres: f.qres } };
   }
   // how far each player got in the finished draw
   const reached = id => { if (champion() === id) return 7; const r = tour.res.findIndex(rr => rr.some(m => m.l === id)); return r < 0 ? 7 : r; };
   const REACHED = ['1回戦敗退', '2回戦敗退', '3回戦敗退', '4回戦敗退', 'ベスト8', 'ベスト4', '準優勝', '🏆 優勝'];
   function careerFinishEvent() {
-    const before = rankOf(0), ev = career.ev, lost = career.players[0].prev[ev];
-    // this slam's points replace the same slam's points from a year ago (the champion's 2000 come off if they lose early)
-    career.players.forEach((p, id) => { p.prev[ev] = SLAM_PTS[reached(id)]; p.pts = p.prev.reduce((a, b) => a + b, 0); });
+    const before = rankOf(0), ev = career.ev, lost = career.players[0].sl[ev];
+    // back to career ids: this slam's points replace the same slam's points from a year ago
+    const cid = l => tour.players[l].cid, main = tour.draw.map(cid);
+    const res = tour.res.map(rr => rr.map(m => ({ w: cid(m.w), l: cid(m.l), s: m.s })));
+    slamPoints(ev, main, res, tour.f);
+    career.evs.push({ k: 'slam', name: `${VENUES[tour.venue].name} 本戦`, gap: ev, wk: WEEKS + 1, draw: main, res,
+                      seeds: tour.players.filter(p => p.seed).sort((a, b) => a.seed - b.seed).map(p => p.cid),
+                      wc: tour.players.filter(p => p.tag === 'WC').map(p => p.cid), qual: tour.f.qual });
     career.hist.push({ venue: tour.venue, got: reached(0), pts: SLAM_PTS[reached(0)], lost, seed: tour.players[0].seed, before, after: rankOf(0), champ: tour.players[champion()].n });
     career.ev++; career.cur = null; tour = null;
+    if (career.ev < 4) simGap(career.ev, true); // the weeks before the next slam
     saveCareer(); showCareer();
   }
   function startCareerEvent() { tour = careerTour(); career.cur = tour; saveCareer(); showTour(); }
+
+  // ---------- career screens: the season, any finished draw, any player ----------
+  const cname = id => id === 0 ? 'あなた' : career.players[id].n;
+  const tierName = k => k === 'slam' ? 'グランドスラム' : k === 'q' ? 'グランドスラム予選' : TIERS[k].name;
+  const slamTag = k => k === 'slam' || k === 'q' ? ` <small>${tierName(k)}</small>` : '';
+  function careerCard(h, back) {
+    const card = $('tourCard');
+    card.innerHTML = `<div class="tour">${h}<div class="btns"><button class="alt" data-c="back">${back ? '◀ もどる' : 'メニュー'}</button></div></div>`;
+    card.querySelectorAll('[data-c]').forEach(b => (b.onclick = () => careerClick(b.dataset.c, back)));
+    card.querySelectorAll('[data-ev]').forEach(b => (b.onclick = () => showEvent(+b.dataset.ev)));
+    card.querySelectorAll('[data-pl]').forEach(b => (b.onclick = () => showPlayer(+b.dataset.pl)));
+    $('menu').classList.add('hidden'); $('result').classList.add('hidden'); $('board').classList.add('hidden'); $('quit').classList.add('hidden');
+    $('tour').classList.remove('hidden'); card.scrollTop = 0; state = 'menu';
+  }
+  function careerClick(c, back) {
+    if (c === 'go') startCareerEvent();
+    else if (c === 'cont') { tour = career.cur; showTour(); }
+    else if (c === 'new') { if (confirm('新しいシーズンを始めますか？（今の記録は消えます）')) { newCareer(); showCareer(); } }
+    else if (c === 'back' && back) showCareer();
+    else { $('tour').classList.add('hidden'); $('menu').classList.remove('hidden'); refreshTourButtons(); }
+  }
+  const plink = id => id === 0 ? '<b>あなた</b>' : `<a href="#" data-pl="${id}" onclick="return false">${career.players[id].n}</a> <small>${career.players[id].cc}</small>`;
   function showCareer() {
-    const card = $('tourCard'), order = rankOrder(), me = order.indexOf(0) + 1, done = career.ev >= 4;
-    let h = `<div class="tour"><h2>📅 キャリア</h2>`;
+    const order = rankOrder(), me = order.indexOf(0) + 1, done = career.ev >= 4;
+    let h = `<h2>📅 キャリア</h2>`;
     h += `<div class="big" style="margin:4px 0">世界ランキング <b>${me}位</b></div><p style="margin:0">${career.players[0].pts} pt · スタート時 ${career.startRank} 位</p>
-      <p style="font-size:12px;margin:2px 0;color:var(--sub)">ランキング＝直近 4 大会のポイントの合計（最高 8000pt）。大会のたびに前年の同じ大会のポイントと入れ替わる</p>`;
-    h += `<h3>今シーズンの 4 大会</h3><ul>` + CAREER_VENUES.map((k, i) => {
+      <p style="font-size:12px;margin:2px 0;color:var(--sub)">選手は ${NPLAYERS} 人。ランキング＝直近 1 年の 4 大大会 ＋ その他の大会のベスト ${BEST_N} 週のポイント。あなたは 4 大大会だけに出場（前年は 4 大会とも優勝）</p>`;
+    h += `<h3>今シーズンの 4 大大会</h3><ul>` + CAREER_VENUES.map((k, i) => {
       const r = career.hist[i], v = VENUES[k];
       const res = r ? `${REACHED[r.got]} <small>+${r.pts} / −${r.lost}pt · ${r.before}→${r.after}位</small>` : i === career.ev ? (career.cur ? '▶ 開催中' : '▶ 次の大会') : '—';
       return `<li class="${i === career.ev && !done ? 'me' : ''}"><span>${i + 1}. ${v.name} <small>${v.surf}</small></span><span>${res}</span></li>`;
     }).join('') + '</ul>';
     if (done) {
       const best = Math.max(...career.hist.map(r => r.got)), titles = career.hist.filter(r => r.got === 7).length;
-      h += `<div class="opp"><div class="nm">シーズン終了！</div>${career.startRank} 位 → <b>${me} 位</b><br>最高成績：${REACHED[best]}${titles ? ` · 優勝 ${titles} 回` : ''}${titles === 4 ? `<br><b>🏆 年間グランドスラム達成！</b>` : ''}</div>`;
-    }
-    // the top of the ranking, and you
-    h += `<h3>世界ランキング</h3><ul>` + order.slice(0, 10).map((id, k) => `<li class="${id === 0 ? 'me' : ''}"><span>${k + 1}. ${id === 0 ? 'あなた' : career.players[id].n} <small>${id === 0 ? '' : career.players[id].cc}</small></span><span>${career.players[id].pts} pt</span></li>`).join('') +
-      (me > 10 ? `<li>…</li><li class="me"><span>${me}. あなた</span><span>${career.players[0].pts} pt</span></li>` : '') + '</ul>';
-    if (!done) {
+      h += `<div class="opp"><div class="nm">シーズン終了！</div>${career.startRank} 位 → <b>${me} 位</b><br>最高成績：${REACHED[best]}${titles ? ` · 優勝 ${titles} 回` : ''}${titles === 4 ? `<br><b>🏆 2 年連続の年間グランドスラム！</b>` : ''}</div>`;
+    } else {
       const next = VENUES[CAREER_VENUES[career.ev]], seedNow = me <= 32 ? me : 0;
-      const def = career.players[0].prev[career.ev], champPrev = career.players.findIndex(p => p.prev[career.ev] === 2000);
-      h += `<p style="font-size:13px">${next.name} で守るポイント：<b>${def}pt</b>（前年の成績）${champPrev > 0 ? `<br>前年の優勝：${career.players[champPrev].n}` : ''}</p>`;
-      h += `<p style="font-size:13px">${seedNow ? `次の大会は第 ${seedNow} シード` : '次の大会はノーシード（33 位以内でシードがつく）'}</p>`;
+      h += `<p style="font-size:13px">${next.name} で守るポイント：<b>${career.players[0].sl[career.ev]}pt</b>（前年の成績）<br>${seedNow ? `次の大会は第 ${seedNow} シード` : '次の大会はノーシード（33 位以内でシードがつく）'}</p>`;
     }
     h += '<div class="btns">' + (done ? `<button data-c="new">新しいシーズン</button>`
       : career.cur ? `<button data-c="cont">▶ 大会の続き</button>`
-      : `<button data-c="go">▶ ${VENUES[CAREER_VENUES[career.ev]].name} へ</button>`) + `<button class="alt" data-c="menu">メニュー</button></div></div>`;
-    card.innerHTML = h;
-    card.querySelectorAll('[data-c]').forEach(b => (b.onclick = () => {
-      const c = b.dataset.c;
-      if (c === 'go') startCareerEvent();
-      else if (c === 'cont') { tour = career.cur; showTour(); }
-      else if (c === 'new') { if (confirm('新しいシーズンを始めますか？（今の記録は消えます）')) { newCareer(); showCareer(); } }
-      else { $('tour').classList.add('hidden'); $('menu').classList.remove('hidden'); refreshTourButtons(); }
-    }));
-    $('menu').classList.add('hidden'); $('result').classList.add('hidden'); $('board').classList.add('hidden'); $('quit').classList.add('hidden');
-    $('tour').classList.remove('hidden'); card.scrollTop = 0; state = 'menu';
+      : `<button data-c="go">▶ ${VENUES[CAREER_VENUES[career.ev]].name} へ</button>`) + '</div>';
+    // the ranking: the top 10 and you, the rest of the top 100 folded
+    const row = (id, k) => `<li class="${id === 0 ? 'me' : ''}"><span>${k + 1}. ${plink(id)}</span><span>${career.players[id].pts} pt</span></li>`;
+    h += `<h3>世界ランキング</h3><ul>` + order.slice(0, 10).map(row).join('') + (me > 10 ? `<li>…</li>${row(0, me - 1)}` : '') + '</ul>';
+    h += `<details><summary>11〜100 位</summary><ul>${order.slice(10, 100).map((id, k) => row(id, k + 10)).join('')}</ul></details>`;
+    // every draw played this season, newest first, grouped by the run-up to each slam: the slam and the week's
+    // tour-level event in view, the challengers and futures folded
+    h += `<h3>📰 大会結果</h3>`;
+    const evRow = i => {
+      const e = career.evs[i], fin = e.res[e.res.length - 1];
+      return `<li><span><a href="#" data-ev="${i}" onclick="return false">${e.name}</a>${slamTag(e.k)}</span><span><small>${e.k === 'q' ? `予選通過 ${fin.length} 人` : `優勝 ${cname(fin[0].w)}`}</small></span></li>`;
+    };
+    for (let g = Math.min(3, career.ev); g >= 0; g--) {
+      const of = (wk, f) => career.evs.map((e, i) => ({ e, i })).filter(x => x.e.gap === g && x.e.wk === wk && f(x.e)).map(x => x.i);
+      let body = of(WEEKS + 1, () => true).concat(of(WEEKS, () => true)).map(evRow).join('');
+      for (let w = WEEKS - 1; w >= 0; w--) {
+        const top = of(w, e => e.k === 't250'), low = of(w, e => e.k !== 't250');
+        if (!top.length && !low.length) continue;
+        body += `<li style="background:none"><b>第${w + 1}週</b></li>` + top.map(evRow).join('') +
+          (low.length ? `<li style="display:block;background:none"><details><summary style="font-size:13px">チャレンジャー・フューチャーズ（${low.length} 大会）</summary><ul>${low.map(evRow).join('')}</ul></details></li>` : '');
+      }
+      if (body) h += `<details${g === Math.min(3, career.ev) ? ' open' : ''}><summary>${VENUES[CAREER_VENUES[g]].name} まで</summary><ul>${body}</ul></details>`;
+    }
+    careerCard(h, false);
+  }
+  // a finished draw, round by round
+  function showEvent(i) {
+    const e = career.evs[i], names = e.k === 'q' ? QROUNDS : e.res.length === 7 ? ROUNDS : ROUNDS32;
+    const seed = id => { const s = e.seeds.indexOf(id) + 1; return s ? `[${s}] ` : ''; };
+    const tag = id => e.qual && e.qual.includes(id) ? ' <small>(Q)</small>' : e.wc && e.wc.includes(id) ? ' <small>(WC)</small>' : '';
+    const nm = id => `${seed(id)}${plink(id)}${tag(id)}`;
+    const fin = e.res[e.res.length - 1];
+    let h = `<h2>${e.name}</h2><p>${tierName(e.k)} · ${e.draw.length} ドロー · 1 セットマッチ</p>`;
+    h += e.k === 'q' ? `<p>予選通過：${fin.map(m => plink(m.w)).join('、')}</p>` : `<div class="opp">優勝<div class="nm">${nm(fin[0].w)}</div>決勝 ${fin[0].s} で ${nm(fin[0].l)} に勝利</div>`;
+    for (let r = e.res.length - 1; r >= 0; r--) {
+      h += `<details${r >= e.res.length - 2 ? ' open' : ''}><summary>${names[r]}（${e.res[r].length} 試合）</summary><ul>` +
+        e.res[r].map(m => `<li class="${m.w === 0 || m.l === 0 ? 'me' : ''}"><span>${nm(m.w)}</span><span>${m.s}</span><span>${nm(m.l)}</span></li>`).join('') + '</ul></details>';
+    }
+    careerCard(h, true);
+  }
+  // one player: strength, ranking, and this season's results
+  function showPlayer(id) {
+    const p = career.players[id], rk = rankOf(id);
+    let h = `<h2>${p.n} <small>${p.cc}</small></h2><div class="opp"><div class="nm">世界ランキング ${rk}位 · ${p.pts} pt</div>
+      ${TSTYLE[p.st] || ''} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>
+      <div class="memo"><b>📋 スカウティングメモ</b>${(p.traits || []).map(k => `<div class="${TRAITS[k].good ? 'g' : 'b'}">${TRAITS[k].good ? '◎' : '△'} <b>${TRAITS[k].name}</b>：${TRAITS[k].memo}</div>`).join('')}</div></div>`;
+    const rows = [];
+    career.evs.forEach((e, i) => {
+      if (!e.draw.includes(id)) return;
+      const r = reachedIn(e.res, id), names = e.k === 'q' ? QROUNDS : e.res.length === 7 ? ROUNDS : ROUNDS32;
+      const got = r >= e.res.length ? (e.k === 'q' ? '予選通過' : '🏆 優勝') : r === e.res.length - 1 && e.k !== 'q' ? '準優勝' : `${names[r]}敗退`;
+      rows.push(`<li><span><a href="#" data-ev="${i}" onclick="return false">${e.name}</a>${slamTag(e.k)}</span><span>${got}</span></li>`);
+    });
+    h += `<h3>今シーズンの成績</h3>` + (rows.length ? `<ul>${rows.reverse().join('')}</ul>` : '<p style="font-size:13px">まだ出場なし</p>');
+    careerCard(h, true);
   }
 
   // ---------- the draw as a PDF: a cover page, the four quarters, and the final eight ----------
@@ -1709,7 +1886,7 @@
   }));
   const PW = 1240, PH = 1754, PFONT = 'system-ui, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif';
   const entAt = r => r === 0 ? tour.draw : r <= tour.res.length ? tour.res[r - 1].map(m => m.w) : null;
-  const plain = (id, cc = true) => { const p = tour.players[id]; return (p.seed ? `[${p.seed}] ` : '') + (id === 0 ? 'あなた' : cc ? `${p.n}  ${p.cc}` : p.n); };
+  const plain = (id, cc = true) => { const p = tour.players[id]; return (p.seed ? `[${p.seed}] ` : '') + (id === 0 ? 'あなた' : (cc ? `${p.n}  ${p.cc}` : p.n) + (p.tag ? ` (${p.tag})` : '')); };
   function finish(id) {
     if (champion() === id) return '優勝';
     const r = tour.res.findIndex(rr => rr.some(m => m.l === id));
