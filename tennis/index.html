@@ -628,7 +628,7 @@
     if (opp) {
       lv = { ...levelFor(opp), name: `${RN()[tour.res.length]} ・ ${STG(tour.res.length).court}` };
       $('cName').textContent = (opp.seed ? `[${opp.seed}] ` : '') + opp.n;
-      $('cStyle').textContent = TSTYLE[opp.st];
+      $('cStyle').textContent = (opp.rk ? `${opp.rk}位 · ` : '') + TSTYLE[opp.st];
     }
     pts = [0, 0]; games = [0, 0]; faults = 0; maxRally = 0; maxSpeed = 0; popups = []; marks = []; skids = [];
     matchT0 = performance.now(); lastServe = null;
@@ -1515,7 +1515,7 @@
 
   const stars = r => { const n = clamp(Math.round((r - .85) / .14), 1, 5); return '★'.repeat(n) + '☆'.repeat(5 - n); };
   const seedTag = p => p.seed ? `<span class="sd">${p.seed}</span> ` : '';
-  const pname = id => { const p = tour.players[id]; return id === 0 ? `${seedTag(p)}<b>あなた</b>` : `${seedTag(p)}${p.n}${p.tag ? ` <small>(${p.tag})</small>` : ''} <small>${p.cc}</small>`; };
+  const pname = id => { const p = tour.players[id]; return id === 0 ? `${seedTag(p)}<b>あなた</b>` : `${seedTag(p)}${p.n}${p.tag ? ` <small>(${p.tag})</small>` : ''} <small>${p.cc}${p.rk ? ` · ${p.rk}位` : ''}</small>`; };
 
   function showTour() {
     const card = $('tourCard'), v = VENUES[tour.venue], r = tour.res.length, champ = champion();
@@ -1533,7 +1533,7 @@
     } else {
       const e = entrants(r), m = userMatch(r), opp = e[2 * m] === 0 ? e[2 * m + 1] : e[2 * m], p = tour.players[opp];
       h += `<h3>${RN()[r]} · 次の相手</h3><div class="opp"><div class="nm">${p.seed ? `<span class="sd">第${p.seed}シード</span> ` : ''}${p.n} <small>${p.cc}</small></div>
-        ${p.tag ? `<div style="font-size:12px">${p.tag === 'Q' ? '予選を勝ち上がってきた選手' : 'ワイルドカードで出場'}${p.cid ? ` · 世界ランキング ${rankOf(p.cid)}位` : ''}</div>` : p.cid ? `<div style="font-size:12px">世界ランキング ${rankOf(p.cid)}位</div>` : ''}
+        ${p.rk ? `<div style="font-size:14px"><b>世界ランキング ${p.rk}位</b>${p.tag ? ` · ${p.tag === 'Q' ? '予選を勝ち上がってきた選手' : 'ワイルドカードで出場'}` : ''}</div>` : ''}
         ${TSTYLE[p.st]} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>
         ${p.look ? `<div style="margin:6px 0"><span class="kit" style="background:${p.look.shirt};border-color:${p.look.trim}"></span><span class="kit" style="background:${p.look.shorts}"></span></div>` : ''}
         <div class="memo"><b>📋 スカウティングメモ</b>${(p.traits || []).map(k => `<div class="${TRAITS[k].good ? 'g' : 'b'}">${TRAITS[k].good ? '◎' : '△'} <b>${TRAITS[k].name}</b>：${TRAITS[k].memo}</div>`).join('')}</div>
@@ -1588,7 +1588,7 @@
     // walk-on: the round and court, the umpire introduces the players, the crowd greets them
     const opp = tour.players[id];
     intro = true;
-    pause(`${RN()[r]} ・ ${st.court}`, `あなた vs ${opp.seed ? `[${opp.seed}] ` : ''}${opp.n}`, STI(r) >= 4 ? 3.2 : 2.2, () => { intro = false; setupServe(true); });
+    pause(`${RN()[r]} ・ ${st.court}`, `あなた vs ${opp.seed ? `[${opp.seed}] ` : ''}${opp.n}${opp.rk ? `（世界${opp.rk}位）` : ''}`, STI(r) >= 4 ? 3.2 : 2.2, () => { intro = false; setupServe(true); });
     umpire(`${r === nR() - 1 ? 'Ladies and gentlemen, the final. ' : RN_EN()[r] + '. '}${NAME.P}, versus, ${NAME.C}.`, 300);
     crowdClap(STI(r) >= 4 ? 1 : .5, STI(r) >= 4 ? 3.5 : 2); if (STI(r) >= 5) crowdVoice('cheer', .8);
   }
@@ -1814,7 +1814,7 @@
   function careerTour() {
     const f = playWeek(career.w, 'play', true), e = f.e, K = KINDS[e.k], { draw, seeds } = makeDraw(f.main, K.size);
     const ids = [0, ...f.main.filter(id => id !== 0)], loc = new Map(ids.map((id, i) => [id, i]));
-    const players = ids.map(id => ({ ...career.players[id], cid: id, seed: seeds.indexOf(id) + 1, tag: f.qual.includes(id) ? 'Q' : f.wc.includes(id) ? 'WC' : '' }));
+    const players = ids.map(id => ({ ...career.players[id], cid: id, rk: rankOf(id), seed: seeds.indexOf(id) + 1, tag: f.qual.includes(id) ? 'Q' : f.wc.includes(id) ? 'WC' : '' }));
     players.forEach(p => { delete p.wk; delete p.wc; });
     return { v: 5, venue: e.vkey, title: evTitle(e), kind: e.k, rounds: roundsFor(K.size), players, draw: draw.map(id => loc.get(id)), res: [], out: false, career: true,
              f: { w: career.w, qual: f.qual, wc: f.wc, q: f.q } };
