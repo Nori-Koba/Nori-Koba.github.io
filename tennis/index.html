@@ -164,7 +164,7 @@
         <button class="dark" data-level="ultra" style="background:#7b2cbf;box-shadow:0 4px 0 #4a1a75">最強</button>
       </div>
       <p style="margin-top:12px"><b>📅 キャリア</b>（世界ランキング 1 位・8000pt からスタート）</p>
-      <p style="font-size:12px;margin:2px 0">前年に 4 大大会を全制覇したあなたが、メルボルン → パリ → ロンドン → ニューヨークの 4 大会でポイントを守る。ツアーには 1000 人の選手がいて、下部大会でポイントを稼ぎ、予選やワイルドカードから本戦に上がってくる</p>
+      <p style="font-size:12px;margin:2px 0">1 年 22 週のツアー。あなたはウィンブルドン・マスターズ1000（4 大会）・ATP500（4 大会）に出場し、前年に全部優勝したポイントを守る。ほかの 999 人は ATP250・チャレンジャー・フューチャーズでもポイントを稼ぎ、予選やワイルドカードから上がってくる</p>
       <div class="btns">
         <button id="carNew">新しく始める</button>
         <button class="alt hidden" id="carCont">つづきから</button>
@@ -626,7 +626,7 @@
     cpu.size = opp && opp.look ? opp.look.size : 1; cpu.build = opp && opp.look ? opp.look.build : 1;
     cpuKit = opp && opp.look ? { ...KIT_C, ...opp.look } : KIT_C;
     if (opp) {
-      lv = { ...levelFor(opp), name: `${ROUNDS[tour.res.length]} ・ ${STAGES[tour.res.length].court}` };
+      lv = { ...levelFor(opp), name: `${RN()[tour.res.length]} ・ ${STG(tour.res.length).court}` };
       $('cName').textContent = (opp.seed ? `[${opp.seed}] ` : '') + opp.n;
       $('cStyle').textContent = TSTYLE[opp.st];
     }
@@ -1157,7 +1157,7 @@
       tb = false;
       if (setWon(i)) {
         crowdClap(1, 4); crowdVoice('cheer', 1); umpire(scoreCall(w, true, true), 600);
-        updateBoard(); pause(title, label, 1.8, () => (tourOpp && tour && tour.res.length === 6 ? startCeremony(w) : endMatch(w))); return;
+        updateBoard(); pause(title, label, 1.8, () => (tourOpp && tour && tour.res.length === nR() - 1 ? startCeremony(w) : endMatch(w))); return;
       }
       crowdClap(.9, 3);
       if (games[0] === 6 && games[1] === 6) { // 6-6: tiebreak
@@ -1276,9 +1276,9 @@
       if (sub) { ctx.font = 'bold 17px system-ui, sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(sub, W / 2, y + 24); }
     };
     const yC = H - (coarse ? 170 : 120);
-    if (t < 4.8) card(cer.w === 'P' ? '🏆 優勝!' : '準優勝…', `NORI OPEN ${venue.name}`, yC, cer.w === 'P' ? '#ffd166' : '#dfe3ea');
+    if (t < 4.8) card(cer.w === 'P' ? '🏆 優勝!' : '準優勝…', (tour && tour.title) || `NORI OPEN ${venue.name}`, yC, cer.w === 'P' ? '#ffd166' : '#dfe3ea');
     else if (t >= 5.8) {
-      ctx.font = 'bold 15px system-ui, sans-serif'; ctx.fillStyle = 'rgba(10,14,32,.75)'; const tt = `NORI OPEN ${venue.name} · 表彰式`, tw = ctx.measureText(tt).width + 30;
+      ctx.font = 'bold 15px system-ui, sans-serif'; ctx.fillStyle = 'rgba(10,14,32,.75)'; const tt = `${(tour && tour.title) || `NORI OPEN ${venue.name}`} · 表彰式`, tw = ctx.measureText(tt).width + 30;
       ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - tw / 2, 104, tw, 30, 15) : ctx.rect(W / 2 - tw / 2, 104, tw, 30); ctx.fill(); ctx.fillStyle = '#ffd166'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tt, W / 2, 119);
       if (t < 9.3) card('🥈 準優勝', cer.rName, yC, '#dfe3ea');
       else if (t < 13.5) card('🏆 優勝', cer.cName, yC, '#ffd166');
@@ -1310,9 +1310,9 @@
     $('again').classList.toggle('hidden', !!tourOpp); $('toTour').classList.toggle('hidden', !tourOpp);
     if (tourOpp) {
       const r = tourResult(w);
-      $('resTitle').textContent = w === 'P' ? (r === 6 ? '🏆 優勝!' : `🎾 ${ROUNDS[r]} 突破!`) : `😢 ${ROUNDS[r]} で敗退…`;
+      $('resTitle').textContent = w === 'P' ? (r === nR() - 1 ? '🏆 優勝!' : `🎾 ${RN()[r]} 突破!`) : `😢 ${RN()[r]} で敗退…`;
       $('resDetail').innerHTML = `相手：${tourOpp.seed ? `第${tourOpp.seed}シード ` : ''}${tourOpp.n} ・ 最長ラリー <b>${maxRally}</b> 回 ・ 最速ショット <b>${maxSpeed}</b> km/h<br>` +
-        (w === 'P' ? (r === 6 ? '128 人の頂点に立った！ おめでとう！' : `次は ${ROUNDS[r + 1]}！`) : 'トーナメント表で優勝者を見てみよう');
+        (w === 'P' ? (r === nR() - 1 ? `${tour.draw.length} 人の頂点に立った！ おめでとう！` : `次は ${RN()[r + 1]}！`) : 'トーナメント表で優勝者を見てみよう');
       tourOpp = null;
     }
     $('result').classList.remove('hidden');
@@ -1320,6 +1320,11 @@
 
   // ---------- tournament: a 128-player grand slam draw, you are the top seed ----------
   const ROUNDS = ['1回戦', '2回戦', '3回戦', '4回戦', '準々決勝', '準決勝', '決勝'];
+  const ROUNDS64 = ['1回戦', '2回戦', '3回戦', '準々決勝', '準決勝', '決勝'], ROUNDS32 = ['1回戦', '2回戦', '準々決勝', '準決勝', '決勝'];
+  // the draw being played: its number of rounds, their names, and the court of each round (the final is always on centre court)
+  const nR = () => (tour && tour.rounds) || 7;
+  const RN = () => nR() === 6 ? ROUNDS64 : nR() === 5 ? ROUNDS32 : ROUNDS;
+  const STI = r => r + 7 - nR(), STG = r => STAGES[STI(r)];
   const TSTYLE = { big: 'ビッグサーバー', base: 'ベースライナー', slice: 'スライス職人', all: 'オールラウンド' };
   const NAMEPOOL = { // made-up players
     ESP: ['Moreno', 'Castell', 'Ibarra', 'Soler', 'Varela', 'Ruiz', 'Olmedo', 'Prado', 'Galindo', 'Herrera', 'Cuesta', 'Montoya', 'Salinas', 'Arroyo', 'Navarro', 'Peña'],
@@ -1396,6 +1401,7 @@
     { court: 'センターコート', fill: .9 }, { court: 'センターコート', fill: 1 }, { court: 'センターコート（ナイター）', fill: 1, night: true },
   ];
   const ROUNDS_EN = ['First round', 'Second round', 'Third round', 'Fourth round', 'Quarterfinal', 'Semifinal', 'Final'];
+  const RN_EN = () => (nR() === 7 ? [0, 1, 2, 3, 4, 5, 6] : nR() === 6 ? [0, 1, 2, 4, 5, 6] : [0, 1, 4, 5, 6]).map(i => ROUNDS_EN[i]);
   const TKEY = 'bumpyTennisTour1';
   let tour = null, tourOpp = null; // tourOpp: the CPU you are playing right now in the tournament
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -1482,7 +1488,7 @@
     for (let m = 0; m < e.length / 2; m++) out.push(userRes && (e[2 * m] === 0 || e[2 * m + 1] === 0) ? userRes : simSet(e[2 * m], e[2 * m + 1]));
     tour.res.push(out);
   }
-  const champion = () => tour.res.length === 7 ? tour.res[6][0].w : -1;
+  const champion = () => tour.res.length === nR() ? tour.res[nR() - 1][0].w : -1;
 
   // strength rating -> CPU level: easy at 0, normal at .5, hard at 1, a touch beyond for the top seeds
   function levelFor(p) {
@@ -1513,42 +1519,42 @@
 
   function showTour() {
     const card = $('tourCard'), v = VENUES[tour.venue], r = tour.res.length, champ = champion();
-    let h = `<div class="tour">${tour.career && career ? `<p style="margin:0 0 4px;font-size:13px">📅 キャリア · 大会 ${career.ev + 1}/4 · ランキング <b>${rankOf(0)}位</b></p>` : ''}<h2>🏆 NORI OPEN</h2><p>${v.name} (${v.surf}) · 128 ドロー ・ 1 セットマッチ</p><div class="path">`;
+    let h = `<div class="tour">${tour.career && career ? `<p style="margin:0 0 4px;font-size:13px">📅 キャリア · 大会 ${career.ue + 1}/${UEV.length} · ランキング <b>${rankOf(0)}位</b></p>` : ''}<h2>🏆 ${tour.title || 'NORI OPEN'}</h2><p>${v.name} (${v.surf}) · ${tour.draw.length} ドロー ・ 1 セットマッチ</p><div class="path">`;
     const lostAt = tour.out ? tour.res.findIndex(rr => rr.some(m => m.l === 0)) : -1;
-    ROUNDS.forEach((n, i) => {
+    RN().forEach((n, i) => {
       const cls = tour.out ? (i < lostAt ? 'done' : i === lostAt ? 'lost' : '') : i < r ? 'done' : i === r ? 'now' : '';
       h += `<span class="${cls}">${n}</span>`;
     });
     h += '</div>';
     if (champ === 0) {
-      h += `<div class="big">🏆 優勝!</div><p>128 人の頂点！ あなたがチャンピオンです！</p>`;
+      h += `<div class="big">🏆 優勝!</div><p>${tour.draw.length} 人の頂点！ あなたがチャンピオンです！</p>`;
     } else if (tour.out) {
-      h += `<p>${ROUNDS[lostAt]} で敗退…</p>` + (champ > 0 ? `<div class="opp">優勝<div class="nm">${pname(champ)}</div>決勝 ${tour.res[6][0].s} で ${pname(tour.res[6][0].l)} に勝利</div>` : '');
+      h += `<p>${RN()[lostAt]} で敗退…</p>` + (champ > 0 ? `<div class="opp">優勝<div class="nm">${pname(champ)}</div>決勝 ${tour.res[nR() - 1][0].s} で ${pname(tour.res[nR() - 1][0].l)} に勝利</div>` : '');
     } else {
       const e = entrants(r), m = userMatch(r), opp = e[2 * m] === 0 ? e[2 * m + 1] : e[2 * m], p = tour.players[opp];
-      h += `<h3>${ROUNDS[r]} · 次の相手</h3><div class="opp"><div class="nm">${p.seed ? `<span class="sd">第${p.seed}シード</span> ` : ''}${p.n} <small>${p.cc}</small></div>
+      h += `<h3>${RN()[r]} · 次の相手</h3><div class="opp"><div class="nm">${p.seed ? `<span class="sd">第${p.seed}シード</span> ` : ''}${p.n} <small>${p.cc}</small></div>
         ${p.tag ? `<div style="font-size:12px">${p.tag === 'Q' ? '予選を勝ち上がってきた選手' : 'ワイルドカードで出場'}${p.cid ? ` · 世界ランキング ${rankOf(p.cid)}位` : ''}</div>` : p.cid ? `<div style="font-size:12px">世界ランキング ${rankOf(p.cid)}位</div>` : ''}
         ${TSTYLE[p.st]} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>
         ${p.look ? `<div style="margin:6px 0"><span class="kit" style="background:${p.look.shirt};border-color:${p.look.trim}"></span><span class="kit" style="background:${p.look.shorts}"></span></div>` : ''}
         <div class="memo"><b>📋 スカウティングメモ</b>${(p.traits || []).map(k => `<div class="${TRAITS[k].good ? 'g' : 'b'}">${TRAITS[k].good ? '◎' : '△'} <b>${TRAITS[k].name}</b>：${TRAITS[k].memo}</div>`).join('')}</div>
-        <div style="font-size:12px;color:var(--sub);margin-top:4px">会場: ${STAGES[r].court}</div></div>`;
+        <div style="font-size:12px;color:var(--sub);margin-top:4px">会場: ${STG(r).court}</div></div>`;
     }
     // your road so far
     const mine = [];
-    tour.res.forEach((rr, i) => rr.forEach(mm => { if (mm.w === 0 || mm.l === 0) mine.push(`<li class="me"><span>${ROUNDS[i]}</span><span>${mm.w === 0 ? '○' : '●'} ${pname(mm.w === 0 ? mm.l : mm.w)}</span><span>${mm.w === 0 ? mm.s : mm.s.replace(/^(\d+)-(\d+)/, '$2-$1')}</span></li>`); }));
+    tour.res.forEach((rr, i) => rr.forEach(mm => { if (mm.w === 0 || mm.l === 0) mine.push(`<li class="me"><span>${RN()[i]}</span><span>${mm.w === 0 ? '○' : '●'} ${pname(mm.w === 0 ? mm.l : mm.w)}</span><span>${mm.w === 0 ? mm.s : mm.s.replace(/^(\d+)-(\d+)/, '$2-$1')}</span></li>`); }));
     if (mine.length) h += `<h3>あなたの戦績</h3><ul>${mine.join('')}</ul>`;
     // upsets in the last round played
     if (r > 0) {
       const ups = tour.res[r - 1].filter(mm => tour.players[mm.l].seed && mm.l !== 0 && (!tour.players[mm.w].seed || tour.players[mm.w].seed > tour.players[mm.l].seed));
-      h += `<h3>${ROUNDS[r - 1]}の番狂わせ</h3>` + (ups.length
+      h += `<h3>${RN()[r - 1]}の番狂わせ</h3>` + (ups.length
         ? `<ul>${ups.map(mm => `<li><span>${pname(mm.w)}</span><span>${mm.s}</span><span>${pname(mm.l)} 敗退</span></li>`).join('')}</ul>`
         : '<p style="font-size:13px">シードは全員勝ち上がり</p>');
     }
-    const alive = new Set(r >= 7 ? [champ] : entrants(r));
+    const alive = new Set(r >= nR() ? [champ] : entrants(r));
     h += `<h3>シード選手</h3><div class="chips">${tour.players.map((p, i) => ({ p, i })).filter(x => x.p.seed).sort((a, b) => a.p.seed - b.p.seed).map(({ p, i }) => `<span class="${alive.has(i) ? '' : 'out'}">${p.seed} ${i === 0 ? 'あなた' : tour.career ? p.n : p.sur}</span>`).join('')}</div>`;
-    if (r < 7) {
+    if (r < nR()) {
       const e = entrants(r);
-      h += `<details><summary>${ROUNDS[r]}の組み合わせ（${e.length} 人）</summary><ul>`;
+      h += `<details><summary>${RN()[r]}の組み合わせ（${e.length} 人）</summary><ul>`;
       for (let m = 0; m < e.length / 2; m++) h += `<li class="${e[2 * m] === 0 || e[2 * m + 1] === 0 ? 'me' : ''}"><span>${pname(e[2 * m])}</span><span>vs</span><span>${pname(e[2 * m + 1])}</span></li>`;
       h += '</ul></details>';
     }
@@ -1572,7 +1578,7 @@
   function playTourMatch() {
     const r = tour.res.length, e = entrants(r), m = userMatch(r);
     const id = e[2 * m] === 0 ? e[2 * m + 1] : e[2 * m];
-    const st = STAGES[r];
+    const st = STG(r);
     venue = st.night && !VENUES[tour.venue].night
       ? { ...VENUES[tour.venue], night: true, sky: ['#04060d', '#151d33'] } : VENUES[tour.venue];
     stage = st;
@@ -1582,67 +1588,112 @@
     // walk-on: the round and court, the umpire introduces the players, the crowd greets them
     const opp = tour.players[id];
     intro = true;
-    pause(`${ROUNDS[r]} ・ ${st.court}`, `あなた vs ${opp.seed ? `[${opp.seed}] ` : ''}${opp.n}`, r >= 4 ? 3.2 : 2.2, () => { intro = false; setupServe(true); });
-    umpire(`${r === 6 ? 'Ladies and gentlemen, the final. ' : ROUNDS_EN[r] + '. '}${NAME.P}, versus, ${NAME.C}.`, 300);
-    crowdClap(r >= 4 ? 1 : .5, r >= 4 ? 3.5 : 2); if (r >= 5) crowdVoice('cheer', .8);
+    pause(`${RN()[r]} ・ ${st.court}`, `あなた vs ${opp.seed ? `[${opp.seed}] ` : ''}${opp.n}`, STI(r) >= 4 ? 3.2 : 2.2, () => { intro = false; setupServe(true); });
+    umpire(`${r === nR() - 1 ? 'Ladies and gentlemen, the final. ' : RN_EN()[r] + '. '}${NAME.P}, versus, ${NAME.C}.`, 300);
+    crowdClap(STI(r) >= 4 ? 1 : .5, STI(r) >= 4 ? 3.5 : 2); if (STI(r) >= 5) crowdVoice('cheer', .8);
   }
   // called when a tournament match ends
   function tourResult(w) {
     const opp = tourOpp.id, s = `${Math.max(...games)}-${Math.min(...games)}` + (tbScore ? `(${Math.min(...tbScore)})` : '');
     const r = tour.res.length;
     simRound(r, w === 'P' ? { w: 0, l: opp, s } : { w: opp, l: 0, s });
-    if (w !== 'P') { tour.out = true; while (tour.res.length < 7) simRound(tour.res.length); }
+    if (w !== 'P') { tour.out = true; while (tour.res.length < nR()) simRound(tour.res.length); }
     saveTour();
     return r;
   }
-  // ---------- career: a 1000-player tour. You play only the four slams, as last year's champion of all four ----------
-  // Everyone else also plays a tour-level event, challengers or futures in the weeks between the slams, and gets
-  // into a slam directly (top 104), through qualifying (16) or on a wildcard (8). The ranking is the last 12 months:
-  // the four slams plus each player's best 8 other weeks, so no one can reach your 8000 (at most 4 x 1200 + 8 x 250).
-  const CKEY = 'bumpyTennisCareer1', CAREER_VENUES = ['mel', 'par', 'lon', 'ny'], HOST = ['AUS', 'FRA', 'GBR', 'USA'];
-  // ranking points for how far you got: lost in round 1 .. lost in the final, then the title
-  const SLAM_PTS = [10, 45, 90, 180, 360, 720, 1200, 2000], QUAL_PTS = [0, 8, 16], QUALIFIER_BONUS = 25;
-  const NPLAYERS = 1000, WEEKS = 4, BEST_N = 8; // WEEKS of other events before each slam
-  const TIERS = { // 32 draws, 8 seeds; points for losing in R32, R16, QF, SF, F and for the title
-    t250: { name: 'ツアー250', pts: [0, 20, 45, 90, 150, 250], n: 1 },
-    ch:   { name: 'チャレンジャー', pts: [0, 6, 12, 25, 64, 125], n: 2 },
-    fu:   { name: 'フューチャーズ', pts: [0, 1, 3, 6, 13, 25], n: 6 },
+  // ---------- career: a 1000-player tour over a 22-week season ----------
+  // You play Wimbledon, the four Masters 1000 and four of the eight ATP 500s - last year you won all nine, so you
+  // start as No. 1 with 8000 points. Everyone else also plays the ATP 250s, challengers and futures, and gets into
+  // the big events directly, through qualifying or on a wildcard. The ranking is the last 12 months: Wimbledon,
+  // the four Masters, the best four 500s and the best six other weeks - no one else can reach 8000.
+  const CKEY = 'bumpyTennisCareer1', NPLAYERS = 1000;
+  const KINDS = { // size, direct entries, wildcards, qualifiers (from a qualifying draw of qsize, qr rounds), seeds
+    gs:    { name: 'グランドスラム', size: 128, direct: 104, wc: 8, q: 16, qsize: 128, qr: 3, seeds: 32, cat: 'G', play: .97, qb: 25,
+             pts: [10, 45, 90, 180, 360, 720, 1200, 2000], qpts: [0, 8, 16], en: 'THE CHAMPIONSHIPS' },
+    m1000: { name: 'マスターズ1000', size: 64, direct: 52, wc: 4, q: 8, qsize: 32, qr: 2, seeds: 16, cat: 'M', play: .95, qb: 16,
+             pts: [10, 45, 90, 180, 360, 600, 1000], qpts: [0, 8], en: 'NORI MASTERS 1000' },
+    a500:  { name: 'ATP500', size: 32, direct: 26, wc: 2, q: 4, qsize: 16, qr: 2, seeds: 8, cat: '5', play: .8, qb: 10,
+             pts: [0, 45, 90, 180, 330, 500], qpts: [0, 4], en: 'NORI 500' },
+    a250:  { name: 'ATP250', size: 32, direct: 32, seeds: 8, cat: '2', play: .75, pts: [0, 20, 45, 90, 150, 250] },
+    ch:    { name: 'チャレンジャー', size: 32, direct: 32, seeds: 8, cat: 'C', play: .8, pts: [0, 6, 12, 25, 64, 125] },
+    fu:    { name: 'フューチャーズ', size: 32, direct: 32, seeds: 8, cat: 'F', play: .8, pts: [0, 1, 3, 6, 13, 25] },
   };
-  const ROUNDS32 = ['1回戦', '2回戦', '準々決勝', '準決勝', '決勝'], QROUNDS = ['予選1回戦', '予選2回戦', '予選決勝'];
-  const TOUR_CITIES = [
-    ['ブリスベン', '香港', 'オークランド', 'アデレード'], ['ドーハ', 'マルセイユ', 'ヒューストン', 'ミュンヘン'],
-    ['シュトゥットガルト', 'スヘルトーヘンボス', 'ハレ', 'イーストボーン'], ['アトランタ', 'ワシントン', 'キッツビュール', 'ウィンストンセーラム'],
+  const COUNT_500 = 4, COUNT_OTHER = 6, NCH = 2, NFU = 6; // challengers and futures every week
+  const SURF = { hard: ['mel', 'ハード'], indoor: ['ny', 'ハード（室内）'], night: ['ny', 'ハード・夜'], clay: ['par', 'クレー'], grass: ['lon', '芝'] };
+  // the season, week by week. U = an event you play (with its look), A = played by the others only
+  const U = (k, city, surf, cc, en, look = {}) => ({ k, city, surf, cc, en, look, u: true }), A = (k, city, surf, cc = '') => ({ k, city, surf, cc });
+  const CAL = [
+    [A('a250', 'ブリスベン', 'hard', 'AUS'), A('a250', '香港', 'hard')],
+    [A('a250', 'オークランド', 'hard'), A('a250', 'アデレード', 'hard', 'AUS')],
+    [U('a500', 'ロッテルダム', 'indoor', 'NED', 'ROTTERDAM', { court: '#2c4a9a', outer: '#273a6e' }), A('a250', 'モンペリエ', 'indoor', 'FRA')],
+    [A('a500', 'ドバイ', 'hard'), A('a250', 'デルレイビーチ', 'hard', 'USA')],
+    [U('m1000', 'インディアンウェルズ', 'hard', 'USA', 'INDIAN WELLS', { court: '#3f63b0', outer: '#6a5a9a' })],
+    [A('a250', 'ヒューストン', 'clay', 'USA'), A('a250', 'マラケシュ', 'clay')],
+    [U('m1000', 'モンテカルロ', 'clay', '', 'MONTE-CARLO')],
+    [U('a500', 'バルセロナ', 'clay', 'ESP', 'BARCELONA', { court: '#c66a40', outer: '#c06038' }), A('a250', 'ミュンヘン', 'clay', 'GER')],
+    [U('m1000', 'ローマ', 'clay', 'ITA', 'ROME', { court: '#b9583a', outer: '#b05232', wall: '#3a4f2a' })],
+    [A('a500', 'ハンブルク', 'clay', 'GER'), A('a250', 'ジュネーブ', 'clay', 'SUI')],
+    [A('a250', 'シュトゥットガルト', 'grass', 'GER'), A('a250', 'スヘルトーヘンボス', 'grass', 'NED')],
+    [U('a500', 'ハレ', 'grass', 'GER', 'HALLE', { court: '#58a243' }), A('a500', 'クイーンズ', 'grass', 'GBR')],
+    [A('a250', 'イーストボーン', 'grass', 'GBR'), A('a250', 'マヨルカ', 'grass', 'ESP')],
+    [U('gs', 'ウィンブルドン', 'grass', 'GBR', 'WIMBLEDON')],
+    [A('a250', 'アトランタ', 'hard', 'USA'), A('a250', 'バスタッド', 'clay', 'SWE')],
+    [A('a250', 'キッツビュール', 'clay', 'AUT'), A('a250', 'ロスカボス', 'hard', 'MEX')],
+    [A('a250', 'ウィンストンセーラム', 'hard', 'USA')],
+    [A('a250', '成都', 'hard', 'CHN'), A('a250', '杭州', 'hard', 'CHN')],
+    [U('a500', '東京', 'hard', 'JPN', 'TOKYO', { court: '#2f7fa0', outer: '#3f8f6a' }), A('a250', 'アントワープ', 'indoor', 'BEL')],
+    [U('m1000', '上海', 'night', 'CHN', 'SHANGHAI', { court: '#4a58c0', outer: '#2c3a8a' })],
+    [A('a500', 'バーゼル', 'indoor', 'SUI'), A('a250', 'ストックホルム', 'indoor', 'SWE')],
+    [A('a250', 'メス', 'indoor', 'FRA'), A('a250', 'アテネ', 'indoor')],
   ];
+  const NW = CAL.length, UEV = [];
+  const evTitle = e => e.k === 'gs' ? e.city : `${KINDS[e.k].name} ${e.city}`;
+  // every event you play gets its own court: the base venue for its surface, recoloured, with its own banner
+  CAL.forEach((wk, w) => wk.forEach(e => {
+    if (!e.u) return;
+    e.vkey = 'c' + w; UEV.push({ w, e });
+    const [base, surf] = SURF[e.surf];
+    VENUES[e.vkey] = { ...VENUES[base], ...e.look, key: e.vkey, name: e.city, nameJa: e.city, surf, banner: `${KINDS[e.k].en} · ${e.en}` };
+  }));
   const CITIES = ['ソウル', '台北', 'プネ', 'カサブランカ', 'サンティアゴ', 'リマ', 'ボゴタ', 'モンテレイ', 'ナポリ', 'ブダペスト', 'プラハ', 'ザグレブ',
     'リヨン', 'ブレーメン', 'ポルト', 'アンタルヤ', 'アスタナ', '横浜', '松山', '京都', 'マニラ', 'バンコク', 'ヌメア', 'キャンベラ', 'バーニー', 'ダラス',
     'タラハシー', 'ウィニペグ', 'グラナダ', 'ビエラ', 'トリノ', 'ハイルブロン', 'ルガーノ', 'ウッチ', 'タンペレ', 'オーフス', 'メディシン', 'グアヤキル',
     'ブエノスアイレス', 'サンパウロ', 'カンピーナス', 'ケレタロ', 'チェンナイ', 'バンガロール', '済州', '深圳', '成都', '広州', '北九州', '甲府'];
+  const QROUNDS = ['予選1回戦', '予選2回戦', '予選決勝'];
+  const roundsOf = n => n === 7 ? ROUNDS : n === 6 ? ROUNDS64 : ROUNDS32;
+  const evRounds = e => e.k === 'q' ? (e.res.length === 3 ? QROUNDS : ['予選1回戦', '予選決勝']) : roundsOf(e.res.length);
+  const reachLabel = (n, r, names) => r >= n ? '🏆 優勝' : r === n - 1 ? '準優勝' : r === n - 2 ? 'ベスト4' : r === n - 3 ? 'ベスト8' : `${names[r]}敗退`;
   let career = null;
   function saveCareer() { try { career ? localStorage.setItem(CKEY, JSON.stringify(career)) : localStorage.removeItem(CKEY); } catch (e) {} }
   function loadCareer() {
     try {
       const c = JSON.parse(localStorage.getItem(CKEY));
       if (!(c && c.players)) return null;
-      if ((c.v || 1) < 4) return null; // careers from before the 1000-player tour can't be carried over
+      if ((c.v || 1) < 5) return null; // careers from before this calendar can't be carried over
       return c;
     } catch (e) { return null; }
   }
-  // the ranking: the four slams plus the best BEST_N other weeks of the last 12 months
+  // the ranking: Wimbledon + the Masters + the best COUNT_500 500s + the best COUNT_OTHER other weeks
   let rankCache = null, rankFor = null;
+  const bestOf = (a, n) => a.sort((x, y) => y - x).slice(0, n).reduce((s, x) => s + x, 0);
   function recalc() {
-    for (const p of career.players) p.pts = p.sl.reduce((a, b) => a + b, 0) + [...p.wk].sort((a, b) => b - a).slice(0, BEST_N).reduce((a, b) => a + b, 0);
+    for (const p of career.players) {
+      let gm = 0; const f = [], o = [];
+      for (let w = 0; w < NW; w++) { const c = p.wc[w], v = p.wk[w]; if (c === 'G' || c === 'M') gm += v; else if (c === '5') f.push(v); else if (v) o.push(v); }
+      p.pts = gm + bestOf(f, COUNT_500) + bestOf(o, COUNT_OTHER);
+    }
     rankCache = null;
   }
   // ties: the better single result first, then a fixed tiebreak order
-  const best1 = p => Math.max(...p.sl, ...p.wk);
   const rankOrder = () => (rankFor === career && rankCache) || (rankFor = career, rankCache = career.players.map((p, i) => i).sort((a, b) => {
     const A = career.players[a], B = career.players[b];
-    return B.pts - A.pts || best1(B) - best1(A) || B.tbk - A.tbk || a - b;
+    return B.pts - A.pts || Math.max(...B.wk) - Math.max(...A.wk) || B.tbk - A.tbk || a - b;
   }));
   const rankOf = id => rankOrder().indexOf(id) + 1;
+  const setWeek = (p, w, v, c) => { p.wk[w] = v; p.wc = p.wc.slice(0, w) + c + p.wc.slice(w + 1); };
 
   function makeCareerPlayers() {
-    // a pyramid of strength: the top 31 are the old seeds (1.55 .. 1.30), then the slam regulars, then the lower tours
+    // a pyramid of strength: the top 31 are the old seeds (1.55 .. 1.30), then the tour regulars, then the lower tours
     const names = [], used = new Set();
     for (const [cc, list] of Object.entries(NAMEPOOL)) for (const sur of list) names.push({ sur, cc });
     const players = [{ n: 'Mang Kobay', sur: 'Kobay', cc: 'YOU', r: 1.1, st: 'top', tbk: -1 }];
@@ -1653,19 +1704,19 @@
       pl.seed = k <= 32 ? k : 0; pl.traits = makeTraits(pl); pl.look = makeLook(pl); delete pl.seed;
       players.push(pl);
     }
-    players.forEach(p => { p.sl = [0, 0, 0, 0]; p.wk = new Array(4 * WEEKS).fill(0); p.pts = 0; });
+    players.forEach(p => { p.wk = new Array(NW).fill(0); p.wc = '-'.repeat(NW); p.pts = 0; });
     return players;
   }
   // a draw with the seeds in their usual places; groups of slots are filled by successive groups of seeds
   const SLOTS = {
     128: [[0], [127], [63, 64], [31, 32, 95, 96], [15, 16, 47, 48, 79, 80, 111, 112], [7, 8, 23, 24, 39, 40, 55, 56, 71, 72, 87, 88, 103, 104, 119, 120]],
+    64: [[0], [63], [31, 32], [15, 16, 47, 48], [7, 8, 23, 24, 39, 40, 55, 56]],
     32: [[0], [31], [15, 16], [7, 8, 23, 24]],
-    q: [[...Array(16)].map((_, i) => i * 8)], // qualifying: 16 sections of 8, one seed at the top of each
   };
-  function makeDraw(order, kind) { // order: entrants by ranking
-    const size = kind === 32 ? 32 : 128, d = new Array(size).fill(-1);
+  function makeDraw(order, size, qr) { // order: entrants by ranking. qr: a qualifying draw of qr rounds, one seed per section
+    const d = new Array(size).fill(-1), groups = qr ? [[...Array(size >> qr)].map((_, i) => i << qr)] : SLOTS[size];
     let s = 0;
-    for (const g of SLOTS[kind]) { const sl = shuffle([...g]); for (const slot of sl) d[slot] = order[s++]; }
+    for (const g of groups) for (const slot of shuffle([...g])) d[slot] = order[s++];
     const rest = shuffle(order.slice(s));
     for (let i = 0; i < size; i++) if (d[i] < 0) d[i] = rest.pop();
     return { draw: d, seeds: order.slice(0, s) };
@@ -1687,102 +1738,108 @@
   }
   // how far each player got in a finished draw (0 = lost in the first round .. rounds = won it)
   const reachedIn = (res, id) => { const r = res.findIndex(rr => rr.some(m => m.l === id)); return r < 0 ? res.length : r; };
+  const roundsFor = size => Math.log2(size);
 
-  // one week of the other tours: the tour-level event takes the best available players, then the challengers;
-  // the futures are filled from everyone else who wants to play, so even the lowest-ranked get matches
-  function simWeek(slot, store) {
-    const pos = new Map(rankOrder().map((id, k) => [id, k])), order = rankOrder().filter(id => id !== 0 && Math.random() < .8);
-    const evs = [], g = Math.floor(slot / WEEKS), cities = shuffle([...CITIES]);
-    let i = 0;
-    const take = n => order.slice(i, i += n);
-    const split = (list, n) => { const out = [...Array(n)].map(() => []); list.forEach((id, k) => out[Math.floor(k / n) % 2 ? n - 1 - k % n : k % n].push(id)); return out; }; // snake: even fields
-    evs.push({ k: 't250', city: TOUR_CITIES[g][slot % WEEKS], ids: take(32) });
-    split(take(32 * TIERS.ch.n), TIERS.ch.n).forEach(ids => evs.push({ k: 'ch', city: cities.pop(), ids }));
-    const pool = shuffle(order.slice(i)).slice(0, 32 * TIERS.fu.n).sort((a, b) => pos.get(a) - pos.get(b));
-    split(pool, TIERS.fu.n).forEach(ids => evs.push({ k: 'fu', city: cities.pop(), ids }));
-    career.players.forEach(p => (p.wk[slot] = 0));
-    for (const ev of evs) {
-      if (ev.ids.length < 32) continue;
-      const { draw, seeds } = makeDraw(ev.ids, 32), res = runDraw(draw, 5);
-      draw.forEach(id => (career.players[id].wk[slot] = TIERS[ev.k].pts[reachedIn(res, id)]));
-      if (store) career.evs.push({ k: ev.k, name: `${TIERS[ev.k].name} ${ev.city}`, gap: g, wk: slot % WEEKS, draw, res, seeds });
+  // one week: the fields of every event (the biggest first, from the top of the ranking down), then the draws.
+  // mode: 'none' = you sit out, 'win' = you play your event and win it (last year), 'play' = your event is
+  // left for you to play and is returned
+  function playWeek(w, mode, store) {
+    const order = rankOrder(), pos = new Map(order.map((id, k) => [id, k])), byRank = (a, b) => pos.get(a) - pos.get(b);
+    const used = new Set([0]), cities = shuffle(CITIES.filter(c => !CAL[w].some(e => e.city === c)));
+    const wants = new Map(order.map(id => [id, Math.random()])); // each player's appetite this week
+    const avail = (k, from = 0) => order.filter(id => !used.has(id) && wants.get(id) < KINDS[k].play).slice(from);
+    const fields = [], mine = CAL[w].find(e => e.u);
+    const evs = [...CAL[w]].sort((a, b) => Object.keys(KINDS).indexOf(a.k) - Object.keys(KINDS).indexOf(b.k));
+    for (const e of evs) {
+      const K = KINDS[e.k], me = e.u && mode !== 'none';
+      const direct = avail(e.k).slice(0, K.direct - (me ? 1 : 0)); if (me) direct.push(0);
+      direct.forEach(id => used.add(id));
+      const wc = [], qual = [];
+      let q = null;
+      if (K.wc) {
+        for (const id of avail(e.k).filter(id => pos.get(id) < 400)) if (wc.length < K.wc / 2 && e.cc && career.players[id].cc === e.cc) { wc.push(id); used.add(id); }
+        const young = shuffle(avail(e.k).slice(0, 150));
+        while (wc.length < K.wc && young.length) { const id = young.pop(); wc.push(id); used.add(id); }
+        const qf = avail(e.k).slice(0, K.qsize).sort(byRank);
+        qf.forEach(id => used.add(id));
+        const qd = makeDraw(qf, K.qsize, K.qr), qres = runDraw(qd.draw, K.qr);
+        qres[K.qr - 1].forEach(m => qual.push(m.w));
+        q = { draw: qd.draw, seeds: qd.seeds, res: qres };
+        if (store) career.evs.push({ k: 'q', of: e.k, name: `${evTitle(e)} 予選`, w, draw: qd.draw, res: qres, seeds: qd.seeds });
+      }
+      fields.push({ e, main: direct.concat(wc, qual).sort(byRank), wc, qual, q });
+    }
+    const low = (k, n) => {
+      const pool = k === 'ch' ? avail(k).slice(0, 32 * n) : shuffle(avail(k)).slice(0, 32 * n).sort(byRank);
+      pool.forEach(id => used.add(id));
+      const out = [...Array(n)].map(() => []); pool.forEach((id, i) => out[Math.floor(i / n) % 2 ? n - 1 - i % n : i % n].push(id)); // snake: even fields
+      out.forEach(main => main.length === 32 && fields.push({ e: { k, city: cities.pop() }, main, wc: [], qual: [] }));
+    };
+    low('ch', NCH); low('fu', NFU);
+    // this week's points replace the same week's points from a year ago; your event's are settled when you finish it
+    const keep = new Set(mode === 'play' && mine ? fields.find(f => f.e === mine).main.concat(fields.find(f => f.e === mine).q.draw) : []);
+    career.players.forEach((p, id) => { if (!keep.has(id)) setWeek(p, w, 0, '-'); });
+    let left = null;
+    for (const f of fields) {
+      if (mode === 'play' && f.e === mine) { left = f; continue; }
+      const K = KINDS[f.e.k], { draw, seeds } = makeDraw(f.main, K.size), res = runDraw(draw, roundsFor(K.size), mode === 'win');
+      weekPoints(w, f, draw, res);
+      if (store) career.evs.push({ k: f.e.k, name: evTitle(f.e), w, draw, res, seeds, wc: f.wc, qual: f.qual });
     }
     recalc();
+    return left;
   }
-  const simGap = (g, store) => { for (let w = 0; w < WEEKS; w++) simWeek(g * WEEKS + w, store); };
-
-  // who plays slam `ev`: the top 104 directly, 8 wildcards (host-country players first, and you if you ever drop
-  // out of the top 104), and 16 qualifiers from a 128-player qualifying draw
-  function slamFields(ev, store, meWins) {
-    const order = rankOrder(), direct = order.slice(0, 104), out = new Set(direct), wc = [];
-    if (!out.has(0)) { wc.push(0); out.add(0); }
-    const rest = order.filter(id => !out.has(id));
-    for (const id of rest) if (wc.length < 5 && career.players[id].cc === HOST[ev] && rankOf(id) <= 400) { wc.push(id); out.add(id); }
-    const young = shuffle(rest.filter(id => !out.has(id)).slice(0, 200));
-    while (wc.length < 8) { const id = young.pop(); wc.push(id); out.add(id); }
-    const left = order.filter(id => !out.has(id)), qwc = shuffle(left.slice(112, 500)).slice(0, 16);
-    const qOrder = left.slice(0, 112).concat(qwc).sort((a, b) => order.indexOf(a) - order.indexOf(b));
-    const q = makeDraw(qOrder, 'q'), qres = runDraw(q.draw, 3, meWins), qual = qres[2].map(m => m.w);
-    if (store) career.evs.push({ k: 'q', name: `${VENUES[CAREER_VENUES[ev]].name} 予選`, gap: ev, wk: WEEKS, draw: q.draw, res: qres, seeds: q.seeds, wc: qwc });
-    const main = direct.concat(wc, qual).sort((a, b) => order.indexOf(a) - order.indexOf(b));
-    return { main, wc, qual, qdraw: q.draw, qres };
+  // the points of one finished event: the main draw by round reached (+ a bonus for qualifiers), the qualifying losers by round
+  function weekPoints(w, f, draw, res) {
+    const K = KINDS[f.e.k];
+    if (f.q) f.q.draw.forEach(id => setWeek(career.players[id], w, K.qpts[Math.min(K.qr - 1, reachedIn(f.q.res, id))], K.cat));
+    draw.forEach(id => setWeek(career.players[id], w, K.pts[reachedIn(res, id)] + (f.qual.includes(id) ? K.qb : 0), K.cat));
   }
-  // a slam's points: the main draw by round reached (+25 for a qualifier), the qualifying losers by their round
-  function slamPoints(ev, main, res, f) {
-    career.players.forEach(p => (p.sl[ev] = 0));
-    f.qdraw.forEach(id => (career.players[id].sl[ev] = QUAL_PTS[Math.min(2, reachedIn(f.qres, id))]));
-    main.forEach(id => (career.players[id].sl[ev] = SLAM_PTS[reachedIn(res, id)] + (f.qual.includes(id) ? QUALIFIER_BONUS : 0)));
-    recalc();
-  }
-  function simSlam(ev, meWins) {
-    const f = slamFields(ev, false, meWins), { draw } = makeDraw(f.main, 128), res = runDraw(draw, 7, meWins);
-    slamPoints(ev, f.main, res, f);
-  }
+  // the weeks the others play on their own, up to your next event (or the end of the season)
+  function advance(store) { while (career.w < NW && !CAL[career.w].some(e => e.u)) playWeek(career.w++, 'none', store); }
   function newCareer() {
-    // two years are played out: the first only builds a ranking, the second is last year, when you won all four slams.
-    // Then the weeks before this year's first slam are played, and you start as No. 1 with 8000 points.
+    // two seasons are played out: the first only builds a ranking, the second is last year, when you won all nine
+    // of your events. Then the weeks before this year's first event are played, and you start as No. 1 with 8000.
     const players = makeCareerPlayers();
-    career = { v: 4, ev: 0, players, hist: [], startRank: 0, cur: null, evs: [] };
+    career = { v: 5, w: 0, ue: 0, players, hist: [], startRank: 0, cur: null, evs: [] };
     players.forEach((p, i) => { if (i) p.tbk = p.r + rand(0, .15); }); // no points yet: the stronger players enter first
-    for (let g = 0; g < 4; g++) { simGap(g, false); simSlam(g, false); }
+    for (let w = 0; w < NW; w++) playWeek(w, 'none', false);
     players.forEach((p, i) => { if (i) p.tbk = Math.random(); });
-    for (let g = 0; g < 4; g++) { simGap(g, false); simSlam(g, true); }
-    simGap(0, true);
+    for (let w = 0; w < NW; w++) playWeek(w, 'win', false);
+    advance(true);
     career.startRank = rankOf(0);
     saveCareer();
   }
-  // the slam you play: the field is set and the qualifying is played, then your draw (you are always id 0 in it)
+  // your event: the field is set and every other draw of the week is played, then your draw (you are id 0 in it)
   function careerTour() {
-    const ev = career.ev, f = slamFields(ev, true, false), order = f.main, { draw, seeds } = makeDraw(order, 128);
-    const ids = [0, ...order.filter(id => id !== 0)], loc = new Map(ids.map((id, i) => [id, i]));
+    const f = playWeek(career.w, 'play', true), e = f.e, K = KINDS[e.k], { draw, seeds } = makeDraw(f.main, K.size);
+    const ids = [0, ...f.main.filter(id => id !== 0)], loc = new Map(ids.map((id, i) => [id, i]));
     const players = ids.map(id => ({ ...career.players[id], cid: id, seed: seeds.indexOf(id) + 1, tag: f.qual.includes(id) ? 'Q' : f.wc.includes(id) ? 'WC' : '' }));
-    players.forEach(p => { delete p.sl; delete p.wk; });
-    return { v: 4, venue: CAREER_VENUES[ev], players, draw: draw.map(id => loc.get(id)), res: [], out: false, career: true,
-             f: { qual: f.qual, qdraw: f.qdraw, qres: f.qres } };
+    players.forEach(p => { delete p.wk; delete p.wc; });
+    return { v: 5, venue: e.vkey, title: evTitle(e), kind: e.k, rounds: roundsFor(K.size), players, draw: draw.map(id => loc.get(id)), res: [], out: false, career: true,
+             f: { w: career.w, qual: f.qual, wc: f.wc, q: f.q } };
   }
-  // how far each player got in the finished draw
-  const reached = id => { if (champion() === id) return 7; const r = tour.res.findIndex(rr => rr.some(m => m.l === id)); return r < 0 ? 7 : r; };
-  const REACHED = ['1回戦敗退', '2回戦敗退', '3回戦敗退', '4回戦敗退', 'ベスト8', 'ベスト4', '準優勝', '🏆 優勝'];
+  // how far you got in the finished draw
+  const reached = id => { if (champion() === id) return nR(); const r = tour.res.findIndex(rr => rr.some(m => m.l === id)); return r < 0 ? nR() : r; };
   function careerFinishEvent() {
-    const before = rankOf(0), ev = career.ev, lost = career.players[0].sl[ev];
-    // back to career ids: this slam's points replace the same slam's points from a year ago
-    const cid = l => tour.players[l].cid, main = tour.draw.map(cid);
+    const before = rankOf(0), w = tour.f.w, K = KINDS[tour.kind], lost = career.players[0].wk[w];
+    // back to career ids: this event's points replace the same week's points from a year ago
+    const cid = l => tour.players[l].cid, draw = tour.draw.map(cid);
     const res = tour.res.map(rr => rr.map(m => ({ w: cid(m.w), l: cid(m.l), s: m.s })));
-    slamPoints(ev, main, res, tour.f);
-    career.evs.push({ k: 'slam', name: `${VENUES[tour.venue].name} 本戦`, gap: ev, wk: WEEKS + 1, draw: main, res,
-                      seeds: tour.players.filter(p => p.seed).sort((a, b) => a.seed - b.seed).map(p => p.cid),
-                      wc: tour.players.filter(p => p.tag === 'WC').map(p => p.cid), qual: tour.f.qual });
-    career.hist.push({ venue: tour.venue, got: reached(0), pts: SLAM_PTS[reached(0)], lost, seed: tour.players[0].seed, before, after: rankOf(0), champ: tour.players[champion()].n });
-    career.ev++; career.cur = null; tour = null;
-    if (career.ev < 4) simGap(career.ev, true); // the weeks before the next slam
+    weekPoints(w, { e: { k: tour.kind }, q: tour.f.q, qual: tour.f.qual }, draw, res); recalc();
+    career.evs.push({ k: tour.kind, name: tour.title, w, draw, res, me: true,
+                      seeds: tour.players.filter(p => p.seed).sort((a, b) => a.seed - b.seed).map(p => p.cid), wc: tour.f.wc, qual: tour.f.qual });
+    const got = reached(0);
+    career.hist.push({ name: tour.title, k: tour.kind, n: nR(), got, pts: K.pts[got], lost, seed: tour.players[0].seed, before, after: rankOf(0), champ: tour.players[champion()].n });
+    career.ue++; career.w++; career.cur = null; tour = null;
+    advance(true);
     saveCareer(); showCareer();
   }
   function startCareerEvent() { tour = careerTour(); career.cur = tour; saveCareer(); showTour(); }
 
   // ---------- career screens: the season, any finished draw, any player ----------
   const cname = id => id === 0 ? 'あなた' : career.players[id].n;
-  const tierName = k => k === 'slam' ? 'グランドスラム' : k === 'q' ? 'グランドスラム予選' : TIERS[k].name;
-  const slamTag = k => k === 'slam' || k === 'q' ? ` <small>${tierName(k)}</small>` : '';
+  const tierName = e => e.k === 'q' ? `${KINDS[e.of].name}予選` : KINDS[e.k].name;
   function careerCard(h, back) {
     const card = $('tourCard');
     card.innerHTML = `<div class="tour">${h}<div class="btns"><button class="alt" data-c="back">${back ? '◀ もどる' : 'メニュー'}</button></div></div>`;
@@ -1801,57 +1858,54 @@
   }
   const plink = id => id === 0 ? '<b>あなた</b>' : `<a href="#" data-pl="${id}" onclick="return false">${career.players[id].n}</a> <small>${career.players[id].cc}</small>`;
   function showCareer() {
-    const order = rankOrder(), me = order.indexOf(0) + 1, done = career.ev >= 4;
+    const order = rankOrder(), me = order.indexOf(0) + 1, done = career.ue >= UEV.length;
     let h = `<h2>📅 キャリア</h2>`;
     h += `<div class="big" style="margin:4px 0">世界ランキング <b>${me}位</b></div><p style="margin:0">${career.players[0].pts} pt · スタート時 ${career.startRank} 位</p>
-      <p style="font-size:12px;margin:2px 0;color:var(--sub)">選手は ${NPLAYERS} 人。ランキング＝直近 1 年の 4 大大会 ＋ その他の大会のベスト ${BEST_N} 週のポイント。あなたは 4 大大会だけに出場（前年は 4 大会とも優勝）</p>`;
-    h += `<h3>今シーズンの 4 大大会</h3><ul>` + CAREER_VENUES.map((k, i) => {
-      const r = career.hist[i], v = VENUES[k];
-      const res = r ? `${REACHED[r.got]} <small>+${r.pts} / −${r.lost}pt · ${r.before}→${r.after}位</small>` : i === career.ev ? (career.cur ? '▶ 開催中' : '▶ 次の大会') : '—';
-      return `<li class="${i === career.ev && !done ? 'me' : ''}"><span>${i + 1}. ${v.name} <small>${v.surf}</small></span><span>${res}</span></li>`;
+      <p style="font-size:12px;margin:2px 0;color:var(--sub)">選手は ${NPLAYERS} 人。ランキング＝直近 1 年のウィンブルドン ＋ マスターズ1000（4 大会）＋ ATP500 のベスト ${COUNT_500} ＋ その他（ATP250・チャレンジャー・フューチャーズ）のベスト ${COUNT_OTHER}。あなたは前年、下の 9 大会すべてで優勝</p>`;
+    h += `<h3>今シーズンのあなたの大会</h3><ul>` + UEV.map(({ e }, i) => {
+      const r = career.hist[i], v = VENUES[e.vkey];
+      const res = r ? `${reachLabel(r.n, r.got, roundsOf(r.n))} <small>+${r.pts} / −${r.lost}pt · ${r.before}→${r.after}位</small>` : i === career.ue ? (career.cur ? '▶ 開催中' : '▶ 次の大会') : '—';
+      return `<li class="${i === career.ue && !done ? 'me' : ''}"><span>${i + 1}. ${evTitle(e)} <small>${v.surf}</small></span><span>${res}</span></li>`;
     }).join('') + '</ul>';
     if (done) {
-      const best = Math.max(...career.hist.map(r => r.got)), titles = career.hist.filter(r => r.got === 7).length;
-      h += `<div class="opp"><div class="nm">シーズン終了！</div>${career.startRank} 位 → <b>${me} 位</b><br>最高成績：${REACHED[best]}${titles ? ` · 優勝 ${titles} 回` : ''}${titles === 4 ? `<br><b>🏆 2 年連続の年間グランドスラム！</b>` : ''}</div>`;
+      const titles = career.hist.filter(r => r.got === r.n).length, wim = career.hist.find(r => r.k === 'gs');
+      h += `<div class="opp"><div class="nm">シーズン終了！</div>${career.startRank} 位 → <b>${me} 位</b><br>優勝 ${titles} 回${wim && wim.got === wim.n ? ' · 🏆 ウィンブルドン連覇' : ''}${titles === UEV.length ? '<br><b>🏆 2 年連続の全大会制覇！</b>' : ''}</div>`;
     } else {
-      const next = VENUES[CAREER_VENUES[career.ev]], seedNow = me <= 32 ? me : 0;
-      h += `<p style="font-size:13px">${next.name} で守るポイント：<b>${career.players[0].sl[career.ev]}pt</b>（前年の成績）<br>${seedNow ? `次の大会は第 ${seedNow} シード` : '次の大会はノーシード（33 位以内でシードがつく）'}</p>`;
+      const { w, e } = UEV[career.ue];
+      h += `<p style="font-size:13px">次は <b>${evTitle(e)}</b>（${VENUES[e.vkey].surf}・${KINDS[e.k].size} ドロー）<br>守るポイント：<b>${career.players[0].wk[w]}pt</b>（前年の成績）</p>`;
     }
     h += '<div class="btns">' + (done ? `<button data-c="new">新しいシーズン</button>`
       : career.cur ? `<button data-c="cont">▶ 大会の続き</button>`
-      : `<button data-c="go">▶ ${VENUES[CAREER_VENUES[career.ev]].name} へ</button>`) + '</div>';
+      : `<button data-c="go">▶ ${evTitle(UEV[career.ue].e)} へ</button>`) + '</div>';
     // the ranking: the top 10 and you, the rest of the top 100 folded
     const row = (id, k) => `<li class="${id === 0 ? 'me' : ''}"><span>${k + 1}. ${plink(id)}</span><span>${career.players[id].pts} pt</span></li>`;
     h += `<h3>世界ランキング</h3><ul>` + order.slice(0, 10).map(row).join('') + (me > 10 ? `<li>…</li>${row(0, me - 1)}` : '') + '</ul>';
     h += `<details><summary>11〜100 位</summary><ul>${order.slice(10, 100).map((id, k) => row(id, k + 10)).join('')}</ul></details>`;
-    // every draw played this season, newest first, grouped by the run-up to each slam: the slam and the week's
-    // tour-level event in view, the challengers and futures folded
+    // every draw played this season, newest week first: the tour events in view, the challengers and futures folded
     h += `<h3>📰 大会結果</h3>`;
     const evRow = i => {
       const e = career.evs[i], fin = e.res[e.res.length - 1];
-      return `<li><span><a href="#" data-ev="${i}" onclick="return false">${e.name}</a>${slamTag(e.k)}</span><span><small>${e.k === 'q' ? `予選通過 ${fin.length} 人` : `優勝 ${cname(fin[0].w)}`}</small></span></li>`;
+      return `<li class="${e.me ? 'me' : ''}"><span><a href="#" data-ev="${i}" onclick="return false">${e.name}</a></span><span><small>${e.k === 'q' ? `予選通過 ${fin.length} 人` : `優勝 ${cname(fin[0].w)}`}</small></span></li>`;
     };
-    for (let g = Math.min(3, career.ev); g >= 0; g--) {
-      const of = (wk, f) => career.evs.map((e, i) => ({ e, i })).filter(x => x.e.gap === g && x.e.wk === wk && f(x.e)).map(x => x.i);
-      let body = of(WEEKS + 1, () => true).concat(of(WEEKS, () => true)).map(evRow).join('');
-      for (let w = WEEKS - 1; w >= 0; w--) {
-        const top = of(w, e => e.k === 't250'), low = of(w, e => e.k !== 't250');
-        if (!top.length && !low.length) continue;
-        body += `<li style="background:none"><b>第${w + 1}週</b></li>` + top.map(evRow).join('') +
-          (low.length ? `<li style="display:block;background:none"><details><summary style="font-size:13px">チャレンジャー・フューチャーズ（${low.length} 大会）</summary><ul>${low.map(evRow).join('')}</ul></details></li>` : '');
-      }
-      if (body) h += `<details${g === Math.min(3, career.ev) ? ' open' : ''}><summary>${VENUES[CAREER_VENUES[g]].name} まで</summary><ul>${body}</ul></details>`;
-    }
+    const weeks = [...new Set(career.evs.map(e => e.w))].sort((a, b) => b - a);
+    weeks.forEach((w, k) => {
+      const list = career.evs.map((e, i) => ({ e, i })).filter(x => x.e.w === w);
+      const rank = e => e.k === 'q' ? Object.keys(KINDS).indexOf(e.of) + .5 : Object.keys(KINDS).indexOf(e.k);
+      const top = list.filter(x => !['ch', 'fu'].includes(x.e.k)).sort((a, b) => rank(a.e) - rank(b.e)), low = list.filter(x => ['ch', 'fu'].includes(x.e.k));
+      const head = top.find(x => x.e.k !== 'q') || list[0];
+      h += `<details${k === 0 ? ' open' : ''}><summary>第${w + 1}週 · ${head.e.name}</summary><ul>${top.map(x => evRow(x.i)).join('')}` +
+        (low.length ? `<li style="display:block;background:none"><details><summary style="font-size:13px">チャレンジャー・フューチャーズ（${low.length} 大会）</summary><ul>${low.map(x => evRow(x.i)).join('')}</ul></details></li>` : '') + '</ul></details>';
+    });
     careerCard(h, false);
   }
   // a finished draw, round by round
   function showEvent(i) {
-    const e = career.evs[i], names = e.k === 'q' ? QROUNDS : e.res.length === 7 ? ROUNDS : ROUNDS32;
+    const e = career.evs[i], names = evRounds(e);
     const seed = id => { const s = e.seeds.indexOf(id) + 1; return s ? `[${s}] ` : ''; };
     const tag = id => e.qual && e.qual.includes(id) ? ' <small>(Q)</small>' : e.wc && e.wc.includes(id) ? ' <small>(WC)</small>' : '';
     const nm = id => `${seed(id)}${plink(id)}${tag(id)}`;
     const fin = e.res[e.res.length - 1];
-    let h = `<h2>${e.name}</h2><p>${tierName(e.k)} · ${e.draw.length} ドロー · 1 セットマッチ</p>`;
+    let h = `<h2>${e.name}</h2><p>第${e.w + 1}週 · ${tierName(e)} · ${e.draw.length} ドロー · 1 セットマッチ</p>`;
     h += e.k === 'q' ? `<p>予選通過：${fin.map(m => plink(m.w)).join('、')}</p>` : `<div class="opp">優勝<div class="nm">${nm(fin[0].w)}</div>決勝 ${fin[0].s} で ${nm(fin[0].l)} に勝利</div>`;
     for (let r = e.res.length - 1; r >= 0; r--) {
       h += `<details${r >= e.res.length - 2 ? ' open' : ''}><summary>${names[r]}（${e.res[r].length} 試合）</summary><ul>` +
@@ -1868,9 +1922,8 @@
     const rows = [];
     career.evs.forEach((e, i) => {
       if (!e.draw.includes(id)) return;
-      const r = reachedIn(e.res, id), names = e.k === 'q' ? QROUNDS : e.res.length === 7 ? ROUNDS : ROUNDS32;
-      const got = r >= e.res.length ? (e.k === 'q' ? '予選通過' : '🏆 優勝') : r === e.res.length - 1 && e.k !== 'q' ? '準優勝' : `${names[r]}敗退`;
-      rows.push(`<li><span><a href="#" data-ev="${i}" onclick="return false">${e.name}</a>${slamTag(e.k)}</span><span>${got}</span></li>`);
+      const r = reachedIn(e.res, id), got = e.k === 'q' ? (r >= e.res.length ? '予選通過' : `${evRounds(e)[r]}敗退`) : reachLabel(e.res.length, r, evRounds(e));
+      rows.push(`<li><span><a href="#" data-ev="${i}" onclick="return false">${e.name}</a> <small>第${e.w + 1}週</small></span><span>${got}</span></li>`);
     });
     h += `<h3>今シーズンの成績</h3>` + (rows.length ? `<ul>${rows.reverse().join('')}</ul>` : '<p style="font-size:13px">まだ出場なし</p>');
     careerCard(h, true);
@@ -1891,7 +1944,7 @@
     if (champion() === id) return '優勝';
     const r = tour.res.findIndex(rr => rr.some(m => m.l === id));
     if (r < 0) return '勝ち残り';
-    return r === 6 ? '準優勝' : r === 5 ? 'ベスト4' : r === 4 ? 'ベスト8' : `${ROUNDS[r]}敗退`;
+    return r === nR() - 1 ? '準優勝' : r === nR() - 2 ? 'ベスト4' : r === nR() - 3 ? 'ベスト8' : `${RN()[r]}敗退`;
   }
   function pdfPage() {
     const c = document.createElement('canvas'); c.width = PW; c.height = PH;
@@ -1905,8 +1958,8 @@
   function pageHead(g, title) {
     const v = VENUES[tour.venue];
     g.fillStyle = '#1d2240'; g.fillRect(0, 0, PW, 110);
-    g.fillStyle = '#fff'; g.font = `bold 44px ${PFONT}`; g.fillText('NORI OPEN', 50, 55);
-    g.font = `24px ${PFONT}`; g.fillText(`${v.name} (${v.surf}) · 128 ドロー`, 400, 55);
+    g.fillStyle = '#fff'; g.font = `bold 44px ${PFONT}`; fitText(g, tour.title || 'NORI OPEN', 50, 55, 380, 44, 'bold'); g.fillStyle = '#fff';
+    g.font = `24px ${PFONT}`; g.fillText(`${v.name} (${v.surf}) · ${tour.draw.length} ドロー`, 440, 55);
     g.textAlign = 'right'; g.font = `bold 30px ${PFONT}`; g.fillText(title, PW - 50, 55); g.textAlign = 'left';
     g.fillStyle = '#1d2240';
   }
@@ -1916,7 +1969,7 @@
     const top = 170, bottom = PH - 60, left = 40, cols = Math.log2(count) + 1, colW = (PW - left * 2) / cols;
     for (let k = 0; k < cols; k++) {
       g.fillStyle = '#5a6080'; g.font = `bold 22px ${PFONT}`;
-      g.fillText(k === cols - 1 ? lastLabel : ROUNDS[r0 + k], left + k * colW + 6, 140);
+      g.fillText(k === cols - 1 ? lastLabel : RN()[r0 + k], left + k * colW + 6, 140);
       const n = count >> k, ent = entAt(r0 + k), rowH = (bottom - top) / n;
       for (let i = 0; i < n; i++) {
         const y = top + (i + .5) * rowH, x = left + k * colW, id = ent ? ent[(off >> k) + i] : null;
@@ -1945,15 +1998,15 @@
     const champ = champion(), r = tour.res.length;
     let y = 190;
     g.font = `bold 40px ${PFONT}`;
-    const status = champ === 0 ? '🏆 あなたが優勝!' : tour.out ? `あなた: ${finish(0)}` : `${ROUNDS[r]} へ進出中`;
+    const status = champ === 0 ? '🏆 あなたが優勝!' : tour.out ? `あなた: ${finish(0)}` : `${RN()[r]} へ進出中`;
     g.fillText(status, 50, y); y += 60;
-    if (champ >= 0) { g.font = `28px ${PFONT}`; g.fillText(`優勝：${plain(champ)}　決勝 ${tour.res[6][0].s}（相手 ${plain(tour.res[6][0].l)}）`, 50, y); y += 50; }
+    if (champ >= 0) { g.font = `28px ${PFONT}`; g.fillText(`優勝：${plain(champ)}　決勝 ${tour.res[nR() - 1][0].s}（相手 ${plain(tour.res[nR() - 1][0].l)}）`, 50, y); y += 50; }
     g.font = `bold 30px ${PFONT}`; g.fillText('あなたの勝ち上がり', 50, y += 30); y += 50;
     tour.res.forEach((rr, i) => rr.forEach(m => {
       if (m.w !== 0 && m.l !== 0) return;
       const win = m.w === 0, s = win ? m.s : m.s.replace(/^(\d+)-(\d+)/, '$2-$1');
       g.font = `24px ${PFONT}`; g.fillStyle = win ? '#1d2240' : '#e0475c';
-      g.fillText(ROUNDS[i], 70, y); g.fillText(win ? '○' : '●', 260, y); fitText(g, plain(win ? m.l : m.w), 310, y, 600, 24); g.fillText(s, 960, y);
+      g.fillText(RN()[i], 70, y); g.fillText(win ? '○' : '●', 260, y); fitText(g, plain(win ? m.l : m.w), 310, y, 600, 24); g.fillText(s, 960, y);
       g.fillStyle = '#1d2240'; y += 42;
     }));
     if (!tour.res.length) { g.font = `24px ${PFONT}`; g.fillText('まだ試合がありません', 70, y); y += 42; }
@@ -1965,19 +2018,19 @@
       g.fillStyle = f === '勝ち残り' ? '#3a8f3a' : '#5a6080'; g.font = `bold 20px ${PFONT}`; g.fillText(f, x + 400, yy);
     });
     g.fillStyle = '#8a8fa6'; g.font = `18px ${PFONT}`;
-    g.fillText('2〜5 ページ：ドロー（1/4 ずつ）　6 ページ：準々決勝から決勝', 50, PH - 50);
+    g.fillText('2 ページ目から：ドローと勝ち上がり', 50, PH - 50);
     return c;
   }
   async function saveTourPDF(btn) {
     const label = btn.textContent; btn.disabled = true; btn.textContent = '作成中…';
     try {
       const jsPDF = await loadJsPDF();
-      const pages = [coverPage(),
-        ...[0, 1, 2, 3].map(q => bracketPage(`ドロー ${q + 1}/4`, 0, q * 32, 32, '準決勝へ')),
-        bracketPage('準々決勝〜決勝', 4, 0, 8, '優勝')];
+      const n = tour.draw.length, pages = [coverPage(), ...(n === 32 ? [bracketPage('ドロー', 0, 0, 32, '優勝')]
+        : [...(n === 128 ? [0, 1, 2, 3].map(q => bracketPage(`ドロー ${q + 1}/4`, 0, q * 32, 32, '準決勝へ')) : [0, 1].map(q => bracketPage(`ドロー ${q + 1}/2`, 0, q * 32, 32, '決勝へ'))),
+           bracketPage('準々決勝〜決勝', nR() - 3, 0, 8, '優勝')])];
       const doc = new jsPDF({ unit: 'mm', format: 'a4' });
       pages.forEach((p, i) => { if (i) doc.addPage(); doc.addImage(p.toDataURL('image/jpeg', .9), 'JPEG', 0, 0, 210, 297); });
-      const blob = doc.output('blob'), filename = `nori-open-${tour.venue}.pdf`;
+      const blob = doc.output('blob'), filename = `${tour.career ? `career-${tour.kind}-${tour.venue}` : `nori-open-${tour.venue}`}.pdf`;
       const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
       if (dl) await dl.save({ filename, data: blob });
       else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
