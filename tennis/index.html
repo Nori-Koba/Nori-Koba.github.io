@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Mang Kobay Tennis</title>
-<meta name="description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、現実と同じ 1 年分のツアーで、世界ランキング 100 位から頂点を目指す。">
+<meta name="description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、現実と同じツアーを 5 年間。世界王者として 4 大大会のタイトルを守り抜く。">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mang Kobay Tennis">
 <meta property="og:title" content="Mang Kobay Tennis — 無料の 3D テニスゲーム">
-<meta property="og:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、現実と同じ 1 年分のツアーで、世界ランキング 100 位から頂点を目指す。">
+<meta property="og:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、現実と同じツアーを 5 年間。世界王者として 4 大大会のタイトルを守り抜く。">
 <meta property="og:url" content="https://nori-koba.github.io/tennis/">
 <meta property="og:image" content="https://nori-koba.github.io/tennis/ogp.png">
 <meta property="og:image:width" content="1200">
@@ -16,7 +16,7 @@
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mang Kobay Tennis — 無料の 3D テニスゲーム">
-<meta name="twitter:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、現実と同じ 1 年分のツアーで、世界ランキング 100 位から頂点を目指す。">
+<meta name="twitter:description" content="無料の 3D テニスゲーム。ブラウザだけで、スマホでも PC でもグランドスラム気分。トップスピン・スライス・フラット・ロブ・ドロップを打ち分けて、現実と同じツアーを 5 年間。世界王者として 4 大大会のタイトルを守り抜く。">
 <meta name="twitter:image" content="https://nori-koba.github.io/tennis/ogp.png">
 <style>
   :root { --ink: #1f2340; --accent: #ff5d73; --sub: #6b6f8f; --ball: #e8ff3a;
@@ -164,8 +164,8 @@
         <button class="dark" data-level="max">つよい</button>
         <button class="dark" data-level="ultra" style="background:#7b2cbf;box-shadow:0 4px 0 #4a1a75">最強</button>
       </div>
-      <p style="margin-top:12px"><b>📅 キャリア</b>（世界ランキング 100 位からスタート）</p>
-      <p style="font-size:12px;margin:2px 0">現実と同じ 1 年分のツアー（4 大大会・マスターズ1000・ATP500/250・チャレンジャー・フューチャーズ）に 1500 人。あなたは 4 大大会だけに出場（ランキングが足りなければ予選から）、年間 8 位以内ならATPファイナルズへ</p>
+      <p style="margin-top:12px"><b>📅 キャリア</b>（5 年間・前年に 4 大大会とファイナルズを制した 9500pt からスタート）</p>
+      <p style="font-size:12px;margin:2px 0">現実と同じ 1 年分のツアー（4 大大会・マスターズ1000・ATP500/250・チャレンジャー・フューチャーズ）を 5 年。1500 人の選手は年ごとに成長・衰え・引退し、トップ選手はけがや欠場も。あなたは 4 大大会だけに出場（ランキングが足りなければ予選から）、年間 8 位以内ならATPファイナルズへ</p>
       <div class="btns">
         <button id="carNew">新しく始める</button>
         <button class="alt hidden" id="carCont">つづきから</button>
@@ -249,13 +249,25 @@
   // Venues modelled on the four majors' surfaces. bz / bh scale how high / how fast the ball comes off the court.
   const VENUES = {
     mel: { name: 'Melbourne', surf: 'ハード', nameJa: 'メルボルン', banner: 'NORI OPEN · MELBOURNE', court: '#2f6fc4', outer: '#4f9ee2', wall: '#17407a',
-           sky: ['#0f2a55', '#3a6fb0'], line: '#ffffff', bz: 1, bh: 1, dust: '215,225,245', slide: 16 },
+           sky: ['#0f2a55', '#3a6fb0'], line: '#ffffff', bz: 1, bh: 1, dust: '215,225,245', slide: 16,
+           // the summer arena: blue seats, an open roof frame, bright summer crowds
+           seats: ['#1f5fae', '#2a6cc0'], roof: 'open', fans: ['#ffffff', '#ffd166', '#4fc3f7', '#1e88e5', '#f4f1de', '#ff8a65', '#80deea'],
+           ads: [['KOBA WATER', '#0077c8'], ['AERO AIR', '#003e7e'], ['NORI DRINK', '#00a3e0'], ['SPEED WATCH', '#1b1b1b'], ['CLOUD BANK', '#0055a5'], ['TOPSPIN TV', '#0a6ebd']] },
     par: { name: 'Paris', surf: 'クレー', nameJa: 'パリ', banner: 'NORI OPEN · PARIS', court: '#c8643a', outer: '#bf5d35', wall: '#1d5a3a',
-           sky: ['#4a7fb8', '#a9cbe8'], line: '#f6f0e4', bz: 1.05, bh: .92, dust: '205,115,65', slide: 9, clay: true },
+           sky: ['#4a7fb8', '#a9cbe8'], line: '#f6f0e4', bz: 1.05, bh: .92, dust: '205,115,65', slide: 9, clay: true,
+           // the clay court bowl: dark green walls, grey-green seats, green and orange boards
+           seats: ['#5b6b62', '#66766c'], fans: ['#ffffff', '#f4f1de', '#0b6b3a', '#e2662b', '#1d3557', '#d4c5a0', '#c0392b'],
+           ads: [['ROLAND GARROS', '#0b6b3a'], ['NORI BANK', '#e2662b'], ['BUMPY SPORTS', '#0b6b3a'], ['AERO AIR', '#1d3557'], ['KOBA WATER', '#0b6b3a'], ['SPEED WATCH', '#3a2a22']] },
     lon: { name: 'London', surf: '芝', nameJa: 'ロンドン', banner: 'NORI OPEN · LONDON', court: '#4f9a3e', outer: '#4a9339', wall: '#12422a',
-           sky: ['#5d84b8', '#cfe0f0'], line: '#ffffff', bz: .92, bh: 1.05, dust: '140,180,100', slide: 14, grass: true },
+           sky: ['#5d84b8', '#cfe0f0'], line: '#ffffff', bz: .92, bh: 1.05, dust: '140,180,100', slide: 14, grass: true,
+           // the grass court of tradition: ivy on the walls, no sponsors, green seats, a roof frame, players all in white
+           seats: ['#1f5b38', '#246642'], roof: 'open', ivy: true, allWhite: true, sbBg: '#0f3b25', plainAds: true,
+           fans: ['#ffffff', '#f4f1de', '#e8e2d0', '#5b3a8c', '#2e7d32', '#d7ccc8', '#90caf9'], ads: [['WIMBLEDON', '#12422a'], ['THE CHAMPIONSHIPS', '#12422a']] },
     ny:  { name: 'New York', surf: 'ハード', nameJa: 'ニューヨーク', banner: 'NORI OPEN · NEW YORK', court: '#3d63b8', outer: '#3f7f56', wall: '#0e1f36',
-           sky: ['#04060d', '#151d33'], line: '#ffffff', bz: .98, bh: 1.02, dust: '215,225,245', slide: 16, night: true },
+           sky: ['#04060d', '#151d33'], line: '#ffffff', bz: .98, bh: 1.02, dust: '215,225,245', slide: 16, night: true,
+           // the biggest bowl: a towering upper deck under a roof frame, a loud night crowd
+           seats: ['#1d3d8f', '#25479f'], roof: 'open', upper: true, fans: ['#ffffff', '#1d3d8f', '#ffd166', '#e63946', '#2b2d42', '#90caf9', '#f4a261'],
+           ads: [['SPEED WATCH', '#1d3d8f'], ['AERO AIR', '#0e1f36'], ['CLOUD BANK', '#e63946'], ['KOBA WATER', '#1d3d8f'], ['GRAND SLAM SHOES', '#2b2d42'], ['TOPSPIN TV', '#3d5af1']] },
   };
   for (const k in VENUES) { VENUES[k].key = k; VENUES[k].name = VENUES[k].nameJa; }
   let venue = VENUES.mel;
@@ -626,6 +638,8 @@
     if (!opp) stage = { fill: 1 };
     cpu.size = opp && opp.look ? opp.look.size : 1; cpu.build = opp && opp.look ? opp.look.build : 1;
     cpuKit = opp && opp.look ? { ...KIT_C, ...opp.look } : KIT_C;
+    KIT_P = venue.allWhite ? { ...KIT_P0, ...WHITE_KIT } : KIT_P0;
+    if (venue.allWhite) cpuKit = { ...cpuKit, ...WHITE_KIT };
     if (opp) {
       lv = { ...levelFor(opp), name: opp.label || `${RN()[tour.res.length]} ・ ${STG(tour.res.length).court}` };
       $('cName').textContent = (opp.seed ? `[${opp.seed}] ` : '') + opp.n + (rkOf(opp) ? `（${rkOf(opp)}位）` : '');
@@ -1173,19 +1187,46 @@
 
   // ---------- the trophy ceremony after a final: celebration, handshake, the runner-up plate, the trophy, a speech ----------
   let cer = null;
+  // each big event has its own silverware, colours, announcement and speeches
+  const CER_STYLES = {
+    mel: { trophy: 'norman', accent: '#4fc3f7', conf: ['#1e88e5', '#ffffff', '#4fc3f7', '#ffd166'], fireworks: true,
+           mc: n => `Ladies and gentlemen, your Australian Open champion, ${n}!`, mcR: n => `The runner-up, ${n}.`,
+           me: ['メルボルンのみんな、最高の夏をありがとう！ このトロフィーにまた名前を刻めて本当に幸せです', '暑い 2 週間でした！ ここは僕にとって特別な場所。来年もまた戻ってきます！'],
+           cpu: n => [`${n}、素晴らしい決勝だった。この大会は君のことを待っているよ`, `夏の始まりにこんな決勝ができて最高だ。${n}、また来年ここで会おう`] },
+    par: { trophy: 'musketeers', accent: '#e2662b', conf: ['#e2662b', '#0b6b3a', '#ffffff'], dust: true,
+           mc: n => `Mesdames et messieurs, the champion of Roland Garros, ${n}!`, mcR: n => `The runner-up, ${n}.`,
+           me: ['メルシー、パリ！ 赤土の上で戦い抜けたことを誇りに思います', '一番タフな大会で勝てて最高です。シャツもシューズも真っ赤だけど、心は最高の気分！'],
+           cpu: n => [`${n}、クレーで君と戦えて光栄だった。メルシー、パリ`, `何時間でも走り続けた決勝だった。${n}、君の粘りには本当に苦しめられた`] },
+    lon: { trophy: 'wimbledon', plate: 'salver', accent: '#b39ddb', conf: [], polite: true,
+           mc: n => `Ladies and gentlemen, the Gentlemen's Singles Champion, ${n}.`, mcR: n => `The runner-up, ${n}.`,
+           me: ['センターコートで優勝できるなんて夢のようです。伝統ある芝の上でプレーできることに感謝します', 'この金色のトロフィーを掲げるのは、子どものころからの夢でした。ありがとう、ウィンブルドン'],
+           cpu: n => [`${n}、芝の上で最高の試合をありがとう。君の名前もいつかこの壁に刻まれるはずだ`, `センターコートの決勝は特別だ。${n}、また来年ここで会おう`] },
+    ny:  { trophy: 'usopen', accent: '#ffd166', conf: ['#1d3d8f', '#ffd166', '#ffffff', '#e63946'], fireworks: true, loud: true,
+           mc: n => `Ladies and gentlemen, your US Open champion, ${n}!`, mcR: n => `The runner-up, ${n}.`,
+           me: ['ニューヨーク、最高だ！ このナイトセッションは一生忘れません！', '眠らない街で、最後まで声援をありがとう！ 最高のフィナーレになりました'],
+           cpu: n => [`${n}、ニューヨークの夜を一緒に盛り上げてくれてありがとう`, `このスタジアムの声援は世界一だ。${n}、君もすぐにこのトロフィーを掲げるよ`] },
+    fin: { trophy: 'finals', accent: '#00b4d8', conf: ['#00b4d8', '#ffffff', '#c0c0c0'], lights: true,
+           mc: n => `Ladies and gentlemen, your ATP Finals champion, ${n}!`, mcR: n => `The runner-up, ${n}.`,
+           me: ['1 年の最後をこの舞台で締めくくれて最高です。来年もここに戻ってきます！', 'トップ 8 だけの戦いを勝ち抜けた。最高のシーズンの締めくくりです'],
+           cpu: n => [`${n}、1 年間ほんとうにお疲れさま。来年もまたこの舞台で`, `最後の大会でこんな決勝ができて嬉しい。${n}、来シーズンも楽しみにしているよ`] },
+  };
+  const cerStyle = () => CER_STYLES[venue.key === 'fin' ? 'fin' : (venue.key || '').replace('gs_', '')] && tour && tour.career ? CER_STYLES[venue.key === 'fin' ? 'fin' : venue.key.replace('gs_', '')] : null;
   const CER_END = 18.5;
   function startCeremony(w) {
     const champ = w === 'P' ? player : cpu, runner = w === 'P' ? cpu : player;
     const nameOf = o => (o === player ? NAME.P : tourOpp.n);
-    cer = { w, t: 0, champ, runner, cName: nameOf(champ), rName: nameOf(runner), conf: [], flashes: [], said: {}, stage: false, cup: false, plate: false };
+    const st = cerStyle(), ev = st && (tour.fin ? { k: 'fin' } : tour.f && tour.f.e), defending = !!(ev && pastOf(ev) && pastOf(ev).w.id === (w === 'P' ? 0 : tourOpp.cid));
+    cer = { w, t: 0, champ, runner, cName: nameOf(champ), rName: nameOf(runner), conf: [], flashes: [], fw: [], said: {}, stage: false, cup: false, plate: false, st, defending,
+            speech: st ? pick(w === 'P' ? st.me : st.cpu(NAME.P)) : null };
     state = 'ceremony'; msg = null; popups = []; charge = null; ball.live = false;
     $('quit').classList.add('hidden');
     [player, cpu].forEach(o => { o.vx = o.vy = 0; o.anim = 0; o.slide = 0; o.cerPose = null; o.noRacket = false; o.faceCam = false; });
-    crowdClap(1, 5); crowdVoice('cheer', 1); cheer = 3;
+    crowdClap(1, 5); if (!(st && st.polite)) crowdVoice('cheer', 1); cheer = st && st.polite ? 1.5 : 3;
     if (w === 'P') confetti(90);
   }
   function confetti(n) {
-    const cols = ['#ffd166', '#ff5d73', '#4cc9f0', '#80ed99', '#ffffff', '#c77dff'];
+    const cols = cer.st ? cer.st.conf : ['#ffd166', '#ff5d73', '#4cc9f0', '#80ed99', '#ffffff', '#c77dff'];
+    if (!cols.length) return;
     for (let i = 0; i < n; i++) cer.conf.push({ x: rand(0, W), y: -rand(0, H * .5), vx: rand(-30, 30), vy: rand(70, 150), r: rand(0, 6), vr: rand(-6, 6), w: rand(5, 9), h: rand(3, 6), c: pick(cols), life: rand(5, 8) });
   }
   function cerWalk(o, x, y, dt, speed) {
@@ -1193,6 +1234,11 @@
     accelTo(o, l > .02 ? dx / l * s : 0, l > .02 ? dy / l * s : 0, dt, 10, 14);
     o.x += o.vx * dt; o.y += o.vy * dt;
     animateBody(o, dt);
+  }
+  // fireworks over the stadium: a rising shell bursts into a ring of sparks
+  function firework() {
+    const x = rand(.12, .88) * W, y = rand(.08, .32) * H, c = pick(cer.st.conf.length ? cer.st.conf : ['#ffd166']);
+    for (let i = 0; i < 36; i++) { const a = i / 36 * 6.28, v = rand(70, 130); cer.fw.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, c, life: rand(.9, 1.4) }); }
   }
   function cerOnce(key, f) { if (!cer.said[key]) { cer.said[key] = true; f(); } }
   function cerStep(dt) {
@@ -1218,10 +1264,16 @@
       [player, cpu].forEach(o => cerWalk(o, o.x, o.y, dt, 0));
       if (t < 9.3) { // the runner-up
         runner.cerPose = 'plate'; cer.plate = true;
-        cerOnce('runner', () => { umpire(`Ladies and gentlemen, the runner-up, ${cer.rName}.`, 200); setTimeout(() => crowdClap(.8, 3.5), 1600); });
+        cerOnce('runner', () => { umpire(cer.st ? cer.st.mcR(cer.rName) : `Ladies and gentlemen, the runner-up, ${cer.rName}.`, 200); setTimeout(() => crowdClap(.8, 3.5), 1600); });
       } else if (t < 13.5) { // the champion lifts the trophy
         champ.cerPose = 'cup'; cer.cup = true; runner.cerPose = null; cer.plate = false; runner.noRacket = false;
-        cerOnce('champ', () => { umpire(`And your champion, ${cer.cName}!`, 100); crowdClap(1, 6); crowdVoice('cheer', 1); cheer = 4; confetti(220); setTimeout(() => crowdClap(1, 5), 3000); });
+        cerOnce('champ', () => {
+          const st = cer.st;
+          umpire(st ? st.mc(cer.cName) : `And your champion, ${cer.cName}!`, 100); crowdClap(1, st && st.polite ? 8 : 6);
+          if (!(st && st.polite)) crowdVoice('cheer', st && st.loud ? 1 : .9); cheer = st && st.polite ? 1.5 : st && st.loud ? 5 : 4;
+          confetti(st && st.fireworks ? 160 : 220); setTimeout(() => crowdClap(1, 5), 3000);
+        });
+        if (cer.st && cer.st.fireworks && Math.random() < dt * 2.2) firework();
       } else { // the speech
         champ.cerPose = 'chest';
         cerOnce('speech', () => crowdClap(.4, 1.5));
@@ -1237,6 +1289,22 @@
     cer = null;
     endMatch(w);
   }
+  // the big trophies, drawn flat: Australia's wide silver cup, Paris's musketeers' cup, the gold cup with a lid,
+  // New York's tall silver trophy, the Finals' silver bowl on a column
+  function drawTrophy2D(c, s, kind) {
+    const silver = kind !== 'wimbledon', fill = silver ? '#e3e7ee' : '#f2c14e', edge = silver ? '#8a909c' : '#a07a10';
+    const shape = {
+      norman: [[-.24, -.62], [.24, -.62], [.2, -.28], [.06, -.18], [.05, 0], [.17, .06], [-.17, .06], [-.05, 0], [-.06, -.18], [-.2, -.28]],
+      musketeers: [[-.22, -.58], [.22, -.58], [.2, -.3], [.07, -.2], [.05, 0], [.14, .05], [-.14, .05], [-.05, 0], [-.07, -.2], [-.2, -.3]],
+      wimbledon: [[-.03, -.78], [.03, -.78], [.05, -.7], [.14, -.64], [.15, -.36], [.06, -.22], [.04, 0], [.13, .05], [-.13, .05], [-.04, 0], [-.06, -.22], [-.15, -.36], [-.14, -.64], [-.05, -.7]],
+      usopen: [[-.03, -.92], [.03, -.92], [.08, -.8], [.12, -.6], [.06, -.4], [.04, 0], [.12, .05], [-.12, .05], [-.04, 0], [-.06, -.4], [-.12, -.6], [-.08, -.8]],
+      finals: [[-.2, -.55], [.2, -.55], [.16, -.42], [.05, -.38], [.05, 0], [.14, .05], [-.14, .05], [-.05, 0], [-.05, -.38], [-.16, -.42]],
+    }[kind];
+    ctx.fillStyle = fill; ctx.strokeStyle = edge; ctx.lineWidth = 1.5;
+    ctx.beginPath(); shape.forEach(([x, y], i) => (i ? ctx.lineTo(c.x + x * s, c.y + y * s) : ctx.moveTo(c.x + x * s, c.y + y * s))); ctx.closePath(); ctx.fill(); ctx.stroke();
+    if (kind === 'norman' || kind === 'musketeers' || kind === 'wimbledon') [-1, 1].forEach(sd => { ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(c.x + sd * (kind === 'norman' ? .27 : .19) * s, c.y - (kind === 'wimbledon' ? .52 : .45) * s, (kind === 'norman' ? .11 : .08) * s, sd > 0 ? -Math.PI / 2 : Math.PI / 2, sd > 0 ? Math.PI / 2 : Math.PI * 1.5); ctx.stroke(); });
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(c.x - .1 * s, c.y - .55 * s, .03 * s, .25 * s); // a glint
+  }
   function drawCeremony() {
     if (!cer) return;
     const t = cer.t, dt = frameDt;
@@ -1245,20 +1313,35 @@
       const hold = (o, kind) => {
         const k = figure(o, o === player ? KIT_P : cpuKit, null, true), a = k.hand, b = k.armL.end;
         const c = P((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 + (kind === 'cup' && o.cerPose === 'cup' ? .12 : 0)), s = c.s * k.FIG;
+        const tk = cer.st ? cer.st.trophy : 'cup';
+        if (kind === 'cup' && tk !== 'cup') return drawTrophy2D(c, s, tk);
         if (kind === 'cup') {
           ctx.fillStyle = '#f2c14e'; ctx.strokeStyle = '#a07a10'; ctx.lineWidth = 1.5;
           ctx.beginPath(); ctx.moveTo(c.x - .2 * s, c.y - .55 * s); ctx.lineTo(c.x + .2 * s, c.y - .55 * s); ctx.lineTo(c.x + .07 * s, c.y - .2 * s);
           ctx.lineTo(c.x + .04 * s, c.y); ctx.lineTo(c.x + .15 * s, c.y + .05 * s); ctx.lineTo(c.x - .15 * s, c.y + .05 * s); ctx.lineTo(c.x - .04 * s, c.y); ctx.lineTo(c.x - .07 * s, c.y - .2 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
           [-1, 1].forEach(sd => { ctx.beginPath(); ctx.arc(c.x + sd * .2 * s, c.y - .42 * s, .08 * s, sd > 0 ? -Math.PI / 2 : Math.PI / 2, sd > 0 ? Math.PI / 2 : Math.PI * 1.5); ctx.stroke(); });
         } else {
-          ctx.fillStyle = '#dfe3ea'; ctx.strokeStyle = '#8a909c'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(c.x, c.y, .24 * s, 0, 7); ctx.fill(); ctx.stroke();
+          const salver = cer.st && cer.st.plate === 'salver';
+          ctx.fillStyle = '#dfe3ea'; ctx.strokeStyle = salver ? '#c9a54a' : '#8a909c'; ctx.lineWidth = salver ? 3 : 2;
+          ctx.beginPath(); ctx.arc(c.x, c.y, (salver ? .3 : .24) * s, 0, 7); ctx.fill(); ctx.stroke();
           ctx.beginPath(); ctx.arc(c.x, c.y, .16 * s, 0, 7); ctx.stroke();
         }
       };
       if (cer.plate) hold(cer.runner, 'plate');
       if (cer.cup) hold(cer.champ, 'cup');
     }
+    // the event's own touches: stage light beams, clay dust, fireworks
+    const st = cer.st;
+    if (st && st.lights && cer.stage) {
+      [[0, '0,180,216'], [W, '123,44,191'], [W / 2, '255,255,255']].forEach(([x0, c], i) => {
+        const a = Math.sin(t * .9 + i * 2) * .5, len = H * 1.1, gx = x0 + Math.sin(a) * len, gy = Math.cos(a) * len;
+        const g = ctx.createLinearGradient(x0, 0, gx, gy); g.addColorStop(0, `rgba(${c},.28)`); g.addColorStop(1, `rgba(${c},0)`);
+        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x0 - 6, 0); ctx.lineTo(gx - 90, gy); ctx.lineTo(gx + 90, gy); ctx.lineTo(x0 + 6, 0); ctx.closePath(); ctx.fill();
+      });
+    }
+    if (st && st.dust && cer.cup && Math.random() < dt * 30) cer.conf.push({ x: rand(0, W), y: H + 5, vx: rand(-10, 10), vy: -rand(40, 90), r: 0, vr: 0, w: rand(2, 4), h: rand(2, 4), c: '#d9774a', life: rand(1.5, 3) });
+    cer.fw.forEach(f => { f.life -= dt; f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 60 * dt; ctx.fillStyle = f.c; ctx.globalAlpha = Math.max(0, Math.min(1, f.life)); ctx.fillRect(f.x - 1.5, f.y - 1.5, 3, 3); });
+    cer.fw = cer.fw.filter(f => f.life > 0); ctx.globalAlpha = 1;
     // photographers' flashes and confetti
     cer.flashes.forEach(f => { f.life -= dt; ctx.fillStyle = `rgba(255,255,255,${Math.max(0, f.life / .09)})`; ctx.beginPath(); ctx.arc(f.x, f.y, 3 + Math.random() * 3, 0, 7); ctx.fill(); });
     cer.flashes = cer.flashes.filter(f => f.life > 0);
@@ -1277,14 +1360,15 @@
       if (sub) { ctx.font = 'bold 17px system-ui, sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(sub, W / 2, y + 24); }
     };
     const yC = H - (coarse ? 170 : 120);
-    if (t < 4.8) card(cer.w === 'P' ? '🏆 優勝!' : '準優勝…', (tour && tour.title) || `NORI OPEN ${venue.name}`, yC, cer.w === 'P' ? '#ffd166' : '#dfe3ea');
+    const acc = st ? st.accent : '#ffd166';
+    if (t < 4.8) card(cer.w === 'P' ? (cer.defending ? '🏆 連覇達成!' : '🏆 優勝!') : '準優勝…', (tour && tour.title) || `NORI OPEN ${venue.name}`, yC, cer.w === 'P' ? acc : '#dfe3ea');
     else if (t >= 5.8) {
       ctx.font = 'bold 15px system-ui, sans-serif'; ctx.fillStyle = 'rgba(10,14,32,.75)'; const tt = `${(tour && tour.title) || `NORI OPEN ${venue.name}`} · 表彰式`, tw = ctx.measureText(tt).width + 30;
-      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - tw / 2, 104, tw, 30, 15) : ctx.rect(W / 2 - tw / 2, 104, tw, 30); ctx.fill(); ctx.fillStyle = '#ffd166'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tt, W / 2, 119);
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - tw / 2, 104, tw, 30, 15) : ctx.rect(W / 2 - tw / 2, 104, tw, 30); ctx.fill(); ctx.fillStyle = acc; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tt, W / 2, 119);
       if (t < 9.3) card('🥈 準優勝', cer.rName, yC, '#dfe3ea');
-      else if (t < 13.5) card('🏆 優勝', cer.cName, yC, '#ffd166');
+      else if (t < 13.5) card(cer.defending ? '🏆 連覇' : '🏆 優勝', cer.cName, yC, acc);
       else {
-        const speech = cer.w === 'P'
+        const speech = cer.speech ? cer.speech : cer.w === 'P'
           ? 'みんな、本当にありがとう！ 最高の 2 週間でした。来年もまたここに戻ってきます！'
           : `${NAME.P}、素晴らしい決勝をありがとう。君もきっとすぐにこのトロフィーを掲げるよ`;
         ctx.font = 'bold 16px system-ui, sans-serif';
@@ -1531,7 +1615,7 @@
   function showTour() {
     if (tour.fin) return showFinals();
     const card = $('tourCard'), v = VENUES[tour.venue], r = tour.res.length, champ = champion();
-    let h = `<div class="tour">${tour.career && career ? `<p style="margin:0 0 4px;font-size:13px">📅 キャリア · 第${tour.f.w + 1}週 · ランキング <b>${rankOf(0)}位</b></p>` : ''}<h2>🏆 ${tour.title || 'NORI OPEN'}</h2><p>${v.name} (${v.surf}) · ${tour.draw.length} ドロー ・ 1 セットマッチ</p><div class="path">`;
+    let h = `<div class="tour">${tour.career && career ? `<p style="margin:0 0 4px;font-size:13px">📅 キャリア · ${career.year}年目 · 第${tour.f.w + 1}週 · ランキング <b>${rankOf(0)}位</b></p>` : ''}<h2>🏆 ${tour.title || 'NORI OPEN'}</h2><p>${v.name} (${v.surf}) · ${tour.draw.length} ドロー ・ 1 セットマッチ</p>${tour.career && tour.f && tour.f.e && pastOf(tour.f.e) ? `<p style="font-size:13px">${pastLine(pastOf(tour.f.e))}</p>` : ''}<div class="path">`;
     const lostAt = tour.out ? tour.res.findIndex(rr => rr.some(m => m.l === 0)) : -1;
     RN().forEach((n, i) => {
       const cls = tour.out ? (i < lostAt ? 'done' : i === lostAt ? 'lost' : '') : i < r ? 'done' : i === r ? 'now' : '';
@@ -1618,12 +1702,14 @@
     saveTour();
     return r;
   }
-  // ---------- career: one season of the real ATP calendar, 1500 players ----------
-  // You start at No. 100 and play only the four Grand Slams (from qualifying if your ranking slips out of the top
-  // 104), plus the ATP Finals if you are in the top 8 at the end. Everyone else plays the whole calendar: Masters
-  // 1000, ATP 500 and 250, challengers and futures, with the real draw sizes (byes for the top seeds), qualifying
-  // and wildcards. The ranking is each player's best 19 results of the last 12 months plus the ATP Finals.
-  const CKEY = 'bumpyTennisCareer1', NPLAYERS = 1500, BEST_N = 19, NCH = 4, NFU = 12;
+  // ---------- career: five seasons of the real ATP calendar, 1500 players ----------
+  // Last year you won all four Grand Slams and the ATP Finals (9500 points); you play only the slams (from
+  // qualifying if your ranking slips out of the top 104), plus the ATP Finals if you are in the top 8 at the end.
+  // Everyone else plays the whole calendar: Masters 1000, ATP 500 and 250, challengers and futures, with the real
+  // draw sizes (byes for the top seeds), qualifying and wildcards - the top players pick their events and get
+  // injured now and then. The ranking is each player's best 19 results of the last 12 months plus the ATP Finals,
+  // carried from season to season; in each off-season the young improve, the old fade and some players retire.
+  const CKEY = 'bumpyTennisCareer1', NPLAYERS = 1500, BEST_N = 19, NCH = 4, NFU = 12, YEARS = 5;
   // size: players in the main draw (slots: the power of two it is played in, the top seeds get the byes),
   // direct entries, wildcards, qualifiers from a qualifying draw of qsize (qr rounds), seeds;
   // top: points for the title, the final, the semis ... back to the first round
@@ -1698,7 +1784,11 @@
     const base = e.vkey; e.vkey = 'gs_' + base;
     VENUES[e.vkey] = { ...VENUES[base], key: e.vkey, banner: VENUES[base].banner.replace('NORI OPEN', SLAM_EN[base]) };
   }));
-  VENUES.fin = { ...VENUES.ny, key: 'fin', name: 'トリノ', nameJa: 'トリノ', surf: 'ハード（室内）', banner: 'NORI ATP FINALS · TURIN', court: '#1d3d8f', outer: '#16213f' };
+  // the ATP Finals: a dark indoor arena under a lighting rig
+  VENUES.fin = { ...VENUES.ny, key: 'fin', name: 'トリノ', nameJa: 'トリノ', surf: 'ハード（室内）', banner: 'NORI ATP FINALS · TURIN', court: '#1d3d8f', outer: '#0d1430',
+                 wall: '#0b0f1e', sky: ['#010207', '#070b1a'], seats: ['#151a2e', '#1b2140'], roof: 'closed', upper: true, lights: true, sbBg: '#020a1f',
+                 fans: ['#ffffff', '#00b4d8', '#2b2d42', '#c0c0c0', '#1d3d8f', '#90caf9', '#3a3f55'],
+                 ads: [['NORI ATP FINALS', '#0b1d4f'], ['TURIN', '#111827'], ['AERO AIR', '#0b1d4f'], ['SPEED WATCH', '#111827'], ['CLOUD BANK', '#003366']] };
   const CITIES = ['ソウル', '台北', 'プネ', 'カサブランカ', 'サンティアゴ', 'リマ', 'ボゴタ', 'モンテレイ', 'ナポリ', 'ブダペスト', 'プラハ', 'ザグレブ',
     'リヨン', 'ブレーメン', 'ポルト', 'アンタルヤ', 'アスタナ', '横浜', '松山', '京都', 'マニラ', 'バンコク', 'ヌメア', 'キャンベラ', 'バーニー', 'ダラス',
     'タラハシー', 'ウィニペグ', 'グラナダ', 'ビエラ', 'トリノ', 'ハイルブロン', 'ルガーノ', 'ウッチ', 'タンペレ', 'オーフス', 'メディシン', 'グアヤキル',
@@ -1715,7 +1805,7 @@
     try {
       const c = JSON.parse(localStorage.getItem(CKEY));
       if (!(c && c.players)) return null;
-      if ((c.v || 1) < 6) return null; // careers from before the real calendar can't be carried over
+      if ((c.v || 1) < 7) return null; // careers from before the five-year tour can't be carried over
       return c;
     } catch (e) { return null; }
   }
@@ -1741,13 +1831,57 @@
     const players = [{ n: 'Mang Kobay', sur: 'Kobay', cc: 'YOU', r: 1.1, st: 'top', tbk: -1 }];
     for (let k = 1; k < NPLAYERS; k++) {
       const r = k <= 31 ? 1.55 - (k - 1) * (.25 / 30) : k <= 127 ? 1.25 - (k - 32) * (.25 / 95) : k <= 300 ? 1 - (k - 128) * (.2 / 172) : .8 - (k - 301) * (.4 / (NPLAYERS - 302));
-      let nm, full; do { nm = pickOf(names); full = INITIALS[Math.floor(Math.random() * INITIALS.length)] + '. ' + nm.sur; } while (used.has(full)); used.add(full);
-      const pl = { n: full, sur: nm.sur, cc: nm.cc, r: +clamp(r + rand(-.03, .03), .35, 1.55).toFixed(3), st: pickOf(['big', 'base', 'slice', 'all']), tbk: 0 };
-      pl.seed = k <= 32 ? k : 0; pl.traits = makeTraits(pl); pl.look = makeLook(pl); delete pl.seed;
-      players.push(pl);
+      // the best are in their prime; further down there are teenagers on the way up and veterans on the way out
+      const age = k <= 60 ? Math.round(rand(21, 33)) : Math.round(17 + Math.pow(Math.random(), 1.3) * 18);
+      players.push(newPlayer(names, used, clamp(r + rand(-.03, .03), .35, 1.55), age, k <= 32 ? k : 0));
     }
     players.forEach(p => { p.wk = new Array(NW).fill(0); p.fp = 0; p.pts = 0; });
     return players;
+  }
+  // a new player: the ceiling (pot) is where a young player can grow to
+  function newPlayer(names, used, r, age, seed = 0) {
+    let nm, full; do { nm = pickOf(names); full = INITIALS[Math.floor(Math.random() * INITIALS.length)] + '. ' + nm.sur; } while (used.has(full)); used.add(full);
+    const pl = { n: full, sur: nm.sur, cc: nm.cc, r: +r.toFixed(3), st: pickOf(['big', 'base', 'slice', 'all']), tbk: Math.random(), age,
+                 pot: +clamp(age <= 23 ? r + rand(.05, .45) + (Math.random() < .08 ? .25 : 0) : r + rand(0, .08), .4, 1.6).toFixed(3), inj: 0 };
+    pl.seed = seed; pl.traits = makeTraits(pl); pl.look = makeLook(pl); delete pl.seed;
+    return pl;
+  }
+  const NAMES = () => { const a = []; for (const [cc, list] of Object.entries(NAMEPOOL)) for (const sur of list) a.push({ sur, cc }); return a; };
+  // the off-season: everyone a year older; the young grow toward their ceiling, the old fade, some have a
+  // breakthrough or a slump, and the oldest or weakest retire (new teenagers take their places)
+  function offSeason() {
+    const order = rankOrder(), before = new Map(order.map((id, k) => [id, k + 1])), used = new Set(career.players.map(p => p.n)), names = NAMES();
+    const rise = [], fall = [], gone = [], fresh = [];
+    const avgTop = career.players.slice(1).map(p => p.r).sort((x, y) => y - x).slice(0, 50).reduce((t, x) => t + x, 0) / 50;
+    career.players.forEach((p, id) => {
+      if (!id) return;
+      p.age++;
+      const a = p.age, r0 = p.r;
+      let d = a <= 20 ? rand(.02, .09) : a <= 23 ? rand(0, .06) : a <= 27 ? rand(-.02, .03) : a <= 30 ? rand(-.04, .01) : a <= 33 ? rand(-.07, 0) : rand(-.1, -.02);
+      if (a <= 24 && p.pot > p.r) d += (p.pot - p.r) * rand(.1, .35);
+      let note = '';
+      if (Math.random() < .04) { d += rand(.06, .12); note = 'ブレイク'; } else if (Math.random() < .05) { d -= rand(.05, .1); note = '不調'; }
+      p.r = +clamp(p.r + d, .3, 1.6).toFixed(3);
+      if (p.r > p.pot) p.pot = p.r;
+      const rk = before.get(id), dr = p.r - r0;
+      // retirement: the veterans, and those going nowhere
+      if ((a >= 35 && Math.random() < .5) || (a >= 32 && p.r < .9 && Math.random() < .3) || (a >= 30 && p.r < .5 && Math.random() < .3)) {
+        if (rk <= 150) gone.push({ n: p.n, cc: p.cc, age: a, rk });
+        const np = newPlayer(names, used, rand(.35, .75), Math.round(rand(16, 19)));
+        Object.assign(np, { wk: new Array(NW).fill(0), fp: 0, pts: 0 });
+        career.players[id] = np;
+        if (np.pot >= 1.25) fresh.push({ id, n: np.n, cc: np.cc, age: np.age, pot: np.pot });
+        return;
+      }
+      if (rk <= 300) (dr > 0 ? rise : fall).push({ id, n: p.n, cc: p.cc, age: a, rk, dr, note });
+    });
+    // the tour as a whole doesn't get stronger every year: the best 50 keep the same average level
+    const top = ps => ps.map(p => p.r).sort((x, y) => y - x).slice(0, 50).reduce((t, x) => t + x, 0) / 50;
+    const shift = top(career.players.slice(1)) - avgTop;
+    career.players.forEach((p, id) => { if (id) p.r = +clamp(p.r - shift, .3, 1.6).toFixed(3); });
+    rise.sort((x, y) => y.dr - x.dr); fall.sort((x, y) => x.dr - y.dr);
+    career.off = { year: career.year, rise: rise.slice(0, 8), fall: fall.slice(0, 8), gone: gone.sort((x, y) => x.rk - y.rk).slice(0, 10), fresh: fresh.sort((x, y) => y.pot - x.pot).slice(0, 5) };
+    recalc();
   }
   // a main draw: the seeds in their usual places, byes beside the top seeds, everyone else at random
   const SLOTS = {
@@ -1793,14 +1927,27 @@
   // the points for a round reached; a bye followed by a loss earns the first round's points
   const mainPts = (K, res, id) => { const n = res.length, r = reachedIn(res, id), bye = res[0].some(m => m.w === id && m.l === -1); return K.top[n - (bye && r === 1 ? 0 : r)] || 0; };
 
+  // how likely a player of ranking position `k` (0 = No. 1) is to enter an event: the slams and Masters are a must
+  // for the best, the 500s and 250s much less so, and the challengers and futures are for those further down
+  function playProb(kind, k) {
+    if (kind === 'gs') return .97;
+    if (kind === 'm96') return k < 30 ? .9 : .95;
+    if (kind === 'm56') return k < 30 ? .75 : .9;
+    if (kind === 'a500' || kind === 'a500w') return k < 10 ? .35 : k < 30 ? .55 : .8;
+    if (kind[1] === '2') return k < 10 ? .12 : k < 30 ? .35 : .75;
+    if (kind === 'ch') return k < 80 ? .05 : .8;
+    return k < 250 ? .03 : .8;
+  }
   // one week: the fields of every event (the biggest first, from the top of the ranking down), then the draws.
   // In 'play' mode your slam is left for you: its field is returned, with its qualifying unplayed if you are in it.
   function playWeek(w, mode, store) {
     if (w === FIN_W) return mode === 'play' ? null : (simFinals(store), null);
     const order = rankOrder(), pos = rankPos();
     const used = new Set([0]), cities = shuffle(CITIES.filter(c => !CAL[w].some(e => e.city === c)));
+    // injuries: a few weeks out; healthy players heal week by week
+    career.players.forEach((p, id) => { if (id && p.inj > 0) p.inj--; else if (id && pos.get(id) < 300 && Math.random() < .012) p.inj = Math.round(rand(1, 8)); });
     const wants = new Map(order.map(id => [id, Math.random()])); // each player's appetite this week
-    const avail = k => order.filter(id => !used.has(id) && wants.get(id) < KINDS[k].play);
+    const avail = k => order.filter(id => !used.has(id) && !career.players[id].inj && wants.get(id) < playProb(k, pos.get(id)));
     const fields = [], mine = mode === 'play' ? CAL[w].find(e => e.u) : null;
     for (const e of [...CAL[w]].sort((a, b) => KINDS[b.k].size - KINDS[a.k].size)) {
       const K = KINDS[e.k], me = e === mine;
@@ -1809,6 +1956,7 @@
       const direct = avail(e.k).slice(0, K.direct - (meIn ? 1 : 0)); if (meIn) direct.push(0);
       direct.forEach(id => used.add(id));
       const wc = [], f = { e, direct, wc, qual: [], q: null, meQ: me && !meIn };
+      if (K.size >= 56) f.out = order.slice(0, 20).filter(id => id && !direct.includes(id)).map(id => ({ id, inj: career.players[id].inj > 0 }));
       if (K.wc) {
         for (const id of avail(e.k)) if (wc.length < K.wc / 2 && e.cc && pos.get(id) < 400 && career.players[id].cc === e.cc) { wc.push(id); used.add(id); }
         const young = shuffle(avail(e.k).slice(0, 150));
@@ -1840,13 +1988,21 @@
     f.q = { draw: qd.draw, seeds: qd.seeds, res }; f.qual = res[K.qr - 1].map(m => m.w);
     if (store) career.evs.push({ k: 'q', of: f.e.k, name: `${evTitle(f.e)} 予選`, w, draw: qd.draw, res, seeds: qd.seeds });
   }
+  // the last edition's champion and runner-up of each event (kept by name: players retire)
+  const evKey = e => e.k === 'fin' ? 'fin' : `${e.k}|${e.city}`;
+  const pastOf = e => career.past && career.past[evKey(e)];
+  const pastEntry = id => ({ id, n: id === 0 ? 'あなた' : career.players[id].n, cc: id === 0 ? '' : career.players[id].cc });
+  function setPast(e, w, l) { (career.past || (career.past = {}))[evKey(e)] = { w: pastEntry(w), l: pastEntry(l), year: career.year || 0 }; }
+  const pastLine = p => p ? `前回優勝 <b>${p.w.n}</b>${p.w.cc ? ` <small>${p.w.cc}</small>` : ''} · 準優勝 ${p.l.n}${p.l.cc ? ` <small>${p.l.cc}</small>` : ''}` : '';
   // a main draw played out (or already played, `res`), and everyone's points for the week
   function finishEvent(f, w, store, played) {
     const K = KINDS[f.e.k], main = f.direct.concat(f.wc, f.qual).sort(byRank);
     const { draw, seeds } = played || makeDraw(main, K), res = played ? played.res : runDraw(draw, roundsFor(K));
     if (f.q) f.q.draw.forEach(id => (career.players[id].wk[w] = K.qpts[Math.min(K.qr - 1, reachedIn(f.q.res, id))]));
     draw.forEach(id => { if (id >= 0) career.players[id].wk[w] = mainPts(K, res, id) + (f.qual.includes(id) ? K.qb : 0); });
-    if (store) career.evs.push({ k: f.e.k, name: evTitle(f.e), w, size: K.size, draw, res, seeds, wc: f.wc, qual: f.qual, me: draw.includes(0) });
+    const prev = pastOf(f.e), fin = res[res.length - 1][0];
+    if (store) career.evs.push({ k: f.e.k, name: evTitle(f.e), w, size: K.size, draw, res, seeds, wc: f.wc, qual: f.qual, me: draw.includes(0), prev, out: f.out });
+    setPast(f.e, fin.w, fin.l);
   }
 
   // the ATP Finals: the top 8, two groups of four, round robin, then semis and the final
@@ -1902,7 +2058,8 @@
   function simFinals(store) {
     const fin = newFinals(); finPlay(fin, 5);
     finPoints(fin);
-    if (store) career.evs.push({ k: 'fin', name: 'ATPファイナルズ', w: FIN_W, fin, draw: fin.eight, res: [] });
+    if (store) career.evs.push({ k: 'fin', name: 'ATPファイナルズ', w: FIN_W, fin, draw: fin.eight, res: [], prev: pastOf({ k: 'fin' }) });
+    setPast({ k: 'fin' }, fin.f.w, fin.f.l);
   }
 
   // the weeks the others play on their own, up to your next event (or the end of the season)
@@ -1915,31 +2072,38 @@
     }
   }
   function newCareer() {
-    // two seasons are played out without you: the first only builds a ranking, the second is last year. The weeks
-    // before the Australian Open follow, then you are given last year's slam results that put you at No. 100.
+    // two seasons are played out without you: the first only builds a ranking, the second is last year. Then last
+    // year is rewritten with you as the champion of the four slams and the ATP Finals (each beaten finalist drops a
+    // round), and the weeks before the Australian Open are played.
     const players = makeCareerPlayers();
-    career = { v: 6, w: 0, players, hist: [], startRank: 0, cur: null, evs: [] };
+    career = { v: 7, year: 1, w: 0, players, hist: [], startRank: 0, cur: null, evs: [], past: {}, seasons: [], off: null };
     players.forEach((p, i) => { if (i) p.tbk = p.r + rand(0, .15); }); // no points yet: the stronger players enter first
     for (let w = 0; w < NW; w++) playWeek(w, 'none', false);
     players.forEach((p, i) => { if (i) p.tbk = Math.random(); });
     for (let w = 0; w < NW; w++) playWeek(w, 'none', false);
+    UEV.forEach(({ w, e }) => {
+      const p = pastOf(e); if (!p) return;
+      const champ = players[p.w.id], runner = players[p.l.id];
+      if (e.k === 'fin') { champ.fp = Math.max(0, champ.fp - FIN_PTS.f); players[0].fp = 3 * FIN_PTS.rr + FIN_PTS.sf + FIN_PTS.f; }
+      else { champ.wk[w] = KINDS.gs.top[1]; runner.wk[w] = KINDS.gs.top[2]; players[0].wk[w] = KINDS.gs.top[0]; }
+      career.past[evKey(e)] = { w: pastEntry(0), l: pastEntry(p.w.id), year: 0 };
+    });
+    recalc();
     advance(true); // the weeks before the Australian Open
-    // your last year: the four slam results (qualifying ones too) that put you nearest No. 100, then slotted in exactly among any players level with you
-    const others = players.slice(1).map(p => p.pts), P = [0, ...KINDS.gs.qpts.slice(1), ...KINDS.gs.top.slice(3).flatMap(x => [x, x + KINDS.gs.qb])], gsW = UEV.filter(u => u.e.k === 'gs').map(u => u.w);
-    let best = null;
-    for (const a of P) for (const b of P) for (const c of P) for (const d of P) {
-      const t = a + b + c + d, hi = 1 + others.filter(x => x > t).length, lo = others.filter(x => x >= t).length + 1;
-      const err = 100 < hi ? hi - 100 : 100 > lo ? 100 - lo : 0;
-      if (!best || err < best.err) best = { err, r: [a, b, c, d] };
-    }
-    gsW.forEach((w, i) => (players[0].wk[w] = best.r[i])); recalc();
-    const order = rankOrder(), tied = order.filter(i => i && players[i].pts === players[0].pts && Math.max(...players[i].wk) === Math.max(...players[0].wk));
-    const k = 99 - order.slice(0, 99).filter(i => i && !tied.includes(i)).length; // how many of the level group stay ahead of you
-    if (tied.length && k > 0) players[0].tbk = k < tied.length ? (players[tied[k - 1]].tbk + players[tied[k]].tbk) / 2 : players[tied[tied.length - 1]].tbk - .001;
-    else if (tied.length) players[0].tbk = 2;
-    rankCache = null;
-    career.startRank = rankOf(0);
+    career.startRank = rankOf(0); career.startPts = players[0].pts;
     saveCareer();
+  }
+  // the season is over: on to the off-season, then the next season (the ranking carries over)
+  function seasonSummary() {
+    const me = rankOf(0);
+    career.seasons.push({ year: career.year, rank: me, pts: career.players[0].pts, hist: career.hist,
+                          champs: UEV.map(({ e }) => ({ name: evTitle(e), w: (pastOf(e) || {}).w })) });
+  }
+  function nextSeason() {
+    career.year++; career.w = 0; career.hist = []; career.evs = []; career.off = null; career.cur = null;
+    advance(true);
+    career.startRank = rankOf(0); career.startPts = career.players[0].pts;
+    saveCareer(); showCareer();
   }
   // a local draw for you to play: you are id 0, everyone keeps their career id, seed, tag and ranking
   function localTour(ids, draw, seeds, extra) {
@@ -2046,7 +2210,8 @@
   function finalsFinish() {
     const before = rankOf(0), fin = tour.fin, lost = career.players[0].fp;
     finPlay(fin, 5); finPoints(fin);
-    career.evs.push({ k: 'fin', name: 'ATPファイナルズ', w: FIN_W, fin, draw: fin.eight, res: [], me: true });
+    career.evs.push({ k: 'fin', name: 'ATPファイナルズ', w: FIN_W, fin, draw: fin.eight, res: [], me: true, prev: pastOf({ k: 'fin' }) });
+    setPast({ k: 'fin' }, fin.f.w, fin.f.l);
     const got = fin.f.w === 0 ? 'W' : fin.f.l === 0 ? 'F' : fin.sf.some(m => m.l === 0) ? 'SF' : 'RR';
     career.hist.push({ w: FIN_W, name: 'ATPファイナルズ', k: 'fin', fin: got, pts: career.players[0].fp, lost, before, after: rankOf(0), champ: cname(fin.f.w) });
     career.w++; career.cur = null; tour = null;
@@ -2068,7 +2233,7 @@
   }
   function showFinals() {
     const fin = tour.fin, nx = finNext(), done = finDone(fin) || finOut(fin);
-    let h = `<p style="margin:0 0 4px;font-size:13px">📅 キャリア · 年間最終戦 · ランキング <b>${rankOf(0)}位</b></p><h2>🏆 ATPファイナルズ</h2><p>トリノ（ハード・室内）· 年間上位 8 人 · 4 人ずつ 2 グループの総当たり → 準決勝 → 決勝</p>`;
+    let h = `<p style="margin:0 0 4px;font-size:13px">📅 キャリア · ${career.year}年目 · 年間最終戦 · ランキング <b>${rankOf(0)}位</b></p><h2>🏆 ATPファイナルズ</h2><p>トリノ（ハード・室内）· 年間上位 8 人 · 4 人ずつ 2 グループの総当たり → 準決勝 → 決勝</p>${pastOf({ k: 'fin' }) ? `<p style="font-size:13px">${pastLine(pastOf({ k: 'fin' }))}</p>` : ''}`;
     if (finDone(fin) && fin.f.w === 0) h += `<div class="big">🏆 優勝!</div><p>年間最終戦の王者！</p>`;
     else if (done) h += `<p>${fin.f && fin.f.l === 0 ? '決勝で敗退…' : fin.sf.some(m => m.l === 0) ? '準決勝で敗退…' : 'ラウンドロビンで敗退…'}</p>` + (finDone(fin) ? `<div class="opp">優勝<div class="nm">${cname(fin.f.w)}</div>決勝 ${fin.f.s}</div>` : '');
     else if (nx) { const p = career.players[nx.opp]; h += `<h3>${nx.label} · 次の相手</h3><div class="opp"><div><span class="rkb">世界ランキング ${rankOf(nx.opp)}位</span></div><div class="nm">${p.n} <small>${p.cc}</small></div>${TSTYLE[p.st]} · 強さ <span class="st">${stars(p.r)}</span></div>`; }
@@ -2097,34 +2262,39 @@
   function careerClick(c, back) {
     if (c === 'go') startCareerEvent();
     else if (c === 'cont') { tour = career.cur; showTour(); }
-    else if (c === 'new') { if (confirm('新しいシーズンを始めますか？（今の記録は消えます）')) { newCareer(); showCareer(); } }
+    else if (c === 'new') { if (confirm('新しいキャリアを始めますか？（今の記録は消えます）')) { newCareer(); showCareer(); } }
+    else if (c === 'off') { seasonSummary(); offSeason(); saveCareer(); showOffSeason(); }
+    else if (c === 'next') nextSeason();
     else if (c === 'back' && back) showCareer();
     else { $('tour').classList.add('hidden'); $('menu').classList.remove('hidden'); refreshTourButtons(); }
   }
   const plink = id => id === 0 ? '<b>あなた</b>' : `<a href="#" data-pl="${id}" onclick="return false">${career.players[id].n}</a> <small>${career.players[id].cc}</small>`;
   const histLabel = r => r.k === 'fin' ? { W: '🏆 優勝', F: '準優勝', SF: 'ベスト4', RR: 'ラウンドロビン敗退' }[r.fin] : r.q != null ? `${QROUNDS[r.q]}敗退` : reachLabel(r.n, r.r, roundsOf(r.n));
   function showCareer() {
+    if (career.off) return showOffSeason();
     const order = rankOrder(), me = order.indexOf(0) + 1, done = career.w >= NW;
     const next = done ? null : career.w === FIN_W ? { w: FIN_W, e: CAL[FIN_W][0] } : UEV.find(u => u.w >= career.w);
-    let h = `<h2>📅 キャリア</h2>`;
-    h += `<div class="big" style="margin:4px 0">世界ランキング <b>${me}位</b></div><p style="margin:0">${career.players[0].pts} pt · スタート時 ${career.startRank} 位</p>
-      <p style="font-size:12px;margin:2px 0;color:var(--sub)">選手は ${NPLAYERS} 人、1 年 ${NW} 週。ランキング＝直近 1 年のベスト ${BEST_N} 大会 ＋ ATPファイナルズ。あなたは 4 大大会だけに出場（104 位より下なら予選から）。年間 8 位以内ならATPファイナルズへ</p>`;
+    let h = `<h2>📅 キャリア · ${career.year}年目 <small>/ ${YEARS}</small></h2>`;
+    h += `<div class="big" style="margin:4px 0">世界ランキング <b>${me}位</b></div><p style="margin:0">${career.players[0].pts} pt · シーズン開始時 ${career.startRank} 位（${career.startPts} pt）</p>
+      <p style="font-size:12px;margin:2px 0;color:var(--sub)">選手は ${NPLAYERS} 人、1 年 ${NW} 週。ランキング＝直近 1 年のベスト ${BEST_N} 大会 ＋ ATPファイナルズ（シーズンをまたいで続く）。あなたは 4 大大会だけに出場（104 位より下なら予選から）。年間 8 位以内ならATPファイナルズへ</p>`;
     h += `<h3>今シーズンのあなたの大会</h3><ul>` + UEV.map(({ w, e }) => {
       const r = career.hist.find(x => x.w === w);
       const res = r ? `${histLabel(r)} <small>+${r.pts} / −${r.lost}pt · ${r.before}→${r.after}位</small>`
         : next && next.w === w ? (career.cur ? '▶ 開催中' : '▶ 次の大会') : e.k === 'fin' ? (career.w > FIN_W ? '出場ならず' : '年間 8 位以内で出場') : '—';
-      return `<li class="${next && next.w === w ? 'me' : ''}"><span>${evTitle(e)} <small>第${w + 1}週 · ${e.k === 'fin' ? 'ハード（室内）' : VENUES[e.vkey].surf}</small></span><span>${res}</span></li>`;
+      const pl = (r || !pastOf(e)) ? '' : `<br><small style="color:var(--sub)">${pastLine(pastOf(e))}</small>`;
+      return `<li class="${next && next.w === w ? 'me' : ''}"><span>${evTitle(e)} <small>第${w + 1}週 · ${e.k === 'fin' ? 'ハード（室内）' : VENUES[e.vkey].surf}</small>${pl}</span><span>${res}</span></li>`;
     }).join('') + '</ul>';
     if (done) {
       const titles = career.hist.filter(r => r.k === 'fin' ? r.fin === 'W' : r.r === r.n).length;
-      h += `<div class="opp"><div class="nm">シーズン終了！</div>${career.startRank} 位 → <b>${me} 位</b><br>優勝 ${titles} 回</div>`;
+      h += `<div class="opp"><div class="nm">${career.year}年目 終了！</div>${career.startRank} 位 → <b>${me} 位</b><br>優勝 ${titles} 回</div>`;
     } else {
       const ent = next.e.k === 'gs' ? (me <= KINDS.gs.direct ? `本戦にストレートイン（${KINDS.gs.direct} 位以内）` : `予選から（本戦は ${KINDS.gs.direct} 位以内）`) : '年間上位 8 人の最終戦';
       h += `<p style="font-size:13px">次は <b>${evTitle(next.e)}</b>（第${next.w + 1}週）· ${ent}<br>守るポイント：<b>${next.e.k === 'fin' ? career.players[0].fp : career.players[0].wk[next.w]}pt</b>（前年の成績）</p>`;
     }
-    h += '<div class="btns">' + (done ? `<button data-c="new">新しいシーズン</button>`
+    h += '<div class="btns">' + (done ? (career.year < YEARS ? `<button data-c="off">▶ オフシーズンへ</button>` : `<button data-c="new">新しいキャリア</button>`)
       : career.cur ? `<button data-c="cont">▶ 大会の続き</button>`
       : `<button data-c="go">▶ ${evTitle(next.e)} へ</button>`) + '</div>';
+    if (career.seasons.length) h += `<h3>これまでのシーズン</h3><ul>${career.seasons.map(x => `<li><span>${x.year}年目 <small>${x.hist.filter(r => r.k === 'fin' ? r.fin === 'W' : r.r === r.n).length ? '🏆×' + x.hist.filter(r => r.k === 'fin' ? r.fin === 'W' : r.r === r.n).length : ''}</small></span><span>年末 ${x.rank}位 · ${x.pts}pt</span></li>`).join('')}</ul>`;
     // the ranking: the top 10 and you, the rest of the top 200 folded
     const row = (id, k) => `<li class="${id === 0 ? 'me' : ''}"><span>${k + 1}. ${plink(id)}</span><span>${career.players[id].pts} pt</span></li>`;
     h += `<h3>世界ランキング</h3><ul>` + order.slice(0, 10).map(row).join('') + (me > 10 ? `<li>…</li>${row(0, me - 1)}` : '') + '</ul>';
@@ -2147,16 +2317,30 @@
     });
     careerCard(h, false);
   }
+  // the off-season: who grew, who faded, who retired, the new names to watch
+  function showOffSeason() {
+    const o = career.off, row = x => `<li><span>${x.id != null && career.players[x.id] && career.players[x.id].n === x.n ? plink(x.id) : x.n} <small>${x.cc} · ${x.age}歳</small></span><span>${x.rk ? `${x.rk}位` : ''}${x.note ? ` · ${x.note}` : ''}</span></li>`;
+    let h = `<h2>🌙 オフシーズン</h2><p>${o.year}年目が終わり、選手たちは 1 つ年をとった。成長する若手、衰えるベテラン、引退する選手も</p>`;
+    h += `<h3>📈 大きく伸びた選手</h3><ul>${o.rise.map(row).join('')}</ul>`;
+    h += `<h3>📉 調子を落とした選手</h3><ul>${o.fall.map(row).join('')}</ul>`;
+    if (o.gone.length) h += `<h3>👋 引退</h3><ul>${o.gone.map(row).join('')}</ul>`;
+    if (o.fresh.length) h += `<h3>🌱 注目の新人</h3><ul>${o.fresh.map(row).join('')}</ul>`;
+    h += `<p style="font-size:12px;color:var(--sub)">ランキング（ポイント）はそのまま引き継がれる。順位は新シーズンの大会で入れ替わっていく</p>`;
+    h += `<div class="btns"><button data-c="next">▶ ${o.year + 1}年目のシーズンへ</button></div>`;
+    careerCard(h, false);
+  }
   // a finished draw, round by round
   function showEvent(i) {
     const e = career.evs[i];
-    if (e.k === 'fin') { careerCard(`<h2>ATPファイナルズ</h2><p>第${e.w + 1}週 · トリノ · 年間上位 8 人</p><div class="opp">優勝<div class="nm">${plink(e.fin.f.w)}</div>決勝 ${e.fin.f.s} で ${plink(e.fin.f.l)} に勝利</div>` + finHTML(e.fin, false), true); return; }
+    if (e.k === 'fin') { careerCard(`<h2>ATPファイナルズ</h2><p>第${e.w + 1}週 · トリノ · 年間上位 8 人</p>${e.prev ? `<p style="font-size:13px">${pastLine(e.prev)}</p>` : ''}<div class="opp">優勝<div class="nm">${plink(e.fin.f.w)}</div>決勝 ${e.fin.f.s} で ${plink(e.fin.f.l)} に勝利</div>` + finHTML(e.fin, false), true); return; }
     const names = evRounds(e);
     const seed = id => { const s = e.seeds.indexOf(id) + 1; return s ? `[${s}] ` : ''; };
     const tag = id => e.qual && e.qual.includes(id) ? ' <small>(Q)</small>' : e.wc && e.wc.includes(id) ? ' <small>(WC)</small>' : '';
     const nm = id => `${seed(id)}${plink(id)}${tag(id)}`;
     const fin = e.res[e.res.length - 1];
     let h = `<h2>${e.name}</h2><p>第${e.w + 1}週 · ${tierName(e)} · ${e.size || e.draw.length} ドロー · 1 セットマッチ</p>`;
+    if (e.prev) h += `<p style="font-size:13px">${pastLine(e.prev)}</p>`;
+    if (e.out && e.out.length) h += `<p style="font-size:12px;color:var(--sub)">上位選手の欠場：${e.out.map(x => `${plink(x.id)}${x.inj ? '（けが）' : ''}`).join('、')}</p>`;
     h += e.k === 'q' ? `<p>予選通過：${fin.map(m => plink(m.w)).join('、')}</p>` : `<div class="opp">優勝<div class="nm">${nm(fin[0].w)}</div>決勝 ${fin[0].s} で ${nm(fin[0].l)} に勝利</div>`;
     for (let r = e.res.length - 1; r >= 0; r--) {
       const ms = e.res[r].filter(m => m.l !== -1);
@@ -2170,7 +2354,7 @@
   function showPlayer(id) {
     const p = career.players[id], rk = rankOf(id);
     let h = `<h2>${p.n} <small>${p.cc}</small></h2><div class="opp"><div class="nm">世界ランキング ${rk}位 · ${p.pts} pt</div>
-      ${TSTYLE[p.st] || ''} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>
+      ${p.age ? `${p.age}歳 · ` : ''}${TSTYLE[p.st] || ''} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>${p.inj ? ' · <b style="color:#e0475c">けがで欠場中</b>' : ''}
       <div class="memo"><b>📋 スカウティングメモ</b>${(p.traits || []).map(k => `<div class="${TRAITS[k].good ? 'g' : 'b'}">${TRAITS[k].good ? '◎' : '△'} <b>${TRAITS[k].name}</b>：${TRAITS[k].memo}</div>`).join('')}</div></div>`;
     const rows = [];
     career.evs.forEach((e, i) => {
@@ -2670,7 +2854,7 @@
   // ---------- drawing ----------
   const crowd = Array.from({ length: 260 }, () => ({
     u: Math.random(), v: Math.random(),
-    c: ['#ff5d73', '#ffd166', '#06d6a0', '#118ab2', '#f4f1de', '#ef8354', '#a78bfa'][Math.floor(Math.random() * 7)],
+    c: ['#ff5d73', '#ffd166', '#06d6a0', '#118ab2', '#f4f1de', '#ef8354', '#a78bfa'][Math.floor(Math.random() * 7)], k: Math.floor(Math.random() * 7),
   }));
 
   function poly(pts, fill) {
@@ -2685,7 +2869,7 @@
   }
 
   // fictional sponsors on LED boards: the back wall panels change every few seconds
-  const SPONSORS = [['BUMPY SPORTS', '#ff5d73'], ['KOBA WATER', '#2ab7ca'], ['AERO AIR', '#3d5af1'], ['SPEED WATCH', '#222'],
+  const SPONSORS0 = [['BUMPY SPORTS', '#ff5d73'], ['KOBA WATER', '#2ab7ca'], ['AERO AIR', '#3d5af1'], ['SPEED WATCH', '#222'],
                     ['CLOUD BANK', '#0a9396'], ['NORI DRINK', '#f4a261'], ['TOPSPIN TV', '#8338ec'], ['GRAND SLAM SHOES', '#e63946']];
   function adPanel(x0, x1, y0, y1, z0, z1, [name, col], vertical) {
     const pts = vertical ? [[x0, y0, z1], [x1, y1, z1], [x1, y1, z0], [x0, y0, z0]] : null;
@@ -2701,7 +2885,7 @@
     ctx.restore();
   }
   function drawAds(t) {
-    const shift = Math.floor(t / 5);
+    const shift = Math.floor(t / 5), SPONSORS = venue.ads || SPONSORS0;
     for (let k = 0, x = -15; x < CW + 15; x += 5.2, k++) {
       if (x + 5 > CX - 3.2 && x < CX + 3.2) continue; // leave the middle for the event banner
       adPanel(x, x + 5, -7.95, -7.95, .25, 1.9, SPONSORS[(k + shift) % SPONSORS.length], true);
@@ -2731,7 +2915,7 @@
     crowd.forEach((c, i) => {
       if (i >= crowd.length * stage.fill) return;
       const y = c.v * (wallTop - 6) + 3 + (rally > 4 ? Math.sin(t * 9 + i) * 1.5 : 0) - Math.abs(Math.sin(t * 13 + i * 1.7)) * 5 * Math.min(1, cheer);
-      ctx.fillStyle = c.c; ctx.beginPath(); ctx.arc(c.u * W, y, 2 + c.v * 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = V.fans ? V.fans[c.k % V.fans.length] : c.c; ctx.beginPath(); ctx.arc(c.u * W, y, 2 + c.v * 2.5, 0, Math.PI * 2); ctx.fill();
     });
     ctx.fillStyle = V.wall; ctx.fillRect(0, wallTop, W, wallBot - wallTop);
     const mid = P(CX, -8, 1.1);
@@ -3198,9 +3382,11 @@
       ctx.fillStyle = col; ctx.fillText(SHOTS[ch.type].name + (p >= 1 ? ' MAX' : ''), base.x, y - 7);
     }
   }
-  const KIT_P = { shirt: '#ff5d73', trim: '#fff', shorts: '#f4f4f4', skin: '#f0c8a0', hair: '#3a2a22', cap: '#c9384d', shoe: '#ffffff', racket: '#d7263d' };
+  const KIT_P0 = { shirt: '#ff5d73', trim: '#fff', shorts: '#f4f4f4', skin: '#f0c8a0', hair: '#3a2a22', cap: '#c9384d', shoe: '#ffffff', racket: '#d7263d' };
   const KIT_C = { shirt: '#4a6fd1', trim: '#ffd166', shorts: '#1f2b55', skin: '#c68a5a', hair: '#1b1b1b', cap: '#1b1b1b', shoe: '#ffd166', racket: '#2b2f4a' };
-  let cpuKit = KIT_C;
+  let cpuKit = KIT_C, KIT_P = KIT_P0;
+  // the all-white rule of the grass court of tradition (a thin trim is all the colour allowed)
+  const WHITE_KIT = { shirt: '#f7f7f2', trim: '#e4e6ea', shorts: '#f7f7f2', cap: '#f7f7f2', shoe: '#ffffff' };
 
   // simple stand-in people for the officials
   function person(x, y, z0, shirt, h, opts = {}) {
@@ -3690,6 +3876,19 @@
       }
       const plate = new T.Mesh(new T.CylinderGeometry(.24, .24, .02, 32), silver);
       cup.visible = plate.visible = false; scene.add(cup); scene.add(plate);
+      // the big events' trophies: lathed profiles in silver or gold, some with handles or a lid
+      const trophyOf = { cup };
+      const lathe = (pts, mat, handles) => {
+        const g = new T.Group(); g.add(new T.Mesh(new T.LatheGeometry(pts.map(([x, y]) => new T.Vector2(x, y)), 28), mat));
+        if (handles) [-1, 1].forEach(sd => { const h = new T.Mesh(new T.TorusGeometry(handles[0], .016, 6, 14, Math.PI), mat); h.position.set(sd * handles[1], handles[2], 0); h.rotation.z = sd > 0 ? -Math.PI / 2 : Math.PI / 2; g.add(h); });
+        g.visible = false; scene.add(g); return g;
+      };
+      trophyOf.norman = lathe([[0, 0], [.16, 0], [.16, .05], [.06, .09], [.05, .22], [.09, .26], [.22, .36], [.25, .54], [.22, .58], [0, .58]], silver, [.13, .25, .42]);
+      trophyOf.musketeers = lathe([[0, 0], [.14, 0], [.14, .05], [.05, .08], [.04, .18], [.1, .22], [.19, .3], [.2, .48], [.17, .5], [0, .5]], silver, [.09, .19, .38]);
+      trophyOf.wimbledon = lathe([[0, 0], [.12, 0], [.12, .03], [.04, .06], [.035, .18], [.07, .22], [.14, .3], [.15, .42], [.13, .46], [.14, .48], [.09, .52], [.03, .55], [.045, .6], [0, .63]], gold, [.07, .15, .36]);
+      trophyOf.usopen = lathe([[0, 0], [.1, 0], [.1, .04], [.04, .08], [.035, .32], [.08, .38], [.12, .52], [.1, .64], [.06, .68], [.03, .76], [0, .78]], silver);
+      trophyOf.finals = lathe([[0, 0], [.12, 0], [.12, .06], [.05, .08], [.05, .3], [.16, .36], [.19, .46], [0, .46]], silver);
+      const salverMat = new T.MeshLambertMaterial({ color: 0xdfe3ea, emissive: 0x202428 });
       let cerCam = false;
       function cerGL() {
         if (state === 'ceremony' && cer) {
@@ -3704,10 +3903,11 @@
             mesh.position.set((a[0] + b[0]) / 2, (a[2] + b[2]) / 2 + up * F, (a[1] + b[1]) / 2);
             mesh.scale.setScalar(F * 1.25);
           };
-          hold(cup, cer.champ, cer.champ.cerPose === 'cup' ? .05 : -.05, cer.cup);
+          const tk = cer.st ? cer.st.trophy : 'cup';
+          for (const k in trophyOf) hold(trophyOf[k], cer.champ, cer.champ.cerPose === 'cup' ? .05 : -.05, cer.cup && k === tk);
           hold(plate, cer.runner, .02, cer.plate);
-          if (plate.visible) plate.rotation.set(Math.PI / 2, 0, 0);
-        } else if (cerCam || cup.visible || plate.visible) { cerCam = false; cup.visible = plate.visible = false; resizeGL(); }
+          if (plate.visible) { plate.rotation.set(Math.PI / 2, 0, 0); if (cer.st && cer.st.plate === 'salver') plate.scale.multiplyScalar(1.25); }
+        } else if (cerCam || cup.visible || plate.visible || Object.values(trophyOf).some(m => m.visible)) { cerCam = false; for (const k in trophyOf) trophyOf[k].visible = false; plate.visible = false; resizeGL(); }
       }
       // ---- stage 3: the stadium (walls, LED boards, stands full of fans, floodlights) and surface textures ----
       const rnd = (a, b) => a + Math.random() * (b - a);
@@ -3761,13 +3961,13 @@
       const sideTex = new T.CanvasTexture(sideCanvas); sideTex.colorSpace = T.SRGBColorSpace; sideTex.anisotropy = 4;
       let ledShift = -1;
       function paintBoards(V, shift) {
-        const g = ledCanvas.getContext('2d'), w = ledCanvas.width, h = ledCanvas.height, mx = x => (x - backX0) / (backX1 - backX0) * w;
+        const g = ledCanvas.getContext('2d'), w = ledCanvas.width, h = ledCanvas.height, mx = x => (x - backX0) / (backX1 - backX0) * w, SPONSORS = V.ads || SPONSORS0;
         g.fillStyle = V.wall; g.fillRect(0, 0, w, h);
         for (let k = 0, x = -15; x < CW + 15; x += 5.2, k++) {
           if (x + 5 > CX - 5.2 && x < CX + 5.2) continue; // the middle is the scoreboard
           const [name, col] = SPONSORS[(k + shift) % SPONSORS.length], a = mx(x), b = mx(x + 5);
           g.fillStyle = col; g.fillRect(a, 8, b - a, h - 16);
-          g.fillStyle = '#fff'; g.font = `bold ${Math.min(70, (b - a) * .9 / (name.length * .6))}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+          g.fillStyle = V.plainAds ? 'rgba(255,255,255,.55)' : '#fff'; g.font = `bold ${Math.min(V.plainAds ? 34 : 70, (b - a) * .9 / (name.length * .6))}px ${V.plainAds ? 'Georgia, serif' : 'system-ui, sans-serif'}`; g.textAlign = 'center'; g.textBaseline = 'middle';
           g.fillText(name, (a + b) / 2, h / 2 + 2);
         }
         ledTex.needsUpdate = true;
@@ -3789,10 +3989,10 @@
       function paintScoreboard() {
         const inMatch = state !== 'menu' && state !== 'over', V = venue;
         const fresh = lastServe && performance.now() - lastServe.t < 9000; // the speed glows for a while after each serve
-        const key = inMatch ? [games, pts, tb, server(), clockText(), lastServe && lastServe.kmh, fresh, NAME.C].join('|') : V.banner;
+        const key = (inMatch ? [games, pts, tb, server(), clockText(), lastServe && lastServe.kmh, fresh, NAME.C].join('|') : V.banner) + V.key;
         if (key === sbKey) return; sbKey = key;
         const g = sbCanvas.getContext('2d'), w = sbCanvas.width, h = sbCanvas.height;
-        g.fillStyle = '#05070d'; g.fillRect(0, 0, w, h);
+        g.fillStyle = V.sbBg || '#05070d'; g.fillRect(0, 0, w, h);
         g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 4; g.strokeRect(4, 4, w - 8, h - 8);
         g.textBaseline = 'middle';
         if (!inMatch) { g.fillStyle = '#fff'; g.font = 'bold 64px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(V.banner, w / 2, h / 2 + 2); sbTex.needsUpdate = true; return; }
@@ -3846,6 +4046,43 @@
           for (let y = -8.5; y < L + 12; y += .58) fans.push([x + rnd(-.08, .08), y + rnd(-.08, .08), z, side < 0 ? Math.PI / 2 : -Math.PI / 2]);
         }
       });
+      // the upper deck of the biggest arenas: a steeper ring of seats above the lower bowl (its fans are marked)
+      const upperDeck = new T.Group(); scene.add(upperDeck);
+      const nLower = fans.length;
+      for (let k = 0; k < 8; k++) {
+        const y = -22.5 - k * .9, z = 10.5 + k * .62;
+        const m = new T.Mesh(new T.BoxGeometry(70, z, .9), k % 2 ? seatMat : seatMat2); m.position.set(CX + 4, z / 2, y); upperDeck.add(m);
+        for (let x = CX - 30; x < CX + 38; x += .62) fans.push([x + rnd(-.08, .08), y + .1, z, Math.PI]);
+      }
+      [-1, 1].forEach(side => {
+        for (let k = 0; k < 6; k++) {
+          const x = side < 0 ? -ALLEY - 13.8 - k * .9 : CW + ALLEY + 13.8 + k * .9, z = 6.5 + k * .62;
+          const m = new T.Mesh(new T.BoxGeometry(.9, z, L + 26), k % 2 ? seatMat : seatMat2); m.position.set(x, z / 2, NET_Y + 2); upperDeck.add(m);
+          for (let y = -10; y < L + 14; y += .62) fans.push([x + rnd(-.08, .08), y + rnd(-.08, .08), z, side < 0 ? Math.PI / 2 : -Math.PI / 2]);
+        }
+      });
+      const upperFan = i => i >= nLower;
+      // a roof frame over the stands (open), or a closed roof with a lighting rig (indoors)
+      const roof = new T.Group(), roofTop = new T.Group(); scene.add(roof); roof.add(roofTop);
+      {
+        const steel = new T.MeshLambertMaterial({ color: 0xd8dde6 }), dark = new T.MeshLambertMaterial({ color: 0x0b0e18 });
+        const beam = (w, h, d, x, y, z, m = steel) => { const b = new T.Mesh(new T.BoxGeometry(w, h, d), m); b.position.set(x, y, z); roof.add(b); return b; };
+        beam(76, .9, 1.4, CX, 17.5, -27);                                                  // over the back stands
+        [-ALLEY - 21, CW + ALLEY + 21].forEach(x => beam(1.4, .9, L + 48, x, 17.5, NET_Y)); // along the sides
+        for (let x = CX - 36; x <= CX + 36; x += 9) beam(.35, .35, 18, x, 16.8, -18, steel).rotation.x = -.18; // ribs toward the court
+        [[-ALLEY - 21, -27], [CW + ALLEY + 21, -27]].forEach(([x, z]) => beam(1, 17.5, 1, x, 8.75, z));
+        const ceil = new T.Mesh(new T.PlaneGeometry(90, 70), dark); ceil.rotation.x = Math.PI / 2; ceil.position.set(CX, 18.2, NET_Y - 6); roofTop.add(ceil);
+        // the lighting rig: rows of lamps and soft coloured beams
+        const lamp = new T.SpriteMaterial({ map: canvasTex(64, 64, (g, w) => { const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); r.addColorStop(0, 'rgba(230,245,255,1)'); r.addColorStop(1, 'rgba(230,245,255,0)'); g.fillStyle = r; g.fillRect(0, 0, w, w); }), transparent: true, depthWrite: false, blending: T.AdditiveBlending });
+        for (let x = -14; x <= CW + 14; x += 3.5) for (const z of [-14, NET_Y, L + 8]) { const l = new T.Sprite(lamp); l.scale.set(2.2, 2.2, 1); l.position.set(x, 17.6, z); roofTop.add(l); }
+        const beamMat = c => new T.MeshBasicMaterial({ color: c, transparent: true, opacity: .07, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide });
+        [[-6, '#00b4d8'], [CW + 6, '#7b2cbf'], [CX, '#ffffff']].forEach(([x, c]) => { const b = new T.Mesh(new T.ConeGeometry(4, 18, 20, 1, true), beamMat(c)); b.position.set(x, 9, -4); roofTop.add(b); });
+      }
+      // ivy on the walls (the grass court of tradition)
+      const ivyTex = canvasTex(512, 64, (g, w, h) => {
+        g.fillStyle = '#1d4a2a'; g.fillRect(0, 0, w, h);
+        for (let i = 0; i < 2600; i++) { g.fillStyle = ['#2f6b3a', '#3d7f45', '#255c33', '#4a8f4f'][i % 4]; g.beginPath(); g.ellipse(Math.random() * w, Math.random() * h, rnd(1.5, 3.5), rnd(1, 2.5), Math.random() * 3, 0, 7); g.fill(); }
+      }, [8, 1]);
       const bodyGeo = new T.BoxGeometry(.42, .55, .3), headGeo = new T.IcosahedronGeometry(.12, 0);
       const fanBody = new T.InstancedMesh(bodyGeo, new T.MeshLambertMaterial(), fans.length);
       const fanHead = new T.InstancedMesh(headGeo, new T.MeshLambertMaterial(), fans.length);
@@ -3858,14 +4095,14 @@
         fanHead.setColorAt(i, col.set(skinCols[Math.floor(Math.random() * skinCols.length)]));
       });
       scene.add(fanBody, fanHead);
-      let fillSet = -1;
+      let fillSet = -1, fansFor = null;
       let fansKey = null;
       function moveFans(t) {
         const cheerK = Math.min(1, cheer), waving = rally > 4;
-        if (!cheerK && !waving) { if (fansKey === stage.fill) return; fansKey = stage.fill; } else fansKey = null;
+        if (!cheerK && !waving) { if (fansKey === stage.fill + venue.key) return; fansKey = stage.fill + venue.key; } else fansKey = null;
         fans.forEach((f, i) => {
           const [x, y, z, rot, here, ph] = f;
-          if (here > stage.fill) { mtx.makeScale(0, 0, 0); fanBody.setMatrixAt(i, mtx); fanHead.setMatrixAt(i, mtx); return; }
+          if (here > stage.fill || (upperFan(i) && !venue.upper)) { mtx.makeScale(0, 0, 0); fanBody.setMatrixAt(i, mtx); fanHead.setMatrixAt(i, mtx); return; }
           const jump = cheerK ? Math.abs(Math.sin(t * 13 + ph)) * .35 * cheerK : waving ? Math.sin(t * 9 + ph) * .03 : 0;
           q.setFromAxisAngle(UP, rot);
           mtx.compose(v.set(x, z + .28 + jump, y), q, one); fanBody.setMatrixAt(i, mtx);
@@ -3888,9 +4125,16 @@
         court.material.map = courtTex[V.key]; court.material.color.set('#ffffff'); court.material.needsUpdate = true; court.visible = true;
         ground.material.map = groundTex[V.key]; ground.material.color.set('#ffffff'); ground.material.needsUpdate = true;
         stripes.visible = false;
-        wallMat.color.set(V.wall);
+        wallMat.color.set(V.ivy ? '#ffffff' : V.wall); wallMat.map = V.ivy ? ivyTex : null; wallMat.needsUpdate = true;
         const seat = new T.Color(V.wall); seatMat.color.copy(seat).offsetHSL(0, -.1, .06); seatMat2.color.copy(seat).offsetHSL(0, -.1, .12);
-        towers.visible = !!V.night;
+        if (V.seats) { seatMat.color.set(V.seats[0]); seatMat2.color.set(V.seats[1]); }
+        upperDeck.visible = !!V.upper; roof.visible = !!V.roof; roofTop.visible = V.roof === 'closed';
+        if (fansFor !== V.key) { // the crowd dresses for the venue
+          fansFor = V.key; const pal = V.fans || shirtCols;
+          fans.forEach((f, i) => fanBody.setColorAt(i, col.set(pal[Math.floor(f[4] * 997) % pal.length])));
+          fanBody.instanceColor.needsUpdate = true; fansKey = null;
+        }
+        towers.visible = !!V.night && V.roof !== 'closed';
         scene.fog.color.set(V.night ? '#05070f' : '#c9dcf0'); scene.fog.near = V.night ? 22 : 70; scene.fog.far = V.night ? 75 : 230;
         sun.color.set(V.night ? '#e9efff' : '#fff1dc'); fill.intensity = V.night ? .25 : 0;
         ledShift = -1;
