@@ -156,6 +156,7 @@
       </div>
       <label id="liteRow" class="hidden"><input type="checkbox" id="lite3d"> 軽量モード（3D が重いとき。遅い端末では自動で ON）</label>
       <label><input type="checkbox" id="replays"> 名場面リプレイ（長いラリー・大事なポイント・豪快なエースのときだけ）</label>
+      <label><input type="checkbox" id="lefty"> 左利きでプレー（フォアとバックが逆、スライスサーブは右に曲がる）</label>
       <label><input type="checkbox" id="use2d"> 2D 表示にする（いちばん軽い。古い端末向け）</label>
       <p style="margin-top:10px"><b>相手の強さを選んでスタート</b></p>
       <div class="btns">
@@ -580,7 +581,7 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const d2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const other = w => (w === 'P' ? 'C' : 'P');
-  const leftOf = w => (w === 'P' ? -1 : 1); // world-x of a right-hander's left side (player faces the far end)
+  const leftOf = w => (w === 'P' ? -1 : 1) * ((w === 'P' ? player : cpu).lefty ? -1 : 1); // world-x of the server's racket-free side: where the slice serve curves
   const pickWeighted = mix => {
     let r = Math.random() * Object.values(mix).reduce((a, b) => a + b, 0);
     for (const [k, w] of Object.entries(mix)) if ((r -= w) < 0) return k;
@@ -635,6 +636,8 @@
     $('board').innerHTML = BOARD_HTML;
     lvKey = key; lv = LEVELS[key];
     tourOpp = opp; NAME.C = opp ? opp.sur : 'C P U';
+    cpu.lefty = !!(opp && (opp.lefty ?? (opp.cid != null && career && career.players[opp.cid] ? isLefty(career.players[opp.cid]) : false)));
+    cpu.turn = player.turn = 0;
     if (!opp) stage = { fill: 1 };
     cpu.size = opp && opp.look ? opp.look.size : 1; cpu.build = opp && opp.look ? opp.look.build : 1;
     cpuKit = opp && opp.look ? { ...KIT_C, ...opp.look } : KIT_C;
@@ -724,6 +727,7 @@
   // shot's margin, then correct the aim for any sidespin curve.
   // side: world-x direction the sidespin pulls toward (default: away from the center line)
   function shoot(tx, ty, type, { speed = 25, angle = null, noClear = false, curve = 1, side = 0, who = null, over = null } = {}) {
+    ball.cord = false;
     const sh = { ...styled(type, who), ...over };
     const ax = sh.curve ? (side || (tx > CX ? 1 : -1)) * sh.curve * curve : 0;
     const { x, y, z } = ball, D = Math.hypot(tx - x, ty - y);
@@ -843,11 +847,17 @@
   const ANIM = { serve: .75, smash: .6, volley: .38 };
   function startAnim(o, kind, spin, from = 0) {
     const dur = ANIM[kind] || .62;
+    if (kind === 'tweener' || kind === 'behind') o.turn = Math.max(o.turn || 0, dur + .15); // stay turned through the swing
     o.stroke = { kind, spin, side: kind === 'volley' ? sideKind(o) : kind };
     o.animDur = dur; o.anim = dur * (1 - from);
   }
-  const strokeKind = o => (ball.z > 2.3 && ball.bounces === 0 ? 'smash'
+  const strokeKind = o => (behind(o) ? trickKind(o)
+    : ball.z > 2.3 && ball.bounces === 0 ? 'smash'
     : ball.bounces === 0 && !ball.serve && !(o === player && isDriveVolley()) ? 'volley' : sideKind(o));
+  // the ball has gone over your head and is running away toward your own baseline: you chase it with your back to
+  // the net, and hit it back without turning - between the legs when it is low, a flick over the shoulder when higher
+  const behind = o => ball.live && !ball.serve && ball.z < 2.4 && (o === player ? ball.vy > 1.5 && ball.y > o.y + .5 && o.y < L - .5 && ball.last === 'C' : ball.vy < -1.5 && ball.y < o.y - .5 && o.y > .5 && ball.last === 'P');
+  const trickKind = o => ball.z < .8 ? 'tweener' : 'behind';
   // a floater taken out of the air from mid-court with a full swing
   const isDriveVolley = () => ball.bounces === 0 && !ball.serve && ball.z > 1 && ball.z <= 2.3 && player.y > NET_Y + 2.5;
   function fireSwing() {
@@ -867,6 +877,7 @@
   }
 
   function playerHit(d) {
+    if (behind(player)) return trickHit(player, player.shot === 'lob');
     let type = player.shot;
     const power = player.power;
     const smash = ball.z > 2.1 && ball.bounces === 0 && type !== 'lob' && type !== 'drop';
@@ -979,6 +990,7 @@
   }
 
   function cpuHit(d) {
+    if (behind(cpu)) return trickHit(cpu, Math.random() < .45);
     if (ball.bounces === 0 || ball.chance) return cpuPutAway(); // a sitter, in the air or after the bounce
     const incoming = Math.hypot(ball.vx, ball.vy);
     const stretched = d > lv.reach;
@@ -1032,6 +1044,34 @@
     else if (type !== 'top' && type !== 'flat' || kmh > 95) popupAt(cpu.x, cpu.y, 2.6, `${SHOTS[type].name} ${kmh}km/h`, SHOTS[type].color);
   }
 
+  // a shot with your back to the net: a lob scooped back over your head, or (low) between the legs / (higher) a flick
+  // over the shoulder - slower, harder to control, and a thrill when it lands
+  function trickHit(o, lob) {
+    const me = o === player, kind = lob ? 'behind' : trickKind(o), opp = me ? cpu : player;
+    const farY = me ? 0 : L, sign = me ? 1 : -1; // toward the opponent's baseline from the net
+    const err = (lob ? .9 : 1.5) + (me ? (1 - (player.power || .5)) * .4 : (1 - lv.aim) * .8);
+    let tx = (opp.x < CX ? CX + rand(.5, 3) : CX - rand(.5, 3)) + rand(-err, err), ty, opts;
+    if (lob) { ty = farY + sign * rand(.8, 3.5) + rand(-err, err * .4); opts = { angle: rand(.52, .62) }; }
+    else if (kind === 'tweener') { ty = NET_Y - sign * rand(3, 8) + rand(-err, err); opts = { speed: rand(17, 24), noClear: Math.random() < .15 }; }
+    else { ty = NET_Y - sign * rand(4, 9.5) + rand(-err, err); opts = { speed: rand(20, 27), noClear: Math.random() < .12 }; }
+    // and often it just doesn't come off: wide, long or into the net
+    if (Math.random() < (lob ? .15 : kind === 'tweener' ? .35 : .3) + (me ? 0 : .05)) {
+      const r = Math.random();
+      if (r < .4) tx = Math.random() < .5 ? rand(-1.5, -.2) : CW + rand(.2, 1.5);
+      else if (r < .75 && lob) ty = farY - sign * rand(.3, 2);
+      else if (r < .75) ty = NET_Y - sign * rand(10, 13);
+      else { ty = NET_Y - sign * rand(1, 3); opts.noClear = true; }
+    }
+    opts.curve = 0; opts.who = me ? 'P' : 'C';
+    const type = lob ? 'lob' : 'flat', kmh = shoot(tx, ty, type, opts);
+    Object.assign(ball, { last: me ? 'P' : 'C', bounces: 0, serve: false, chance: false });
+    if (!(o.anim > 0) || (o.stroke && !['tweener', 'behind'].includes(o.stroke.kind))) startAnim(o, kind, type, .3);
+    else { const ct = .38 * o.animDur; if (o.anim > o.animDur - ct) o.anim = o.animDur - ct; }
+    if (me) { player.lastGrade = 'normal'; player.closest = null; } else { cpu.swing = SWING * .6; player.hop = HOP; cpu.defend = true; cpu.rush = false; }
+    rally++; maxRally = Math.max(maxRally, rally); if (me) maxSpeed = Math.max(maxSpeed, kmh);
+    ball.shotKmh = kmh; sHit(.5, type, !me); crowdVoice('ooh', .9); cheer = Math.max(cheer, 1.2);
+    popupAt(o.x, o.y, 3, lob ? '背走ロブ!' : kind === 'tweener' ? '股抜きショット!' : '背面ショット!', '#c77dff');
+  }
   // where should the CPU go to meet the ball in time?
   function planIntercept() {
     if ((ball.chance || cpu.rush) && ball.bounces === 0) { // a floater (or at the net): meet it in the air, as close to the net as it can get
@@ -1074,6 +1114,7 @@
     const recv = other(ball.last);
     if (ball.bounces === 1) {
       const ok = ball.serve ? inBox(serveBox(recv, deuce())) : inCourt(recv);
+      if (ok && ball.serve && ball.cord) { ball.live = false; umpire('Let'); pause('レット', faults ? 'セカンドサーブ' : 'もう一度ファーストサーブ', 1.2, setupServe); return; }
       marks.push({ x: ball.x, y: ball.y, life: venue.clay ? 5 : 1.2, ok }); // clay keeps the ball mark
       if (ok && ball.serve && ball.type === 'top') popupAt(ball.x, ball.y, 1.4, 'キック!', SHOTS.top.color);
       if (ok && lineDist(recv) < .1) crowdVoice('gasp', .55); // just caught the line
@@ -1633,7 +1674,7 @@
       const e = entrants(r), m = userMatch(r), opp = e[2 * m] === 0 ? e[2 * m + 1] : e[2 * m], p = tour.players[opp];
       h += `<h3>${RN()[r]} · 次の相手</h3><div class="opp">${rkOf(p) ? `<div><span class="rkb">世界ランキング ${rkOf(p)}位</span></div>` : ''}<div class="nm">${p.seed ? `<span class="sd">第${p.seed}シード</span> ` : ''}${p.n} <small>${p.cc}</small></div>
         ${p.tag ? `<div style="font-size:13px">${p.tag === 'Q' ? '予選を勝ち上がってきた選手' : 'ワイルドカードで出場'}</div>` : ''}
-        ${TSTYLE[p.st]} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>
+        ${TSTYLE[p.st]}${p.lefty || (p.cid && career && career.players[p.cid] && isLefty(career.players[p.cid])) ? ' · <b>左利き</b>' : ''} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>
         ${p.look ? `<div style="margin:6px 0"><span class="kit" style="background:${p.look.shirt};border-color:${p.look.trim}"></span><span class="kit" style="background:${p.look.shorts}"></span></div>` : ''}
         <div class="memo"><b>📋 スカウティングメモ</b>${(p.traits || []).map(k => `<div class="${TRAITS[k].good ? 'g' : 'b'}">${TRAITS[k].good ? '◎' : '△'} <b>${TRAITS[k].name}</b>：${TRAITS[k].memo}</div>`).join('')}</div>
         <div style="font-size:12px;color:var(--sub);margin-top:4px">会場: ${STG(r).court}</div></div>`;
@@ -1841,11 +1882,12 @@
   // a new player: the ceiling (pot) is where a young player can grow to
   function newPlayer(names, used, r, age, seed = 0) {
     let nm, full; do { nm = pickOf(names); full = INITIALS[Math.floor(Math.random() * INITIALS.length)] + '. ' + nm.sur; } while (used.has(full)); used.add(full);
-    const pl = { n: full, sur: nm.sur, cc: nm.cc, r: +r.toFixed(3), st: pickOf(['big', 'base', 'slice', 'all']), tbk: Math.random(), age,
+    const pl = { n: full, sur: nm.sur, cc: nm.cc, r: +r.toFixed(3), st: pickOf(['big', 'base', 'slice', 'all']), tbk: Math.random(), age, lefty: Math.random() < .12,
                  pot: +clamp(age <= 23 ? r + rand(.05, .45) + (Math.random() < .08 ? .25 : 0) : r + rand(0, .08), .4, 1.6).toFixed(3), inj: 0 };
     pl.seed = seed; pl.traits = makeTraits(pl); pl.look = makeLook(pl); delete pl.seed;
     return pl;
   }
+  const isLefty = p => p.lefty ?? ([...p.n].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 997, 7) % 100 < 12);
   const NAMES = () => { const a = []; for (const [cc, list] of Object.entries(NAMEPOOL)) for (const sur of list) a.push({ sur, cc }); return a; };
   // the off-season: everyone a year older; the young grow toward their ceiling, the old fade, some have a
   // breakthrough or a slump, and the oldest or weakest retire (new teenagers take their places)
@@ -2108,7 +2150,7 @@
   // a local draw for you to play: you are id 0, everyone keeps their career id, seed, tag and ranking
   function localTour(ids, draw, seeds, extra) {
     const list = [0, ...ids.filter(id => id !== 0 && id >= 0)], loc = new Map(list.map((id, i) => [id, i]));
-    const players = list.map(id => ({ ...career.players[id], cid: id, rk: rankOf(id), seed: seeds.indexOf(id) + 1 }));
+    const players = list.map(id => ({ ...career.players[id], cid: id, rk: rankOf(id), seed: seeds.indexOf(id) + 1, lefty: id ? isLefty(career.players[id]) : false }));
     players.forEach(p => { delete p.wk; });
     return { v: 6, players, draw: draw.map(id => loc.get(id)), res: [], out: false, career: true, ...extra };
   }
@@ -2354,7 +2396,7 @@
   function showPlayer(id) {
     const p = career.players[id], rk = rankOf(id);
     let h = `<h2>${p.n} <small>${p.cc}</small></h2><div class="opp"><div class="nm">世界ランキング ${rk}位 · ${p.pts} pt</div>
-      ${p.age ? `${p.age}歳 · ` : ''}${TSTYLE[p.st] || ''} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>${p.inj ? ' · <b style="color:#e0475c">けがで欠場中</b>' : ''}
+      ${p.age ? `${p.age}歳 · ` : ''}${TSTYLE[p.st] || ''}${isLefty(p) ? ' · 左利き' : ''} · 身長 ${heightCm(p)}cm · 強さ <span class="st">${stars(p.r)}</span>${p.inj ? ' · <b style="color:#e0475c">けがで欠場中</b>' : ''}
       <div class="memo"><b>📋 スカウティングメモ</b>${(p.traits || []).map(k => `<div class="${TRAITS[k].good ? 'g' : 'b'}">${TRAITS[k].good ? '◎' : '△'} <b>${TRAITS[k].name}</b>：${TRAITS[k].memo}</div>`).join('')}</div></div>`;
     const rows = [];
     career.evs.forEach((e, i) => {
@@ -2781,7 +2823,13 @@
     if (impact) { if (impact > 2) sBounce(impact); onBounce(); }
     if ((py - NET_Y) * (ball.y - NET_Y) < 0 && ball.x > -2.3 && ball.x < CW + 2.3) {
       const nh = NET_H + Math.min(1, Math.abs(ball.x - CX) / (CX + 2.3)) * .155;
-      if (ball.z < nh) {
+      const graze = (nh - ball.z) / .08; // how deep into the tape: 0 = just clipped the top
+      if (ball.z < nh && ball.live && graze < 1 && Math.random() < .8 - .55 * graze) {
+        // a net cord: the ball clips the tape, pops up and trickles over
+        ball.z = nh + .02; ball.vy *= rand(.12, .32); ball.vx *= .5; ball.vz = Math.abs(ball.vz) * .25 + rand(.6, 2); ball.ax = 0; ball.mg = 0;
+        ball.cord = true; sBounce(2); crowdVoice('ooh', .6);
+        popupAt(ball.x, NET_Y, 1.7, ball.serve ? 'ネット…' : 'ネットイン!', '#fff');
+      } else if (ball.z < nh) {
         ball.y = NET_Y + Math.sign(py - NET_Y) * .06; ball.vy *= -.15; ball.vx *= .3; ball.ax = 0;
         if (ball.live) onNet();
       }
@@ -2795,6 +2843,7 @@
     moveBall(dt * ballTS());
     player.swing = Math.max(0, player.swing - dt); player.cool -= dt;
     cpu.swing = Math.max(0, cpu.swing - dt);
+    [player, cpu].forEach(o => { o.turn = behind(o) && d2(ball, o) < 7 && state === 'rally' ? Math.max(o.turn || 0, .25) : Math.max(0, (o.turn || 0) - dt); });
     if (charge) charge.t += dt;
     // held too long: the toss drops and you have to swing anyway
     if (charge && charge.serve && tossing && ball.vz < 0 && ball.z < 1.9) serveRelease();
@@ -3023,8 +3072,20 @@
                     K(1, -.9, [-.35, .35, .8], [-.3, -.2, -.95], [-.3, 0, 1])];
   // smash: side-on, left hand pointing up at the ball, then the same overhead swing
   const SMASH = [K(0, 1, [.35, -.2, 1.75], [0, -.3, -1], [.1, .55, 2.2]), ...OVERHEAD.slice(1)];
+  // back-to-the-net shots (the body faces your own baseline): between the legs, a flick back over the shoulder,
+  // and a lob scooped back over the head
+  const TWEENER = [K(0, 0, [.25, .4, .95], [.1, .3, -.95], [-.3, .3, 1.2]),
+                   K(.38, 0, [.02, -.05, .3], [0, -.95, -.2], [-.35, .2, 1.1]),
+                   K(1, 0, [-.05, -.4, .55], [0, -.6, .8], [-.35, .25, 1.15])];
+  const BEHIND = [K(0, .3, [.5, .35, 1], [.3, .6, -.7], [-.3, .4, 1.2]),
+                  K(.38, -.2, [.35, -.15, 1.35], [.2, -.9, .3], [-.3, .3, 1.25]),
+                  K(1, -.5, [.1, -.45, 1.75], [-.1, -.6, .8], [-.3, .3, 1.3])];
+  const BEHIND_LOB = [K(0, .2, [.45, .4, .7], [.2, .5, -.8], [-.3, .4, 1.2]),
+                      K(.38, 0, [.3, .05, .9], [.1, -.4, .9], [-.3, .3, 1.25]),
+                      K(1, -.2, [.15, -.25, 2.05], [0, -.3, 1], [-.3, .3, 1.35])];
   const keysFor = st => st.kind === 'serve' ? OVERHEAD : st.kind === 'smash' ? SMASH
     : st.kind === 'volley' ? (st.side === 'bh' ? VOLLEY_BH : VOLLEY_FH)
+    : st.kind === 'tweener' ? TWEENER : st.kind === 'behind' ? (st.spin === 'lob' ? BEHIND_LOB : BEHIND)
     : (st.kind === 'bh' ? BH : FH)[st.spin] || FH.top;
 
   const lerp3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
@@ -3039,7 +3100,12 @@
       if (p <= keys[i].t) return blendKey(keys[i - 1], keys[i], (p - keys[i - 1].t) / (keys[i].t - keys[i - 1].t));
     return keys[keys.length - 1];
   }
-  const facing = o => (o === player && !o.faceCam ? { R: [1, 0], Fw: [0, -1] } : { R: [-1, 0], Fw: [0, 1] });
+  const facing = o => {
+    const away = (o === player && !o.faceCam) !== (o.turn > 0); // turned: chasing a ball over your head, back to the net
+    const f = away ? { R: [1, 0], Fw: [0, -1] } : { R: [-1, 0], Fw: [0, 1] };
+    if (o.lefty) f.R = [-f.R[0], -f.R[1]]; // a left-hander is the mirror image: the racket in the other hand
+    return f;
+  };
   const backView = o => facing(o).Fw[1] < 0; // seen from behind (you, normally)
   const sideKind = o => ((ball.x - o.x) * facing(o).R[0] >= 0 ? 'fh' : 'bh');
   const isServer = o => (server() === 'P') === (o === player);
@@ -4300,6 +4366,9 @@
   GL = want2d ? null : initGL();
   $('use2d').checked = !GL;
   $('replays').checked = replaysOn;
+  try { player.lefty = localStorage.getItem('bumpyLefty') === '1'; } catch (e) {}
+  $('lefty').checked = !!player.lefty;
+  $('lefty').onchange = e => { player.lefty = e.target.checked; try { localStorage.setItem('bumpyLefty', player.lefty ? '1' : '0'); } catch (err) {} };
   $('replays').onchange = e => { replaysOn = e.target.checked; try { localStorage.setItem('bumpyReplays', replaysOn ? 'on' : 'off'); } catch (err) {} };
   $('use2d').onchange = e => { try { localStorage.setItem('bumpyRender', e.target.checked ? '2d' : '3d'); } catch (err) {} location.reload(); };
   if (GL) {
