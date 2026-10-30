@@ -854,9 +854,12 @@
   const strokeKind = o => (behind(o) ? trickKind(o)
     : ball.z > 2.3 && ball.bounces === 0 ? 'smash'
     : ball.bounces === 0 && !ball.serve && !(o === player && isDriveVolley()) ? 'volley' : sideKind(o));
-  // the ball has gone over your head and is running away toward your own baseline: you chase it with your back to
+  // a lob has gone over your head and is running away toward your own baseline: you chase it with your back to
   // the net, and hit it back without turning - between the legs when it is low, a flick over the shoulder when higher
-  const behind = o => ball.live && !ball.serve && ball.z < 2.4 && (o === player ? ball.vy > 1.5 && ball.y > o.y + .5 && o.y < L - .5 && ball.last === 'C' : ball.vy < -1.5 && ball.y < o.y - .5 && o.y > .5 && ball.last === 'P');
+  // only a real lob over someone who had come forward counts (at least 3.5 m inside the baseline when it went over)
+  const behind = o => ball.live && !ball.serve && ball.type === 'lob' && ball.z < 2.4 && (o === player
+    ? ball.vy > 1.5 && ball.y > o.y + .5 && o.y < L - 3.5 && ball.last === 'C'
+    : ball.vy < -1.5 && ball.y < o.y - .5 && o.y > 3.5 && ball.last === 'P');
   const trickKind = o => ball.z < .8 ? 'tweener' : 'behind';
   // a floater taken out of the air from mid-court with a full swing
   const isDriveVolley = () => ball.bounces === 0 && !ball.serve && ball.z > 1 && ball.z <= 2.3 && player.y > NET_Y + 2.5;
