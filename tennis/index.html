@@ -171,9 +171,6 @@
         <button id="carNew">新しく始める</button>
         <button class="alt hidden" id="carCont">つづきから</button>
       </div>
-      <p style="margin-top:12px"><b>練習モード</b></p>
-      <div class="btns"><button class="alt" data-drill="tweener">股抜き・背面ショット練習</button></div>
-      <p style="font-size:12px;margin:2px 0">ネット前のあなたの頭上を CPU がロブで抜いてくる。ショットのボタンを長押しして追いかけ、後ろ向きのまま打ち返そう（スライスのボタンか低い球なら股抜き、それ以外は背面ショット、ロブのボタンなら背走ロブ）</p>
       <p style="margin-top:12px"><a href="../party/index.html">🎉 Bumpy Party! であそぶ</a></p>
     </div>
   </div>
@@ -600,7 +597,6 @@
   let pts = [0, 0], games = [0, 0], faults = 0, rally = 0, maxRally = 0, maxSpeed = 0, tossing = false, cpuServeT = 0;
   let dust = [];
   let aimX = 0, aimD = 0; // where you are aiming while a shot is charged: -1..1 across, -1 short .. 1 deep
-  let practice = null, pstats = null; // the practice drill (null = a match) and its tally
   let pauseT = 0, pauseCb = null, msg = null, popups = [], marks = [], skids = [], charge = null, history = [], cpuMod = { err: 0, react: 0, noise: 1 };
 
   // tiebreak: the player due to serve serves the first point, then each serves two in a row
@@ -635,7 +631,6 @@
     (recv === 'C' ? ball.y >= -TB && ball.y <= NET_Y : ball.y >= NET_Y && ball.y <= L + TB);
 
   function startMatch(key, opp = null) {
-    practice = null;
     $('quit').classList.remove('hidden');
     tb = false; tbScore = null; intro = false;
     $('board').innerHTML = BOARD_HTML;
@@ -871,7 +866,6 @@
       if (o.lobbed || !ball.live || ball.type !== 'lob' || ball.last !== (o === player ? 'C' : 'P')) continue;
       const over = o === player ? ball.y > o.y : ball.y < o.y, forward = o === player ? o.y < L - 2.5 : o.y > 2.5;
       if (over) o.lobbed = forward ? true : null; // null: it went over, but you were back already
-      if (over && practice && o === player) msg = null; // the drill's caption clears: go!
     }
   }
   const trickKind = o => ball.z < .8 || (o === player && player.shot === 'slice' && ball.z < 1.4) ? 'tweener' : 'behind'; // you can go for the tweener with the slice button
@@ -887,7 +881,6 @@
   }
 
   function canHit(w) {
-    if (w === 'P' && practice === 'tweener' && player.lobbed && ball.bounces === 0) return false; // the drill: let it bounce, then run it down
     if (!ball.live || ball.last === w) return false;
     if (ball.bounces === 1) return true;
     if (w === 'C') return ball.bounces === 0 && (ball.chance || cpu.rush) && ball.y < NET_Y; // the CPU volleys sitters, or anything once it has rushed the net
@@ -1089,39 +1082,6 @@
     rally++; maxRally = Math.max(maxRally, rally); if (me) maxSpeed = Math.max(maxSpeed, kmh);
     ball.shotKmh = kmh; sHit(.5, type, !me); crowdVoice('ooh', .9); cheer = Math.max(cheer, 1.2);
     popupAt(o.x, o.y, 3, lob ? '背走ロブ!' : kind === 'tweener' ? '股抜きショット!' : '背面ショット!', '#c77dff');
-    if (me) player.lastTrick = lob ? 'lob' : kind;
-  }
-  // ---------- practice: the back-to-the-net drill ----------
-  const TRICK_NAME = { tweener: '股抜き', behind: '背面ショット', lob: '背走ロブ' };
-  function startPractice(key) {
-    startMatch('mid');
-    practice = key; pstats = { n: 0, ok: 0, streak: 0, best: 0, tweener: 0, behind: 0, lob: 0 };
-    stage = { fill: .5 }; $('lvName').textContent = '練習';
-    feedNext();
-  }
-  function practiceBoard() {
-    $('board').innerHTML = `<div class="r"><span class="n">練習: 股抜き・背面ショット</span></div>` +
-      `<div class="r"><span class="n" style="font-size:13px">成功 ${pstats.ok} / ${pstats.n} ・ 連続 ${pstats.streak}（最高 ${pstats.best}）</span></div>` +
-      `<div class="r"><span class="n" style="font-size:12px">股抜き ${pstats.tweener} ・ 背面 ${pstats.behind} ・ 背走ロブ ${pstats.lob}</span></div>`;
-  }
-  // the CPU at its baseline lobs you standing at the net
-  function feedNext() {
-    Object.assign(player, { x: CX + rand(-1.5, 1.5), y: NET_Y + rand(1.5, 2.6), vx: 0, vy: 0, feet: null, slide: 0, anim: 0, swing: 0, closest: null, turn: 0, lobbed: false });
-    Object.assign(cpu, { x: CX + rand(-2, 2), y: -.5, vx: 0, vy: 0, feet: null, slide: 0, plan: null, turn: 0 });
-    Object.assign(ball, { x: cpu.x - .3, y: cpu.y + .3, z: 1, held: false, rolling: false, live: true, serve: false, last: 'C', bounces: 0, chance: false, trail: [] });
-    tossing = false; charge = null; rally = 0; msg = { title: 'ロブで抜かれる！', sub: '頭上を越えたら追いかけて、後ろ向きのまま打ち返そう' }; player.lastTrick = null;
-    shoot(clamp(player.x + rand(-1.3, 1.3), 1, CW - 1), L - rand(3.5, 6), 'lob', { angle: rand(.62, .7), who: 'C' }); // too high to smash, but short enough to run down
-    startAnim(cpu, sideKind(cpu), 'lob', .3);
-    state = 'rally'; practiceBoard();
-  }
-  function practiceDone(ok, label) {
-    ball.live = false; pstats.n++;
-    const t = player.lastTrick;
-    if (ok) { pstats.ok++; pstats.streak++; pstats.best = Math.max(pstats.best, pstats.streak); if (t) pstats[t]++; sWin(); }
-    else { pstats.streak = 0; sLose(); }
-    popupAt(player.x, player.y, 3, ok ? (t ? `${TRICK_NAME[t]} 成功!` : '返球成功（後ろ向きではなかった）') : label, ok ? '#e8ff3a' : '#ff8080');
-    practiceBoard();
-    state = 'pause'; msg = null; pauseT = 1.1; pauseCb = feedNext;
   }
   // where should the CPU go to meet the ball in time?
   function planIntercept() {
@@ -1160,13 +1120,6 @@
 
   // ---------- rules ----------
   function onBounce() {
-    if (practice) { // the drill: your shot must land in; a lob that bounces twice beat you
-      if (!ball.live) return;
-      ball.bounces++;
-      if (ball.last === 'P') practiceDone(ball.bounces === 1 && inCourt('C'), 'アウト');
-      else if (ball.bounces >= 2) practiceDone(false, '追いつけなかった…');
-      return;
-    }
     if (!ball.live) return;
     ball.bounces++;
     const recv = other(ball.last);
@@ -1190,7 +1143,6 @@
     }
   }
   function onNet() {
-    if (practice) return practiceDone(false, 'ネット');
     ball.serve ? fault('ネット') : pointTo(other(ball.last), 'ネット!');
   }
 
@@ -1202,8 +1154,12 @@
 
   // ---------- the stadium: chair umpire, line judges, crowd ----------
   const UMP = { x: CW + ALLEY + 2.3, y: NET_Y };
-  const judges = [[-1.8, -6], [CW + 1.8, -6], [-ALLEY - 2.6, 4], [-ALLEY - 2.6, L - 4], [CW + ALLEY + 2.6, L - 4], [CW + ALLEY + 2.6, 4]]
-    .map(([x, y]) => ({ x, y, call: 0 }));
+  // line judges sit in line with the line they call: behind the far baseline on the sidelines, and at the
+  // sides on both baselines and the service lines (the near end's sideline judges would sit behind the camera)
+  const JX = ALLEY + 3.1;
+  const judges = [[0, -5.6, 0, 1], [CW, -5.6, 0, 1], [-JX, 0, 1, 0], [CW + JX, 0, -1, 0], [-JX, L, 1, 0], [CW + JX, L, -1, 0],
+                  [-JX, NET_Y + SVC, 1, 0], [CW + JX, NET_Y - SVC, -1, 0]]
+    .map(([x, y, fx, fy]) => ({ x, y, face: [x + fx * 10, y + fy * 10], call: 0 }));
   let umpCall = null, cheer = 0;
   const NAME = { P: 'Mang Kobay', C: 'C P U' };
   let umpTimers = [];
@@ -2632,7 +2588,6 @@
     }
     if (player.swing > 0) { tvx *= .25; tvy *= .25; } // planted while swinging
     if (player.slide > 0) accelTo(player, 0, 0, dt, P_ACC, venue.slide); // sliding: no control; skids 1-2 m (further on clay)
-    else if (practice === 'tweener' && ball.live && ball.last === 'C' && !player.lobbed) accelTo(player, 0, 0, dt, P_ACC, P_DEC); // the drill: caught at the net until the lob is over your head
     else accelTo(player, tvx, tvy, dt, P_ACC, P_DEC);
     player.x += player.vx * dt; player.y += player.vy * dt;
     const [x0, x1, y0, y1] = serving
@@ -2694,7 +2649,7 @@
       return { x: ball.x + ball.vx * k, y: clamp(ball.y + ball.vy * k, NET_Y + .8, L + 4) };
     }
     const ss = smashSpot();
-    if (ss && !practice && (player.y < NET_Y + 9 || ball.chance)) { // get under it (rush in for a sitter) so it drops onto the racket above your head
+    if (ss && (player.y < NET_Y + 9 || ball.chance)) { // get under it (rush in for a sitter) so it drops onto the racket above your head
       const side = ss.x >= player.x - .1 ? 1 : -1;
       return { x: ss.x - side * .25, y: clamp(ss.y + .25, NET_Y + .8, L + 3) };
     }
@@ -2847,7 +2802,6 @@
   }
 
   function moveCpu(dt) {
-    if (practice) { accelTo(cpu, 0, 0, dt, C_ACC, C_DEC); cpu.x += cpu.vx * dt; cpu.y += cpu.vy * dt; animateBody(cpu, dt); return; } // the feeder stays put
     let target = null, speed = lv.speed * (ball.live && ball.last === 'P' ? footSpeed() : 1);
     if (state === 'rally' && ball.live && ball.last === 'P') {
       if (cpu.react > 0) cpu.react -= dt;
@@ -2935,7 +2889,7 @@
       const dc = d2(ball, cpu);
       // the CPU also meets the ball where it passes closest (it can stretch past its reach with a
       // defensive slice), and lets a ball that just bounced rise to a hittable height first
-      const cIn = !practice && state === 'rally' && canHit('C') && dc < lv.reach * STRETCH && ball.z < (ball.bounces === 0 ? 3.1 : 2.6);
+      const cIn = state === 'rally' && canHit('C') && dc < lv.reach * STRETCH && ball.z < (ball.bounces === 0 ? 3.1 : 2.6);
       const rising = ball.z < .35 && ball.vz > 0;
       if (cIn && (cpu.closest == null || dc < cpu.closest || rising)) cpu.closest = Math.min(cpu.closest ?? dc, dc);
       else if (cpu.closest != null) {
@@ -3561,6 +3515,19 @@
       ctx.globalAlpha = 1;
     }
   }
+  // the players' benches either side of the umpire's chair: a seat with a back, a towel, bottles and a racket bag
+  const BENCHES = [{ x: CW + ALLEY + 2.75, y: NET_Y - 2.3, bag: '#d7263d' }, { x: CW + ALLEY + 2.75, y: NET_Y + 2.3, bag: '#2b2f4a' }];
+  const benchColor = () => venue.seats ? venue.seats[0] : venue.wall;
+  function drawBench(b) {
+    const q = (dx, dy, z) => P(b.x + dx, b.y + dy, z), quad = (pts, c) => { ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath(); ctx.fillStyle = c; ctx.fill(); };
+    const c = benchColor(), l = .9;
+    quad([q(-.25, -l, .45), q(.25, -l, .45), q(.25, l, .45), q(-.25, l, .45)], c);                   // seat
+    quad([q(.25, -l, .45), q(.3, -l, 1.05), q(.3, l, 1.05), q(.25, l, .45)], c);                     // back
+    quad([q(-.25, -l, 0), q(-.25, -l, .45), q(-.25, l, .45), q(-.25, l, 0)], 'rgba(0,0,0,.35)');       // front
+    quad([q(-.2, -.5, .46), q(.15, -.5, .46), q(.15, -.15, .46), q(-.2, -.15, .46)], '#f4f4f4');      // towel
+    [-.9, -.8].forEach(dy => { const a = q(-.45, dy, 0), t = q(-.45, dy, .28); ctx.strokeStyle = '#4cc9f0'; ctx.lineWidth = Math.max(2, a.s * .07); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(t.x, t.y); ctx.stroke(); });
+    quad([q(-.55, .2, 0), q(-.55, 1, 0), q(-.55, 1, .3), q(-.55, .2, .3)], b.bag);                   // racket bag
+  }
   function drawJudge(j) {
     const chair = P(j.x, j.y, .45), s = chair.s;
     ctx.fillStyle = '#3a3f55'; ctx.fillRect(chair.x - .2 * s, chair.y, .4 * s, .45 * s);
@@ -3720,6 +3687,7 @@
       { y: NET_Y, f: drawNet },
       { y: UMP.y + .02, f: drawUmpire },
       ...judges.map(j => ({ y: j.y, f: () => drawJudge(j) })),
+      ...(GL ? [] : BENCHES.map(b => ({ y: b.y, f: () => drawBench(b) }))),
       { y: cpu.y, f: () => figure(cpu, cpuKit) },
       { y: player.y, f: () => figure(player, KIT_P, charge) },
     ];
@@ -4261,6 +4229,7 @@
         const seat = new T.Color(V.wall); seatMat.color.copy(seat).offsetHSL(0, -.1, .06); seatMat2.color.copy(seat).offsetHSL(0, -.1, .12);
         if (V.seats) { seatMat.color.set(V.seats[0]); seatMat2.color.set(V.seats[1]); }
         upperDeck.visible = !!V.upper; roof.visible = !!V.roof; roofTop.visible = V.roof === 'closed';
+        benchMat.color.set(V.seats ? V.seats[0] : V.wall);
         if (fansFor !== V.key) { // the crowd dresses for the venue
           fansFor = V.key; const pal = V.fans || shirtCols;
           fans.forEach((f, i) => fanBody.setColorAt(i, col.set(pal[Math.floor(f[4] * 997) % pal.length])));
@@ -4295,7 +4264,20 @@
         return { group: g, pivot };
       }
       const umpire3 = makeOfficial(UMP.x, UMP.y, 1.9, [CX, NET_Y], '#1f2b55', 1.25, true);
-      const judges3 = judges.map(j => makeOfficial(j.x, j.y, .45, [CX, NET_Y], '#1f2b55', 1.05, false));
+      // the players' benches beside the umpire's chair (seat and back in the venue's colour)
+      const benchMat = new T.MeshLambertMaterial({ color: 0x1f5fae });
+      BENCHES.forEach(b => {
+        const g = new T.Group(); g.position.set(b.x, 0, b.y); scene.add(g);
+        const m = (geo, mat, x, y, z) => { const o = new T.Mesh(geo, mat); o.position.set(x, y, z); g.add(o); return o; };
+        const lam = c => new T.MeshLambertMaterial({ color: c });
+        m(new T.BoxGeometry(.5, .06, 1.8), benchMat, 0, .45, 0);                         // seat
+        m(new T.BoxGeometry(.06, .6, 1.8), benchMat, .27, .78, 0);                       // back
+        [-.8, .8].forEach(z => m(new T.BoxGeometry(.46, .45, .06), lam('#3a3f55'), 0, .22, z)); // legs
+        m(new T.BoxGeometry(.32, .03, .36), lam('#f4f4f4'), -.02, .5, -.35);             // a folded towel
+        [-.88, -.78].forEach(z => m(new T.CylinderGeometry(.035, .035, .26, 10), lam('#4cc9f0'), -.42, .13, z)); // bottles
+        m(new T.BoxGeometry(.24, .26, .85), lam(b.bag), -.5, .13, .55);                 // racket bag
+      });
+      const judges3 = judges.map(j => makeOfficial(j.x, j.y, .45, j.face, '#1f2b55', 1.05, false));
       // night: a dark haze swallows the far stands while the court stays bright; by day a faint distance haze
       scene.fog = new T.Fog(0xbfd6ee, 70, 230);
       [backBoard.material, ...scene.children.filter(o => o.material && o.material.map === sideTex).map(o => o.material), lampMat].forEach(m => (m.fog = false));
@@ -4467,14 +4449,12 @@
   pickOne('[data-venue]', 'venue', 'mel');
   document.querySelectorAll('[data-level]').forEach(b => (b.onclick = () => startMatch(b.dataset.level)));
   $('quit').onclick = () => {
-    practice = null;
     state = 'menu'; msg = null; ball.live = false; quietForPoint();
     if (tourOpp) { tourOpp = null; $('board').classList.add('hidden'); $('quit').classList.add('hidden'); showTour(); return; }
     refreshTourButtons();
     $('result').classList.add('hidden'); $('board').classList.add('hidden'); $('quit').classList.add('hidden'); $('menu').classList.remove('hidden');
   };
   $('again').onclick = () => startMatch(lvKey);
-  document.querySelectorAll('[data-drill]').forEach(b => (b.onclick = () => startPractice(b.dataset.drill)));
   $('toTour').onclick = () => showTour();
   $('carNew').onclick = () => {
     const c = loadCareer();
