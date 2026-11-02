@@ -171,6 +171,9 @@
         <button id="carNew">新しく始める</button>
         <button class="alt hidden" id="carCont">つづきから</button>
       </div>
+      <p style="margin-top:12px"><b>練習モード</b></p>
+      <div class="btns"><button class="alt" data-drill="tweener">股抜き・背面ショット練習</button></div>
+      <p style="font-size:12px;margin:2px 0">ネット前のあなたの頭上を CPU がロブで抜いてくる。ショットのボタンを長押しして追いかけ、後ろ向きのまま打ち返そう（スライスのボタンか低い球なら股抜き、それ以外は背面ショット、ロブのボタンなら背走ロブ）</p>
       <p style="margin-top:12px"><a href="../party/index.html">🎉 Bumpy Party! であそぶ</a></p>
     </div>
   </div>
@@ -597,6 +600,7 @@
   let pts = [0, 0], games = [0, 0], faults = 0, rally = 0, maxRally = 0, maxSpeed = 0, tossing = false, cpuServeT = 0;
   let dust = [];
   let aimX = 0, aimD = 0; // where you are aiming while a shot is charged: -1..1 across, -1 short .. 1 deep
+  let practice = null, pstats = null; // the practice drill (null = a match) and its tally
   let pauseT = 0, pauseCb = null, msg = null, popups = [], marks = [], skids = [], charge = null, history = [], cpuMod = { err: 0, react: 0, noise: 1 };
 
   // tiebreak: the player due to serve serves the first point, then each serves two in a row
@@ -631,6 +635,7 @@
     (recv === 'C' ? ball.y >= -TB && ball.y <= NET_Y : ball.y >= NET_Y && ball.y <= L + TB);
 
   function startMatch(key, opp = null) {
+    practice = null;
     $('quit').classList.remove('hidden');
     tb = false; tbScore = null; intro = false;
     $('board').innerHTML = BOARD_HTML;
@@ -727,7 +732,7 @@
   // shot's margin, then correct the aim for any sidespin curve.
   // side: world-x direction the sidespin pulls toward (default: away from the center line)
   function shoot(tx, ty, type, { speed = 25, angle = null, noClear = false, curve = 1, side = 0, who = null, over = null } = {}) {
-    ball.cord = false;
+    ball.cord = false; player.lobbed = cpu.lobbed = false;
     const sh = { ...styled(type, who), ...over };
     const ax = sh.curve ? (side || (tx > CX ? 1 : -1)) * sh.curve * curve : 0;
     const { x, y, z } = ball, D = Math.hypot(tx - x, ty - y);
@@ -856,11 +861,20 @@
     : ball.bounces === 0 && !ball.serve && !(o === player && isDriveVolley()) ? 'volley' : sideKind(o));
   // a lob has gone over your head and is running away toward your own baseline: you chase it with your back to
   // the net, and hit it back without turning - between the legs when it is low, a flick over the shoulder when higher
-  // only a real lob over someone who had come forward counts (at least 3.5 m inside the baseline when it went over)
-  const behind = o => ball.live && !ball.serve && ball.type === 'lob' && ball.z < 2.4 && (o === player
-    ? ball.vy > 1.5 && ball.y > o.y + .5 && o.y < L - 3.5 && ball.last === 'C'
-    : ball.vy < -1.5 && ball.y < o.y - .5 && o.y > 3.5 && ball.last === 'P');
-  const trickKind = o => ball.z < .8 ? 'tweener' : 'behind';
+  // only a real lob counts: `lobbed` is set the moment a lob goes over a player who had come forward (at least
+  // 2.5 m inside the baseline), and cleared by the next shot
+  const behind = o => ball.live && !ball.serve && o.lobbed && ball.z < 2.4 && (o === player
+    ? ball.vy > 1 && ball.y > o.y - .5 && ball.last === 'C'
+    : ball.vy < -1 && ball.y < o.y + .5 && ball.last === 'P');
+  function watchLobs() {
+    for (const o of [player, cpu]) {
+      if (o.lobbed || !ball.live || ball.type !== 'lob' || ball.last !== (o === player ? 'C' : 'P')) continue;
+      const over = o === player ? ball.y > o.y : ball.y < o.y, forward = o === player ? o.y < L - 2.5 : o.y > 2.5;
+      if (over) o.lobbed = forward ? true : null; // null: it went over, but you were back already
+      if (over && practice && o === player) msg = null; // the drill's caption clears: go!
+    }
+  }
+  const trickKind = o => ball.z < .8 || (o === player && player.shot === 'slice' && ball.z < 1.4) ? 'tweener' : 'behind'; // you can go for the tweener with the slice button
   // a floater taken out of the air from mid-court with a full swing
   const isDriveVolley = () => ball.bounces === 0 && !ball.serve && ball.z > 1 && ball.z <= 2.3 && player.y > NET_Y + 2.5;
   function fireSwing() {
@@ -873,6 +887,7 @@
   }
 
   function canHit(w) {
+    if (w === 'P' && practice === 'tweener' && player.lobbed && ball.bounces === 0) return false; // the drill: let it bounce, then run it down
     if (!ball.live || ball.last === w) return false;
     if (ball.bounces === 1) return true;
     if (w === 'C') return ball.bounces === 0 && (ball.chance || cpu.rush) && ball.y < NET_Y; // the CPU volleys sitters, or anything once it has rushed the net
@@ -1074,6 +1089,39 @@
     rally++; maxRally = Math.max(maxRally, rally); if (me) maxSpeed = Math.max(maxSpeed, kmh);
     ball.shotKmh = kmh; sHit(.5, type, !me); crowdVoice('ooh', .9); cheer = Math.max(cheer, 1.2);
     popupAt(o.x, o.y, 3, lob ? '背走ロブ!' : kind === 'tweener' ? '股抜きショット!' : '背面ショット!', '#c77dff');
+    if (me) player.lastTrick = lob ? 'lob' : kind;
+  }
+  // ---------- practice: the back-to-the-net drill ----------
+  const TRICK_NAME = { tweener: '股抜き', behind: '背面ショット', lob: '背走ロブ' };
+  function startPractice(key) {
+    startMatch('mid');
+    practice = key; pstats = { n: 0, ok: 0, streak: 0, best: 0, tweener: 0, behind: 0, lob: 0 };
+    stage = { fill: .5 }; $('lvName').textContent = '練習';
+    feedNext();
+  }
+  function practiceBoard() {
+    $('board').innerHTML = `<div class="r"><span class="n">練習: 股抜き・背面ショット</span></div>` +
+      `<div class="r"><span class="n" style="font-size:13px">成功 ${pstats.ok} / ${pstats.n} ・ 連続 ${pstats.streak}（最高 ${pstats.best}）</span></div>` +
+      `<div class="r"><span class="n" style="font-size:12px">股抜き ${pstats.tweener} ・ 背面 ${pstats.behind} ・ 背走ロブ ${pstats.lob}</span></div>`;
+  }
+  // the CPU at its baseline lobs you standing at the net
+  function feedNext() {
+    Object.assign(player, { x: CX + rand(-1.5, 1.5), y: NET_Y + rand(1.5, 2.6), vx: 0, vy: 0, feet: null, slide: 0, anim: 0, swing: 0, closest: null, turn: 0, lobbed: false });
+    Object.assign(cpu, { x: CX + rand(-2, 2), y: -.5, vx: 0, vy: 0, feet: null, slide: 0, plan: null, turn: 0 });
+    Object.assign(ball, { x: cpu.x - .3, y: cpu.y + .3, z: 1, held: false, rolling: false, live: true, serve: false, last: 'C', bounces: 0, chance: false, trail: [] });
+    tossing = false; charge = null; rally = 0; msg = { title: 'ロブで抜かれる！', sub: '頭上を越えたら追いかけて、後ろ向きのまま打ち返そう' }; player.lastTrick = null;
+    shoot(clamp(player.x + rand(-1.3, 1.3), 1, CW - 1), L - rand(3.5, 6), 'lob', { angle: rand(.62, .7), who: 'C' }); // too high to smash, but short enough to run down
+    startAnim(cpu, sideKind(cpu), 'lob', .3);
+    state = 'rally'; practiceBoard();
+  }
+  function practiceDone(ok, label) {
+    ball.live = false; pstats.n++;
+    const t = player.lastTrick;
+    if (ok) { pstats.ok++; pstats.streak++; pstats.best = Math.max(pstats.best, pstats.streak); if (t) pstats[t]++; sWin(); }
+    else { pstats.streak = 0; sLose(); }
+    popupAt(player.x, player.y, 3, ok ? (t ? `${TRICK_NAME[t]} 成功!` : '返球成功（後ろ向きではなかった）') : label, ok ? '#e8ff3a' : '#ff8080');
+    practiceBoard();
+    state = 'pause'; msg = null; pauseT = 1.1; pauseCb = feedNext;
   }
   // where should the CPU go to meet the ball in time?
   function planIntercept() {
@@ -1112,6 +1160,13 @@
 
   // ---------- rules ----------
   function onBounce() {
+    if (practice) { // the drill: your shot must land in; a lob that bounces twice beat you
+      if (!ball.live) return;
+      ball.bounces++;
+      if (ball.last === 'P') practiceDone(ball.bounces === 1 && inCourt('C'), 'アウト');
+      else if (ball.bounces >= 2) practiceDone(false, '追いつけなかった…');
+      return;
+    }
     if (!ball.live) return;
     ball.bounces++;
     const recv = other(ball.last);
@@ -1135,6 +1190,7 @@
     }
   }
   function onNet() {
+    if (practice) return practiceDone(false, 'ネット');
     ball.serve ? fault('ネット') : pointTo(other(ball.last), 'ネット!');
   }
 
@@ -2564,7 +2620,7 @@
       aimFromInput(mx, my);
       const g = charge.serve ? null : assistTarget();
       if (g) {
-        const dx = g.x - player.x, dy = g.y - player.y, l = Math.hypot(dx, dy), sp = Math.min(PSPEED * .75, l * 6);
+        const dx = g.x - player.x, dy = g.y - player.y, l = Math.hypot(dx, dy), sp = Math.min(PSPEED * (player.lobbed ? 1 : .75), l * 6); // flat out after a lob over your head
         if (l > .05) { tvx = dx / l * sp; tvy = dy / l * sp; }
       }
     } else if (mx || my) {
@@ -2576,6 +2632,7 @@
     }
     if (player.swing > 0) { tvx *= .25; tvy *= .25; } // planted while swinging
     if (player.slide > 0) accelTo(player, 0, 0, dt, P_ACC, venue.slide); // sliding: no control; skids 1-2 m (further on clay)
+    else if (practice === 'tweener' && ball.live && ball.last === 'C' && !player.lobbed) accelTo(player, 0, 0, dt, P_ACC, P_DEC); // the drill: caught at the net until the lob is over your head
     else accelTo(player, tvx, tvy, dt, P_ACC, P_DEC);
     player.x += player.vx * dt; player.y += player.vy * dt;
     const [x0, x1, y0, y1] = serving
@@ -2632,8 +2689,12 @@
 
   function assistTarget() {
     if (!ball.live || ball.last !== 'C') return null;
+    if (player.lobbed && ball.y > player.y - 1) { // a lob over your head: run after it and catch it up from behind
+      const k = ball.bounces ? .3 : .45; // aim a little ahead of it so you run flat out, and swing as you catch it
+      return { x: ball.x + ball.vx * k, y: clamp(ball.y + ball.vy * k, NET_Y + .8, L + 4) };
+    }
     const ss = smashSpot();
-    if (ss && (player.y < NET_Y + 9 || ball.chance)) { // get under it (rush in for a sitter) so it drops onto the racket above your head
+    if (ss && !practice && (player.y < NET_Y + 9 || ball.chance)) { // get under it (rush in for a sitter) so it drops onto the racket above your head
       const side = ss.x >= player.x - .1 ? 1 : -1;
       return { x: ss.x - side * .25, y: clamp(ss.y + .25, NET_Y + .8, L + 3) };
     }
@@ -2786,6 +2847,7 @@
   }
 
   function moveCpu(dt) {
+    if (practice) { accelTo(cpu, 0, 0, dt, C_ACC, C_DEC); cpu.x += cpu.vx * dt; cpu.y += cpu.vy * dt; animateBody(cpu, dt); return; } // the feeder stays put
     let target = null, speed = lv.speed * (ball.live && ball.last === 'P' ? footSpeed() : 1);
     if (state === 'rally' && ball.live && ball.last === 'P') {
       if (cpu.react > 0) cpu.react -= dt;
@@ -2846,6 +2908,7 @@
     moveBall(dt * ballTS());
     player.swing = Math.max(0, player.swing - dt); player.cool -= dt;
     cpu.swing = Math.max(0, cpu.swing - dt);
+    if (state === 'rally') watchLobs();
     [player, cpu].forEach(o => { o.turn = behind(o) && d2(ball, o) < 7 && state === 'rally' ? Math.max(o.turn || 0, .25) : Math.max(0, (o.turn || 0) - dt); });
     if (charge) charge.t += dt;
     // held too long: the toss drops and you have to swing anyway
@@ -2872,7 +2935,7 @@
       const dc = d2(ball, cpu);
       // the CPU also meets the ball where it passes closest (it can stretch past its reach with a
       // defensive slice), and lets a ball that just bounced rise to a hittable height first
-      const cIn = state === 'rally' && canHit('C') && dc < lv.reach * STRETCH && ball.z < (ball.bounces === 0 ? 3.1 : 2.6);
+      const cIn = !practice && state === 'rally' && canHit('C') && dc < lv.reach * STRETCH && ball.z < (ball.bounces === 0 ? 3.1 : 2.6);
       const rising = ball.z < .35 && ball.vz > 0;
       if (cIn && (cpu.closest == null || dc < cpu.closest || rising)) cpu.closest = Math.min(cpu.closest ?? dc, dc);
       else if (cpu.closest != null) {
@@ -4404,12 +4467,14 @@
   pickOne('[data-venue]', 'venue', 'mel');
   document.querySelectorAll('[data-level]').forEach(b => (b.onclick = () => startMatch(b.dataset.level)));
   $('quit').onclick = () => {
+    practice = null;
     state = 'menu'; msg = null; ball.live = false; quietForPoint();
     if (tourOpp) { tourOpp = null; $('board').classList.add('hidden'); $('quit').classList.add('hidden'); showTour(); return; }
     refreshTourButtons();
     $('result').classList.add('hidden'); $('board').classList.add('hidden'); $('quit').classList.add('hidden'); $('menu').classList.remove('hidden');
   };
   $('again').onclick = () => startMatch(lvKey);
+  document.querySelectorAll('[data-drill]').forEach(b => (b.onclick = () => startPractice(b.dataset.drill)));
   $('toTour').onclick = () => showTour();
   $('carNew').onclick = () => {
     const c = loadCareer();
